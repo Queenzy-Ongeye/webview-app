@@ -103,6 +103,10 @@ const App = () => {
       "Header": "Response Code",
       "accessor" : "respCode"
 
+    },
+    {
+      "Header": "Product Name",
+      "accessor": "productName"
     }
   ]
   return (
