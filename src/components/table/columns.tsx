@@ -6,7 +6,7 @@ interface ColumnType {
   sortType: string;
   Cell?: any;
 }
-export const columnsData: ColumnInterface[] = [
+export const columnsData: ColumnType[] = [
   {
     Header: "No",
     accessor: "",
@@ -21,15 +21,17 @@ export const columnsData: ColumnInterface[] = [
   {
     Header: "Full Name",
     accessor: "fullName",
-
+    sortType: "basic"
   },
   {
     Header: "Product Name",
     accessor: "productName",
+    sortType: "basic"
   },
   {
     Header: "Product ID",
     accessor: "productId",
+    sortType: "basic"
   },
   {
     Header: "Connection",
