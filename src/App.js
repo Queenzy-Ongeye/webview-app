@@ -6,6 +6,7 @@ import { columnsData } from "./components/table/columns";
 const App = () => {
   const [bridgeInitialized, setBridgeInitialized] = useState(false);
   const [bleData, setBleData] = useState([]);
+  const [isScanning, setIsScanning] = useState(false); // New state to track scanning status
 
   useEffect(() => {
     const connectWebViewJavascriptBridge = (callback) => {
@@ -66,22 +67,24 @@ const App = () => {
           setBleData((prevData) => [...prevData, responseData]);
         }
       );
+      setIsScanning(true); // Set scanning status to true
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
 
   const stopBleScan = () => {
-    if (window.WebViewJavascriptBridge) {
+    if (window.WebViewJavascriptBridge && isScanning) {
       window.WebViewJavascriptBridge.callHandler(
         "stopBleScan",
         "",
         (responseData) => {
-          setBleData((prevData) => [...prevData, responseData]);
+          console.log("Scanning stopped");
         }
       );
+      setIsScanning(false); // Set scanning status to false
     } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
+      console.error("WebViewJavascriptBridge is not initialized or scanning is not active.");
     }
   };
 
