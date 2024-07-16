@@ -10,7 +10,6 @@ export const columnsData: ColumnType[] = [
   {
     Header: "No",
     accessor: "",
-    // sortType: "basic",
     Cell: ({ row }: any) => (
       <span className="py-3.5 px-4 text-sm font-medium text-gray-700">
         {row.index + 1}
