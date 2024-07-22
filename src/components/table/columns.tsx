@@ -18,6 +18,11 @@ export const columnsData: ColumnType[] = [
     "sortType" : "basic"
   },
   {
+    Header: "Address",
+    accessor: "address",
+    sortType: "basic"
+  },
+  {
     Header: "Full Name",
     accessor: "fullName",
     sortType: "basic"
@@ -30,6 +35,11 @@ export const columnsData: ColumnType[] = [
   {
     Header: "Product ID",
     accessor: "productId",
+    sortType: "basic"
+  },
+  {
+    Header: "TimeStamp",
+    accessor: "timestampNanos",
     sortType: "basic"
   },
   {
