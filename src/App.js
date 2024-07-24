@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import ReusableTable from "./components/table/table";
-import { columnsData } from "./components/table/columns";
+import TablePage from "./components/table/TablePage";
+import BleButtons from "./components/BleButtons/BleButtons";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const App = () => {
   const [bridgeInitialized, setBridgeInitialized] = useState(false);
   const [bleData, setBleData] = useState([]);
-  const [isScanning, setIsScanning] = useState(false); // New state to track scanning status
+  const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
     const connectWebViewJavascriptBridge = (callback) => {
@@ -67,7 +68,7 @@ const App = () => {
           setBleData((prevData) => [...prevData, responseData]);
         }
       );
-      setIsScanning(true); // Set scanning status to true
+      setIsScanning(true);
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
@@ -82,9 +83,11 @@ const App = () => {
           console.log("Scanning stopped");
         }
       );
-      setIsScanning(false); // Set scanning status to false
+      setIsScanning(false);
     } else {
-      console.error("WebViewJavascriptBridge is not initialized or scanning is not active.");
+      console.error(
+        "WebViewJavascriptBridge is not initialized or scanning is not active."
+      );
     }
   };
 
@@ -103,26 +106,22 @@ const App = () => {
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col justify-around items-center bg-black">
-      <div id="app" className="flex-1 h-4/5 flex flex-col flex-wrap mt-2">
-        <button className="w-24 h-24 bg-slate-50" onClick={startBleScan}>
-          startBleScan
-        </button>
-        {bleData.length > 0 && (
-          <ReusableTable
-            tableColumns={columnsData}
-            tableData={bleData}
-            title={"Response Data"}
-          />
-        )}
-        <button className="w-24 h-24 mt-2 bg-slate-50" onClick={stopBleScan}>
-          stopBleScan
-        </button>
-        <button className="w-24 h-24 mt-2 bg-slate-50" onClick={toastMsg}>
-          toastMsg
-        </button>
-      </div>
-    </div>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <BleButtons
+              startBleScan={startBleScan}
+              stopBleScan={stopBleScan}
+              toastMsg={toastMsg}
+              bleData={bleData}
+            />
+          }
+        />
+        <Route path="/table" element={<TablePage bleData={bleData} />} />
+      </Routes>
+    </Router>
   );
 };
 
