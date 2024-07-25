@@ -15,32 +15,57 @@ export const columnsData: ColumnType[] = [
         {row.index + 1}
       </span>
     ),
-    "sortType" : "basic"
+    sortType: "basic",
   },
   {
     Header: "Address",
     accessor: "address",
-    sortType: "basic"
+    sortType: "basic",
+    Cell: ({ value }: any) => (
+      <span className="py-3.5 px-4 text-sm font-medium text-gray-800">
+        {value}
+      </span>
+    ),
   },
   {
     Header: "Full Name",
     accessor: "fullName",
-    sortType: "basic"
+    sortType: "basic",
+    Cell: ({ value }: any) => (
+      <span className="py-3.5 px-4 text-sm font-medium text-gray-800">
+        {value}
+      </span>
+    ),
   },
   {
     Header: "Product Name",
     accessor: "productName",
-    sortType: "basic"
+    sortType: "basic",
+    Cell: ({ value }: any) => (
+      <span className="py-3.5 px-4 text-sm font-medium text-gray-800">
+        {value}
+      </span>
+    ),
   },
   {
     Header: "Product ID",
     accessor: "productId",
-    sortType: "basic"
+    sortType: "basic",
+    Cell: ({ value }: any) => (
+      <span className="py-3.5 px-4 text-sm font-medium text-gray-800">
+        {value}
+      </span>
+    ),
   },
   {
     Header: "TimeStamp",
     accessor: "timestampNanos",
-    sortType: "basic"
+    sortType: "basic",
+    Cell: ({ value }: any) => (
+      <span className="py-3.5 px-4 text-sm font-medium text-gray-800">
+        {value}
+      </span>
+    ),
   },
   {
     Header: "Connection",
@@ -56,7 +81,6 @@ export const columnsData: ColumnType[] = [
         {value ? "True" : "Not Dispatched"}
       </span>
     ),
-    sortType: "basic"
+    sortType: "basic",
   },
-  
 ];
