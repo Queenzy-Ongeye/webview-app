@@ -1,5 +1,6 @@
 import React from "react";
 import { columnsData } from "../table/columns";
+import ReusableTable from "../table/table";
 
 const BleButtons = ({
   startBleScan,
