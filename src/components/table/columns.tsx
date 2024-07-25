@@ -84,3 +84,23 @@ export const columnsData: ColumnType[] = [
     sortType: "basic",
   },
 ];
+
+export const bleData = [
+  {
+    address: "123 Main St",
+    fullName: "John Doe",
+    productName: "Product A",
+    productId: "001",
+    timestampNanos: "2024-07-25T12:34:56Z",
+    isConnected: true,
+  },
+  {
+    address: "456 Elm St",
+    fullName: "Jane Smith",
+    productName: "Product B",
+    productId: "002",
+    timestampNanos: "2024-07-25T14:56:78Z",
+    isConnected: false,
+  },
+  // Add more data objects as needed...
+];
