@@ -57,8 +57,8 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
   return (
     <section className="w-full">
       <div className="border border-gray-200 md:rounded-lg my-1 bg-gray-100">
-        <div className="flex items-center justify-between p-4">
-          <h3 className="ml-4 text-lg sm:text-xl font-bold text-black">
+        <div className="flex items-center justify-between p-2 sm:p-4">
+          <h3 className="text-sm sm:text-lg font-bold text-black">
             {title}
           </h3>
           <div className="flex items-center">
@@ -73,8 +73,8 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
                   setValue(e.target.value);
                   onChange(e.target.value);
                 }}
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-32 sm:w-80 md:w-120 pl-10 p-2.5"
-                placeholder="Search for items..."
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-24 sm:w-80 pl-10 p-2"
+                placeholder="Search..."
               />
             </div>
           </div>
@@ -93,10 +93,10 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
                   <th
                     {...column.getHeaderProps(column.getSortByToggleProps())}
                     key={`${column.id}-${index}`}
-                    className="py-2 px-2 sm:py-3.5 sm:px-4 text-xs sm:text-sm font-bold text-left rtl:text-right text-gray-700"
+                    className="py-2 px-2 text-xs sm:text-sm font-bold text-left text-gray-700"
                   >
                     {column.render("Header")}
-                    <span className="ml-2 text-xs sm:text-sm font-normal">
+                    <span className="ml-2 text-xs font-normal">
                       {column.isSorted ? (
                         column.isSortedDesc ? (
                           <span className="opacity-100">↓</span>
@@ -122,14 +122,14 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
                 <tr
                   {...row.getRowProps()}
                   key={row.id}
-                  className={`hover:bg-gray-200 cursor-pointer`}
+                  className="hover:bg-gray-200 cursor-pointer"
                 >
                   {row.cells.map((cell) => {
                     return (
                       <td
                         {...cell.getCellProps()}
                         key={`${cell.column.id}-${row.id}`}
-                        className="py-2 px-2 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-gray-800 whitespace-nowrap"
+                        className="py-2 px-2 text-xs sm:text-sm font-medium text-gray-800 whitespace-nowrap"
                       >
                         {cell.render("Cell")}
                       </td>
@@ -144,7 +144,7 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
       <div className="flex flex-col sm:flex-row justify-between border border-gray-200 md:rounded-lg my-1 p-2 bg-white">
         <div className="flex items-center gap-2 sm:gap-8 mb-2 sm:mb-0">
           <button
-            className={`flex items-center px-3 py-1 sm:px-5 sm:py-2 text-xs sm:text-sm capitalize transition-colors duration-200 border rounded-md gap-x-2 text-gray-700 bg-gray-100 border-gray-200 hover:border-orange-300`}
+            className="flex items-center px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm transition-colors duration-200 border rounded-md gap-x-2 text-gray-700 bg-gray-100 border-gray-200 hover:border-orange-300"
             onClick={onPrevious}
             disabled={!canPreviousPage}
           >
@@ -158,7 +158,7 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
             <strong>{pageOptions.length}</strong>
           </div>
         </div>
-        <div className="hidden md:block text-sm">
+        <div className="hidden md:block text-xs sm:text-sm">
           <span className="mr-2">Show</span>
           <select
             className="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-md py-1 focus:outline-none focus:ring-green-500 focus:border-green-500"
@@ -167,7 +167,7 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
               setPageSize(Number(e.target.value));
             }}
           >
-            {[10, 25, 50, 100, 200, 400, 800].map((pageSize) => (
+            {[10, 25, 50, 100].map((pageSize) => (
               <option key={pageSize} value={pageSize}>
                 {pageSize}
               </option>
@@ -178,7 +178,7 @@ const ReusableTable = ({ tableColumns, tableData, title }) => {
         <button
           disabled={!canNextPage}
           onClick={onNext}
-          className={`flex items-center px-3 py-1 sm:px-5 sm:py-2 text-xs sm:text-sm capitalize transition-colors duration-200 border rounded-md gap-x-2 text-gray-700 bg-gray-100 border-gray-200 hover:border-orange-300`}
+          className="flex items-center px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm transition-colors duration-200 border rounded-md gap-x-2 text-gray-700 bg-gray-100 border-gray-200 hover:border-orange-300"
         >
           <span>Next</span>
           <BsArrowRight />
