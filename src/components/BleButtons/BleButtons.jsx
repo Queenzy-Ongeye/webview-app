@@ -1,4 +1,5 @@
 import React from "react";
+import { columnsData } from "../table/columns";
 
 const BleButtons = ({
   startBleScan,
@@ -33,13 +34,15 @@ const BleButtons = ({
       </button>
       <div className="mt-4 w-full max-w-md">
         <h3 className="text-lg font-semibold mb-2">BLE Data</h3>
-        <ul className="bg-white shadow rounded-md p-4 space-y-2">
-          {bleData.map((data, index) => (
-            <li key={index} className="text-sm text-gray-700">
-              {JSON.stringify(data)}
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col items-center">
+          <div className="w-full max-w-6xl p-4">
+            <ReusableTable
+              tableColumns={columnsData}
+              tableData={bleData}
+              title="Response Data"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
