@@ -1,34 +1,45 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 
-const BleButtons = ({ startBleScan, stopBleScan, toastMsg }) => {
-  const navigate = useNavigate();
-  const handleStartBleScan = () => {
-    startBleScan();
-    navigate("/table");
-  };
-
+const BleButtons = ({
+  startBleScan,
+  stopBleScan,
+  toastMsg,
+  bleData,
+  isScanning,
+}) => {
   return (
-    <div className="absolute inset-0 flex flex-col justify-around items-center bg-black">
-      <div id="app" className="flex-1 h-4/5 flex flex-col flex-wrap mt-2">
-        <button
-          className="w-64 h-16 rounded-md bg-slate-50"
-          onClick={handleStartBleScan}
-        >
-          startBleScan
-        </button>
-        <button
-          className="w-64 h-16 rounded-md mt-2 bg-slate-50"
-          onClick={stopBleScan}
-        >
-          stopBleScan
-        </button>
-        <button
-          className="w-64 h-16 rounded-md mt-2 bg-slate-50"
-          onClick={toastMsg}
-        >
-          toastMsg
-        </button>
+    <div className="flex flex-col items-center space-y-4">
+      <button
+        onClick={startBleScan}
+        className={`px-4 py-2 rounded-md text-white ${
+          isScanning ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-600"
+        } transition-colors duration-200`}
+        disabled={isScanning}
+      >
+        {isScanning ? "Scanning..." : "Start BLE Scan"}
+      </button>
+      <button
+        onClick={stopBleScan}
+        className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors duration-200"
+        disabled={!isScanning}
+      >
+        Stop BLE Scan
+      </button>
+      <button
+        onClick={toastMsg}
+        className="px-4 py-2 rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors duration-200"
+      >
+        Show Toast Message
+      </button>
+      <div className="mt-4 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-2">BLE Data</h3>
+        <ul className="bg-white shadow rounded-md p-4 space-y-2">
+          {bleData.map((data, index) => (
+            <li key={index} className="text-sm text-gray-700">
+              {JSON.stringify(data)}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
