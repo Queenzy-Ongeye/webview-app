@@ -22,7 +22,7 @@ const App = () => {
           },
           false
         );
-
+  
         const timeout = setTimeout(() => {
           if (window.WebViewJavascriptBridge) {
             callback(window.WebViewJavascriptBridge);
@@ -35,30 +35,33 @@ const App = () => {
         }, 3000);
       }
     };
-
+  
     const setupBridge = (bridge) => {
       if (!bridgeInitialized) {
         bridge.init((message, responseCallback) => {
           responseCallback("js success!");
         });
-
+  
         bridge.registerHandler("print", (data, responseCallback) => {
-          setBleData((prevData) => [...prevData, data]);
+          setBleData((prevData) => [...prevData, JSON.parse(data)]);
           responseCallback(data);
         });
-
+  
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
-          setDetectedDevices((prevData) => [...prevData, data]);
+          const parsedData = JSON.parse(data);
+          setBleData((prevData) => [...prevData, parsedData]);
+          setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
           responseCallback(data);
         });
-
+  
         setBridgeInitialized(true);
         console.log("WebViewJavascriptBridge initialized.");
       }
     };
-
+  
     connectWebViewJavascriptBridge(setupBridge);
   }, [bridgeInitialized]);
+  
 
   const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {
