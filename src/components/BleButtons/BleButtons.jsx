@@ -45,7 +45,7 @@ const BleButtons = ({
         <ul className="list-disc pl-5">
           {detectedDevices.map((device, index) => (
             <li key={index} onClick={() => setMacAddress(device.macAddress)}>
-              {device.name} - {device.macAddress}
+              {device.fullName} - {device.macAddress}
             </li>
           ))}
         </ul>
