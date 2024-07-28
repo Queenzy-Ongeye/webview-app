@@ -47,6 +47,11 @@ const App = () => {
           responseCallback(data);
         });
 
+        bridge.registerHandler("findBleDevice", (data, responseCallback) => {
+          setDetectedDevices((prevData) => [...prevData, data]);
+          responseCallback(data);
+        });
+
         setBridgeInitialized(true);
         console.log("WebViewJavascriptBridge initialized.");
       }
