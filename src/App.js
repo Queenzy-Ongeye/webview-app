@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./index.css"; // Ensure you import the Tailwind CSS file
+import "./index.css";
 import TablePage from "./components/table/TablePage";
 import BleButtons from "./components/BleButtons/BleButtons";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
@@ -8,6 +8,7 @@ const App = () => {
   const [bridgeInitialized, setBridgeInitialized] = useState(false);
   const [bleData, setBleData] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
+  const [detectedDevices, setDetectedDevices] = useState([]);
 
   useEffect(() => {
     const connectWebViewJavascriptBridge = (callback) => {
@@ -42,11 +43,6 @@ const App = () => {
         });
 
         bridge.registerHandler("print", (data, responseCallback) => {
-          setBleData((prevData) => [...prevData, data]);
-          responseCallback(data);
-        });
-
-        bridge.registerHandler("findBleDevice", (data, responseCallback) => {
           setBleData((prevData) => [...prevData, data]);
           responseCallback(data);
         });
@@ -105,6 +101,7 @@ const App = () => {
     }
   };
 
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -129,6 +126,8 @@ const App = () => {
                   toastMsg={toastMsg}
                   bleData={bleData}
                   isScanning={isScanning}
+                  connectToBluetoothDevice={connectToBluetoothDevice}
+                  detectedDevices={detectedDevices}
                 />
               }
             />
