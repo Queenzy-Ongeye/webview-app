@@ -43,15 +43,24 @@ const App = () => {
         });
   
         bridge.registerHandler("print", (data, responseCallback) => {
-          setBleData((prevData) => [...prevData, JSON.parse(data)]);
-          responseCallback(data);
+          try {
+            const parsedData = JSON.parse(data);
+            setBleData((prevData) => [...prevData, parsedData]);
+            responseCallback(parsedData);
+          } catch (error) {
+            console.error("Error parsing JSON data from 'print' handler:", error);
+          }
         });
   
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
-          const parsedData = JSON.parse(data);
-          setBleData((prevData) => [...prevData, parsedData]);
-          setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
-          responseCallback(data);
+          try {
+            const parsedData = JSON.parse(data);
+            setBleData((prevData) => [...prevData, parsedData]);
+            setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
+            responseCallback(parsedData);
+          } catch (error) {
+            console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
+          }
         });
   
         setBridgeInitialized(true);
@@ -61,6 +70,7 @@ const App = () => {
   
     connectWebViewJavascriptBridge(setupBridge);
   }, [bridgeInitialized]);
+  
   
 
   const startBleScan = () => {
