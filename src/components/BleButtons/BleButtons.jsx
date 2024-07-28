@@ -1,14 +1,16 @@
-import React from "react";
-import { columnsData, bleData } from "../table/columns";
+import React, { useState } from "react";
+import { columnsData } from "../table/columns";
 import ReusableTable from "../table/table";
 
 const BleButtons = ({
   startBleScan,
   stopBleScan,
   toastMsg,
-  
+  bleData,
   isScanning,
 }) => {
+  const [macAddress, setMacAddress] = useState("");
+
   return (
     <div className="flex flex-col items-center space-y-4">
       <button
