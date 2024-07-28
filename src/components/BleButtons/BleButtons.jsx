@@ -8,6 +8,8 @@ const BleButtons = ({
   toastMsg,
   bleData,
   isScanning,
+  connectToBluetoothDevice,
+  detectedDevices,
 }) => {
   const [macAddress, setMacAddress] = useState("");
 
@@ -35,6 +37,8 @@ const BleButtons = ({
       >
         Show Toast Message
       </button>
+
+
       <div className="mt-4 w-full max-w-md">
         <h3 className="text-lg font-semibold mb-2">BLE Data</h3>
         <div className="flex flex-col items-center">
