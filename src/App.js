@@ -106,6 +106,20 @@ const App = () => {
     }
   };
 
+  const connectToBluetoothDevice = (macAddress) => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        macAddress,
+        (responseData) => {
+          console.log("Connected to Bluetooth device:", responseData);
+          // Handle the response data if needed
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
 
   return (
     <Router>
