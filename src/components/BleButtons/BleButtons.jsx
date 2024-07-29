@@ -142,12 +142,12 @@ const BleButtons = ({
         </ul>
       </div>
 
-      {/* <button
+      <button
         onClick={() => connectToBluetoothDevice(macAddress)}
         className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200"
       >
         Connect to Bluetooth Device
-      </button> */}
+      </button>
 
       <div className="mt-4 w-full max-w-md">
         <h3 className="text-lg font-semibold mb-2">BLE Data</h3>

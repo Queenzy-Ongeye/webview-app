@@ -120,6 +120,7 @@ const App = () => {
   };
 
   const connectToBluetoothDevice = (macAddress) => {
+    console.log("-------123-----", macAddress)
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
