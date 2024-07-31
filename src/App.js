@@ -44,9 +44,9 @@ const App = () => {
   
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
-            const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData]);
-            responseCallback(parsedData);
+            // const parsedData = JSON.parse(data);
+            setBleData((prevData) => [...prevData, data]);
+            responseCallback(data);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
@@ -54,10 +54,10 @@ const App = () => {
   
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
           try {
-            const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData]);
+            // const parsedData = JSON.parse(data);
+            setBleData((prevData) => [...prevData, data]);
             setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
-            responseCallback(parsedData);
+            responseCallback(data);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
           }
@@ -120,6 +120,7 @@ const App = () => {
   };
 
   const connectToBluetoothDevice = (macAddress) => {
+    console.log("-------123-----", macAddress)
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
