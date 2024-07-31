@@ -22,7 +22,7 @@ const App = () => {
           },
           false
         );
-  
+
         const timeout = setTimeout(() => {
           if (window.WebViewJavascriptBridge) {
             callback(window.WebViewJavascriptBridge);
@@ -35,43 +35,43 @@ const App = () => {
         }, 3000);
       }
     };
-  
+
     const setupBridge = (bridge) => {
       if (!bridgeInitialized) {
         bridge.init((message, responseCallback) => {
           responseCallback("js success!");
         });
-  
+
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData]);
-            responseCallback(parsedData);
+            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
+            setBleData((prevData) => [...prevData, jsonData]);
+            responseCallback(jsonData);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
         });
-  
+
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData]);
-            setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
-            responseCallback(parsedData);
+            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
+            setBleData((prevData) => [...prevData, jsonData]);
+            setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
+            responseCallback(jsonData);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
           }
         });
-  
+
         setBridgeInitialized(true);
         console.log("WebViewJavascriptBridge initialized.");
       }
     };
-  
+
     connectWebViewJavascriptBridge(setupBridge);
   }, [bridgeInitialized]);
-  
-  
 
   const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {

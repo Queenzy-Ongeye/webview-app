@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { columnsData } from "../table/columns";
+import { useNavigate } from "react-router-dom";
 import ReusableTable from "../table/table";
+import { columnsData } from "../table/columns";
 
 const BleButtons = ({
   startBleScan,
@@ -8,10 +9,11 @@ const BleButtons = ({
   toastMsg,
   bleData,
   isScanning,
-  connectToBluetoothDevice,
   detectedDevices,
+  connectToBluetoothDevice
 }) => {
   const [macAddress, setMacAddress] = useState("");
+  const navigate = useNavigate();
 
   const columnsData = [
     {
@@ -95,7 +97,7 @@ const BleButtons = ({
       accessor: "actions",
       Cell: ({ row }) => (
         <button
-          onClick={() => connectToBluetoothDevice(row.original.address)}
+          onClick={() => handleViewClick(row.original)}
           className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200"
         >
           View
@@ -104,6 +106,7 @@ const BleButtons = ({
       sortType: "basic",
     },
   ];
+
   return (
     <div className="flex flex-col items-center space-y-4">
       <button
@@ -135,8 +138,8 @@ const BleButtons = ({
         </h3>
         <ul className="list-disc pl-5">
           {detectedDevices.map((device, index) => (
-            <li key={index} onClick={() => setMacAddress(device.address)}>
-              {device.fullName} - {device.address}
+            <li key={index} onClick={() => setMacAddress(device.macAddress)}>
+              {device.fullName} - {device.macAddress}
             </li>
           ))}
         </ul>
@@ -154,7 +157,7 @@ const BleButtons = ({
         <div className="flex flex-col items-center">
           <div className="w-full max-w-6xl p-4">
             <ReusableTable
-              tableColumns={columnsData}
+              tableColumns={columnsWithViewButton}
               tableData={bleData}
               title="Response Data"
             />
