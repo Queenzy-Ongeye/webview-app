@@ -53,14 +53,14 @@ const App = () => {
           }
         });
 
-        bridge.registerHandler("findBleDevice", (responseData, responseCallback) => {
+        bridge.registerHandler("findBleDeviceCallBack", (responseData, responseCallback) => {
           try {
             const jsonData = JSON.parse(responseData.data);
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
-            // responseCallback(jsonData);
+            responseCallback(jsonData);
           } catch (error) {
-            console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
+            console.error("Error parsing JSON data from 'findBleDeviceCallBack' handler:", error);
           }
         });
 
