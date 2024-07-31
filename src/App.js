@@ -74,11 +74,13 @@ const App = () => {
   }, [bridgeInitialized]);
 
   const startBleScan = () => {
+    console.log("----------7------")
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startBleScan",
         "",
         (responseData) => {
+          console.log(responseData, "------82------")
           const parsedData = JSON.parse(responseData.data)
           console.log(parsedData, "-----83----")
           setBleData((prevData) => [...prevData, parsedData]);
@@ -123,7 +125,7 @@ const App = () => {
   };
 
   const connectToBluetoothDevice = (macAddress) => {
-    console.log("-------123-----", macAddress)
+    console.log("-------128-----", macAddress)
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
