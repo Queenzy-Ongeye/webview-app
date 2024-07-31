@@ -44,7 +44,7 @@ const App = () => {
 
         bridge.registerHandler("print", (responseData, responseCallback) => {
           try {
-            const jsonData = JSON.parse(responseData.data.data);
+            const jsonData = JSON.parse(responseData.data);
             console.log("Data is here...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
             // responseCallback(jsonData);
@@ -55,7 +55,8 @@ const App = () => {
 
         bridge.registerHandler("findBleDevice", (responseData, responseCallback) => {
           try {
-            const jsonData = JSON.parse(responseData.data.data);
+            const jsonData = JSON.parse(responseData.data);
+            console.log("Settings data layout...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
             responseCallback(jsonData);
@@ -78,7 +79,7 @@ const App = () => {
         "startBleScan",
         "",
         (responseData) => {
-          const parsedData = JSON.parse(responseData.data.data)
+          const parsedData = JSON.parse(responseData.data)
           setBleData((prevData) => [...prevData, parsedData]);
         }
       );
@@ -127,7 +128,7 @@ const App = () => {
         "connBleByMacAddress",
         macAddress,
         (responseData) => {
-          const parsedData = JSON.parse(responseData.data.data);
+          const parsedData = JSON.parse(responseData);
           setBleData((prevData) => [...prevData, parsedData]);
         }
       );
