@@ -78,7 +78,7 @@ export const columnsData: ColumnType[] = [
             : "bg-red-500 text-white p-2 rounded-md"
         }`}
       >
-        {value ? "True" : "Not Dispatched"}
+        {value ? "Conneted" : "Not Connected"}
       </span>
     ),
     sortType: "basic",
