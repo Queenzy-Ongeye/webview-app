@@ -126,6 +126,7 @@ const App = () => {
         "connBleByMacAddress",
         macAddress,
         (responseData) => {
+          console.log("Connected to Bluetooth device:", responseData);
           const parsedData = JSON.parse(responseData);
           setBleData((prevData) => [...prevData, parsedData]);
         }
