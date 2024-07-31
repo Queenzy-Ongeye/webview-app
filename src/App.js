@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./index.css";
 import TablePage from "./components/table/TablePage";
 import BleButtons from "./components/BleButtons/BleButtons";
-import { BrowserRouter as Router, Route, Routes, Link, json } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 
 const App = () => {
   const [bridgeInitialized, setBridgeInitialized] = useState(false);
@@ -22,7 +22,7 @@ const App = () => {
           },
           false
         );
-  
+
         const timeout = setTimeout(() => {
           if (window.WebViewJavascriptBridge) {
             callback(window.WebViewJavascriptBridge);
@@ -35,13 +35,13 @@ const App = () => {
         }, 3000);
       }
     };
-  
+
     const setupBridge = (bridge) => {
       if (!bridgeInitialized) {
         bridge.init((message, responseCallback) => {
           responseCallback("js success!");
         });
-  
+
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
@@ -52,28 +52,26 @@ const App = () => {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
         });
-  
+
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
             const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
-            responseCallback(parsedData);
+            responseCallback(jsonData);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
           }
         });
-  
+
         setBridgeInitialized(true);
         console.log("WebViewJavascriptBridge initialized.");
       }
     };
-  
+
     connectWebViewJavascriptBridge(setupBridge);
   }, [bridgeInitialized]);
-  
-  
 
   const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {
@@ -128,8 +126,6 @@ const App = () => {
         "connBleByMacAddress",
         macAddress,
         (responseData) => {
-          console.log("Connected to Bluetooth device:", responseData);
-          // Handle the response data if needed
           const parsedData = JSON.parse(responseData);
           setBleData((prevData) => [...prevData, parsedData]);
         }
