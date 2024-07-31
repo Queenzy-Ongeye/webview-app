@@ -42,11 +42,10 @@ const App = () => {
           responseCallback("js success!");
         });
 
-        bridge.registerHandler("print", (data, responseCallback) => {
+        bridge.registerHandler("print", (responseData, responseCallback) => {
           try {
-            const parsedData = JSON.parse(data);
-            const jsonData = JSON.parse(parsedData.data);
-            console.log("Data is here...", jsonData); // Ensure the nested JSON is parsed
+            const jsonData = JSON.parse(responseData.data);
+            console.log("Data is here...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
             responseCallback(jsonData);
           } catch (error) {
@@ -54,10 +53,9 @@ const App = () => {
           }
         });
 
-        bridge.registerHandler("findBleDevice", (data, responseCallback) => {
+        bridge.registerHandler("findBleDevice", (responseData, responseCallback) => {
           try {
-            const parsedData = JSON.parse(data);
-            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
+            const jsonData = JSON.parse(responseData.data);
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
             responseCallback(jsonData);
@@ -80,7 +78,8 @@ const App = () => {
         "startBleScan",
         "",
         (responseData) => {
-          setBleData((prevData) => [...prevData, responseData]);
+          const parsedData = JSON.parse(responseData.data)
+          setBleData((prevData) => [...prevData, parsedData]);
         }
       );
       setIsScanning(true);
@@ -112,7 +111,8 @@ const App = () => {
         "toastMsg",
         "toastMsg",
         (responseData) => {
-          setBleData((prevData) => [...prevData, responseData]);
+          const parsedData = JSON.parse(responseData);
+          setBleData((prevData) => [...prevData, parsedData]);
         }
       );
     } else {
@@ -127,7 +127,6 @@ const App = () => {
         "connBleByMacAddress",
         macAddress,
         (responseData) => {
-          console.log("Connected to Bluetooth device:", responseData);
           const parsedData = JSON.parse(responseData);
           setBleData((prevData) => [...prevData, parsedData]);
         }
