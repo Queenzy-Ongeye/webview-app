@@ -9,7 +9,7 @@ const App = () => {
   const [bleData, setBleData] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [detectedDevices, setDetectedDevices] = useState([]);
-  console.log(bleData, "------12------")
+  console.log("------12------")
   useEffect(() => {
     const connectWebViewJavascriptBridge = (callback) => {
       if (window.WebViewJavascriptBridge) {
@@ -33,6 +33,7 @@ const App = () => {
             );
           }
         }, 3000);
+        console.log("------36-----")
       }
     };
 
@@ -45,7 +46,7 @@ const App = () => {
         bridge.registerHandler("print", (responseData, responseCallback) => {
           try {
             const jsonData = JSON.parse(responseData.data);
-            console.log("Data is here...", jsonData);
+            // console.log("Data is here...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
             // responseCallback(jsonData);
           } catch (error) {
@@ -56,7 +57,7 @@ const App = () => {
         bridge.registerHandler("findBleDevice", (responseData, responseCallback) => {
           try {
             const jsonData = JSON.parse(responseData.data);
-            console.log("Settings data layout...", jsonData);
+            // console.log("Settings data layout...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
             responseCallback(jsonData);
@@ -87,6 +88,7 @@ const App = () => {
         }
       );
       setIsScanning(true);
+      console.log("-----90-----")
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
