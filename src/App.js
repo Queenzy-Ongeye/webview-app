@@ -45,7 +45,7 @@ const App = () => {
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData]);
+            setBleData((prevData) => [...prevData, parsedData.data]);
             responseCallback(parsedData);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
@@ -55,8 +55,8 @@ const App = () => {
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData]);
-            setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
+            setBleData((prevData) => [...prevData, parsedData.data]);
+            setDetectedDevices((prevDevices) => [...prevDevices, parsedData.data]);
             responseCallback(parsedData);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
@@ -129,7 +129,7 @@ const App = () => {
           console.log("Connected to Bluetooth device:", responseData);
           // Handle the response data if needed
           const parsedData = JSON.parse(responseData);
-          setBleData((prevData) => [...prevData, parsedData]);
+          setBleData((prevData) => [...prevData, parsedData.data]);
         }
       );
     } else {
