@@ -44,9 +44,9 @@ const App = () => {
   
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
-            // const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, data]);
-            responseCallback(data);
+            const parsedData = JSON.parse(data);
+            setBleData((prevData) => [...prevData, parsedData]);
+            responseCallback(parsedData);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
@@ -54,10 +54,10 @@ const App = () => {
   
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
           try {
-            // const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, data]);
-            setDetectedDevices((prevDevices) => [...prevDevices, data]);
-            responseCallback(data);
+            const parsedData = JSON.parse(data);
+            setBleData((prevData) => [...prevData, parsedData]);
+            setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
+            responseCallback(parsedData);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
           }
