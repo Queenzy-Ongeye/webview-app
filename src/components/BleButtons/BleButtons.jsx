@@ -26,7 +26,7 @@ const BleButtons = ({
     },
     {
       Header: "Address",
-      accessor: "address",
+      accessor: "macAddress",
       sortType: "basic",
       Cell: ({ value }) => (
         <span className="py-3.5 px-4 text-sm font-medium text-gray-800">
@@ -85,7 +85,7 @@ const BleButtons = ({
               : "bg-red-500 text-white p-2 rounded-md"
           }`}
         >
-          {value ? "True" : "Not Dispatched"}
+          {value ? "Connected" : "Not Connected"}
         </span>
       ),
       sortType: "basic",
