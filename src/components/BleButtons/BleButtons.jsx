@@ -16,7 +16,7 @@ const BleButtons = ({
   const navigate = useNavigate();
 
   const handleViewClick = (deviceData) => {
-    navigate(`/device-details/${deviceData.address}`, { state: deviceData });
+    navigate(`/device-details/${deviceData.macAddress}`, { state: deviceData });
   };
 
   const columnsWithViewButton = [
@@ -67,8 +67,8 @@ const BleButtons = ({
         </h3>
         <ul className="list-disc pl-5">
           {detectedDevices.map((device, index) => (
-            <li key={index} onClick={() => setMacAddress(device.address)}>
-              {device.fullName} - {device.address}
+            <li key={index} onClick={() => setMacAddress(device.macAddress)}>
+              {device.fullName} - {device.macAddress}
             </li>
           ))}
         </ul>
