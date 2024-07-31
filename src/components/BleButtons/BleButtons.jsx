@@ -10,6 +10,7 @@ const BleButtons = ({
   bleData,
   isScanning,
   detectedDevices,
+  connectToBluetoothDevice
 }) => {
   const [macAddress, setMacAddress] = useState("");
   const navigate = useNavigate();

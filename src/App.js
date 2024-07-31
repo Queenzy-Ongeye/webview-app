@@ -56,7 +56,7 @@ const App = () => {
           try {
             // const parsedData = JSON.parse(data);
             setBleData((prevData) => [...prevData, data]);
-            setDetectedDevices((prevDevices) => [...prevDevices, parsedData]);
+            setDetectedDevices((prevDevices) => [...prevDevices, data]);
             responseCallback(data);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
