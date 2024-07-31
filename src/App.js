@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./index.css";
 import TablePage from "./components/table/TablePage";
 import BleButtons from "./components/BleButtons/BleButtons";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Link, json } from "react-router-dom";
 
 const App = () => {
   const [bridgeInitialized, setBridgeInitialized] = useState(false);
@@ -45,8 +45,9 @@ const App = () => {
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData.data]);
-            responseCallback(parsedData);
+            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
+            setBleData((prevData) => [...prevData, jsonData]);
+            responseCallback(jsonData);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
@@ -55,8 +56,9 @@ const App = () => {
         bridge.registerHandler("findBleDevice", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
-            setBleData((prevData) => [...prevData, parsedData.data]);
-            setDetectedDevices((prevDevices) => [...prevDevices, parsedData.data]);
+            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
+            setBleData((prevData) => [...prevData, jsonData]);
+            setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
             responseCallback(parsedData);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
@@ -129,7 +131,7 @@ const App = () => {
           console.log("Connected to Bluetooth device:", responseData);
           // Handle the response data if needed
           const parsedData = JSON.parse(responseData);
-          setBleData((prevData) => [...prevData, parsedData.data]);
+          setBleData((prevData) => [...prevData, parsedData]);
         }
       );
     } else {
