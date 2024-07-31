@@ -44,23 +44,23 @@ const App = () => {
 
         bridge.registerHandler("print", (responseData, responseCallback) => {
           try {
-            const jsonData = JSON.parse(responseData.data);
+            const jsonData = JSON.parse(responseData.data.data);
             console.log("Data is here...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
-            responseCallback(jsonData);
+            // responseCallback(jsonData);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
         });
 
-        bridge.registerHandler("findBleDeviceCallBack", (responseData, responseCallback) => {
+        bridge.registerHandler("findBleDevice", (responseData, responseCallback) => {
           try {
-            const jsonData = JSON.parse(responseData.data);
+            const jsonData = JSON.parse(responseData.data.data);
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
             responseCallback(jsonData);
           } catch (error) {
-            console.error("Error parsing JSON data from 'findBleDeviceCallBack' handler:", error);
+            console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
           }
         });
 
@@ -78,7 +78,7 @@ const App = () => {
         "startBleScan",
         "",
         (responseData) => {
-          const parsedData = JSON.parse(responseData.data)
+          const parsedData = JSON.parse(responseData.data.data)
           setBleData((prevData) => [...prevData, parsedData]);
         }
       );
@@ -127,7 +127,7 @@ const App = () => {
         "connBleByMacAddress",
         macAddress,
         (responseData) => {
-          const parsedData = JSON.parse(responseData);
+          const parsedData = JSON.parse(responseData.data.data);
           setBleData((prevData) => [...prevData, parsedData]);
         }
       );
