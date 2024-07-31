@@ -12,6 +12,7 @@ const BleButtons = ({
   detectedDevices,
   connectToBluetoothDevice
 }) => {
+  console.log(bleData, "-----15-----")
   const [macAddress, setMacAddress] = useState("");
   const navigate = useNavigate();
 
