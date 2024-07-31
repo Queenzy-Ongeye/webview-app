@@ -19,7 +19,7 @@ export const columnsData: ColumnType[] = [
   },
   {
     Header: "Address",
-    accessor: "address",
+    accessor: "macAddress",
     sortType: "basic",
     Cell: ({ value }: any) => (
       <span className="py-3.5 px-4 text-sm font-medium text-gray-800">
@@ -84,6 +84,7 @@ export const columnsData: ColumnType[] = [
     sortType: "basic",
   },
 ];
+
 
 export const bleData = [
   {
