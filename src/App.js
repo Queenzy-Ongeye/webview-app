@@ -83,7 +83,7 @@ const App = () => {
           console.log(responseData, "------82------")
           // const parsedData = JSON.parse(responseData.data)
           // console.log(parsedData, "-----83----")
-          setBleData((prevData) => [...prevData, parsedData]);
+          // setBleData((prevData) => [...prevData, parsedData]);
         }
       );
       setIsScanning(true);
