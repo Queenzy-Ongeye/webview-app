@@ -56,7 +56,6 @@ const App = () => {
         bridge.registerHandler("findBleDevice", (responseData, responseCallback) => {
           try {
             const jsonData = JSON.parse(responseData.data);
-            responseCallback(jsonData, "-----59----")
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
             // responseCallback(jsonData);
