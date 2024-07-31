@@ -78,7 +78,7 @@ const App = () => {
         "startBleScan",
         "",
         (responseData) => {
-          const parsedData = JSON.parse(responseData)
+          const parsedData = JSON.parse(responseData.data)
           setBleData((prevData) => [...prevData, parsedData]);
         }
       );
