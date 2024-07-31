@@ -80,6 +80,7 @@ const App = () => {
         "",
         (responseData) => {
           const parsedData = JSON.parse(responseData.data)
+          console.log(parsedData, "-----83----")
           setBleData((prevData) => [...prevData, parsedData]);
         }
       );
