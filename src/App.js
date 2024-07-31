@@ -45,7 +45,8 @@ const App = () => {
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
-            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
+            const jsonData = JSON.parse(parsedData.data);
+            console.log("Data is here...", jsonData); // Ensure the nested JSON is parsed
             setBleData((prevData) => [...prevData, jsonData]);
             responseCallback(jsonData);
           } catch (error) {
