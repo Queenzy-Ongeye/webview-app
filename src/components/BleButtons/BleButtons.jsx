@@ -11,17 +11,45 @@ const BleButtons = ({
   startQrCode,
   jump2MainActivity
 }) => {
+  const [macAddress, setMacAddress] = useState("");
+  const navigate = useNavigate();
+
+  const handleViewClick = (deviceData) => {
+    navigate(`/device-details/${deviceData.macAddress}`, { state: deviceData });
+  };
+
+  const columnsWithViewButton = [
+    ...columnsData,
+    {
+      Header: "Actions",
+      accessor: "actions",
+      Cell: ({ row }) => (
+        <button
+          onClick={() => handleViewClick(row.original)}
+          className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200"
+        >
+          View
+        </button>
+      ),
+      sortType: "basic",
+    },
+  ];
+
   return (
     <div className="flex flex-col items-center p-4 space-y-4">
       <button
-        className="w-48 h-12 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
         onClick={startBleScan}
+        className={`px-4 py-2 rounded-md text-white ${
+          isScanning ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-600"
+        } transition-colors duration-200`}
+        disabled={isScanning}
       >
-        Start BLE Scan
+        {isScanning ? "Scanning..." : "Start BLE Scan"}
       </button>
       <button
-        className="w-48 h-12 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
         onClick={stopBleScan}
+        className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors duration-200"
+        disabled={!isScanning}
       >
         Stop BLE Scan
       </button>
@@ -31,21 +59,23 @@ const BleButtons = ({
       >
         Show Toast Message
       </button>
+
+      <div className="mt-4 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-2">
+          Detected Bluetooth Devices
+        </h3>
+        <ul className="list-disc pl-5">
+          {detectedDevices.map((device, index) => (
+            <li key={index} onClick={() => setMacAddress(device.macAddress)}>
+              {device.fullName} - {device.macAddress}
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <button
-        className="w-48 h-12 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75"
-        onClick={startQrCode}
-      >
-        Start QR Code Scan
-      </button>
-      <button
-        className="w-48 h-12 bg-purple-500 text-white font-semibold rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75"
-        onClick={jump2MainActivity}
-      >
-        Jump to Main Activity
-      </button>
-      <button
-        className="w-48 h-12 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-opacity-75"
-        onClick={connectToBluetoothDevice}
+        onClick={() => connectToBluetoothDevice(macAddress)}
+        className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200"
       >
         Connect to BLE Device
       </button>
