@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { columnsData } from "../table/columns";
 
@@ -15,6 +15,10 @@ const BleButtons = ({
 }) => {
   const [macAddress, setMacAddress] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("Detected Devices in BleButtons component:", detectedDevices);
+  }, [detectedDevices]);
 
   const handleViewClick = (deviceData) => {
     navigate(`/device-details/${deviceData.macAddress}`, { state: deviceData });
@@ -86,7 +90,7 @@ const BleButtons = ({
       <div className="mt-4 space-y-2">
         {detectedDevices.map((device, index) => (
           <div key={index} className="p-4 bg-white shadow-md rounded-lg">
-            <p className="font-semibold">Device: {device.keyword}</p>
+            <p className="font-semibold">Device: {device.fullName}</p>
             <p>MAC Address: {device.macAddress}</p>
           </div>
         ))}
