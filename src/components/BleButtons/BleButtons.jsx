@@ -1,7 +1,4 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import ReusableTable from "../table/table";
-import { columnsData } from "../table/columns";
+import React from "react";
 
 const BleButtons = ({
   startBleScan,
@@ -9,10 +6,12 @@ const BleButtons = ({
   toastMsg,
   bleData,
   isScanning,
+  connectToBluetoothDevice,
   detectedDevices,
-  connectToBluetoothDevice
+  startQrCode,
+  jump2MainActivity
 }) => {
-  const [selectedMacAddress, setSelectedMacAddress] = useState("");
+  const [macAddress, setMacAddress] = useState("");
   const navigate = useNavigate();
 
   const handleViewClick = (deviceData) => {
@@ -37,7 +36,7 @@ const BleButtons = ({
   ];
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center p-4 space-y-4">
       <button
         onClick={startBleScan}
         className={`px-4 py-2 rounded-md text-white ${
@@ -55,8 +54,8 @@ const BleButtons = ({
         Stop BLE Scan
       </button>
       <button
+        className="w-48 h-12 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75"
         onClick={toastMsg}
-        className="px-4 py-2 rounded-md bg-yellow-500 hover:bg-yellow-600 text-white transition-colors duration-200"
       >
         Show Toast Message
       </button>
@@ -65,13 +64,9 @@ const BleButtons = ({
         <h3 className="text-lg font-semibold mb-2">
           Detected Bluetooth Devices
         </h3>
-        <ul className="list-disc pl-5 space-y-1">
+        <ul className="list-disc pl-5">
           {detectedDevices.map((device, index) => (
-            <li
-              key={index}
-              className={`cursor-pointer p-2 rounded-md ${selectedMacAddress === device.macAddress ? "bg-blue-100" : ""}`}
-              onClick={() => setSelectedMacAddress(device.macAddress)}
-            >
+            <li key={index} onClick={() => setMacAddress(device.macAddress)}>
               {device.fullName} - {device.macAddress}
             </li>
           ))}
@@ -79,23 +74,20 @@ const BleButtons = ({
       </div>
 
       <button
-        onClick={() => connectToBluetoothDevice(selectedMacAddress)}
+        onClick={() => connectToBluetoothDevice(macAddress)}
         className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200"
       >
-        Connect to Bluetooth Device
+        Connect to BLE Device
       </button>
 
-      <div className="mt-4 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-2">BLE Data</h3>
-        <div className="flex flex-col items-center">
-          <div className="w-full max-w-6xl p-4">
-            <ReusableTable
-              tableColumns={columnsWithViewButton}
-              tableData={bleData}
-              title="Response Data"
-            />
+      {/* Display detected devices */}
+      <div className="mt-4 space-y-2">
+        {detectedDevices.map((device, index) => (
+          <div key={index} className="p-4 bg-white shadow-md rounded-lg">
+            <p className="font-semibold">Device: {device.keyword}</p>
+            <p>MAC Address: {device.macAddress}</p>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );
