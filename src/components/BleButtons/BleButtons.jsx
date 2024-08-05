@@ -1,5 +1,4 @@
 import React, { useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
 import { StoreContext } from "./service/store";
 
 const BleButtons = ({
