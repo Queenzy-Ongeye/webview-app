@@ -12,7 +12,7 @@ const BleButtons = ({
   detectedDevices,
   connectToBluetoothDevice
 }) => {
-  const [macAddress, setMacAddress] = useState("");
+  const [selectedMacAddress, setSelectedMacAddress] = useState("");
   const navigate = useNavigate();
 
   const handleViewClick = (deviceData) => {
@@ -65,9 +65,13 @@ const BleButtons = ({
         <h3 className="text-lg font-semibold mb-2">
           Detected Bluetooth Devices
         </h3>
-        <ul className="list-disc pl-5">
+        <ul className="list-disc pl-5 space-y-1">
           {detectedDevices.map((device, index) => (
-            <li key={index} onClick={() => setMacAddress(device.macAddress)}>
+            <li
+              key={index}
+              className={`cursor-pointer p-2 rounded-md ${selectedMacAddress === device.macAddress ? "bg-blue-100" : ""}`}
+              onClick={() => setSelectedMacAddress(device.macAddress)}
+            >
               {device.fullName} - {device.macAddress}
             </li>
           ))}
@@ -75,7 +79,7 @@ const BleButtons = ({
       </div>
 
       <button
-        onClick={() => connectToBluetoothDevice(macAddress)}
+        onClick={() => connectToBluetoothDevice(selectedMacAddress)}
         className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200"
       >
         Connect to Bluetooth Device
