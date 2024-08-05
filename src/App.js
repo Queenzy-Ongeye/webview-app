@@ -15,7 +15,7 @@ const App = () => {
               <Link to="/" className="text-lg font-semibold">
                 Home
               </Link>
-              <Link to="/table" className="text-lg font-semibold">
+              <Link to="/table-page" className="text-lg font-semibold">
                 Data Table
               </Link>
             </div>
