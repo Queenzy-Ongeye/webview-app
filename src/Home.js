@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import BleButtons from "./components/BleButtons/BleButtons";
-import { useStore } from "./store";
+import { useStore } from "./service/store";
 
 const Home = () => {
   const { state, dispatch } = useStore();

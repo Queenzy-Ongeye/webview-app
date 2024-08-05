@@ -2,7 +2,7 @@ import React from "react";
 import "./index.css";
 import TablePage from "./components/table/TablePage";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
-import { StoreProvider } from "./store";
+import { StoreProvider } from "./service/store";
 import Home from "./Home";
 
 const App = () => {
