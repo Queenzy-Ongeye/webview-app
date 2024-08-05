@@ -138,7 +138,6 @@ const Home = () => {
       startBleScan={startBleScan}
       stopBleScan={stopBleScan}
       toastMsg={toastMsg}
-      bleData={state.bleData}
       isScanning={state.isScanning}
       connectToBluetoothDevice={connectToBluetoothDevice}
       detectedDevices={state.detectedDevices}

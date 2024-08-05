@@ -1,19 +1,18 @@
 import React, { useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { StoreContext } from "../service/store";
+import { StoreContext } from "./service/store";
 
 const BleButtons = ({
   startBleScanProp, // renamed to avoid conflict
   stopBleScan,
   toastMsg,
-  bleData,
   isScanning,
   connectToBluetoothDevice,
   detectedDevices,
   startQrCode,
   jump2MainActivity,
 }) => {
-  const { state, dispatch } = useContext(StoreContext);
+  const { dispatch } = useContext(StoreContext);
 
   const startBleScan = () => {
     dispatch({ type: "SET_IS_SCANNING", payload: true });
