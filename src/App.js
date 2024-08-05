@@ -23,7 +23,7 @@ const App = () => {
           <main className="flex-grow container mx-auto p-4">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/table" element={<TablePage />} />
+              {/* <Route path="/table" element={<TablePage />} /> */}
             </Routes>
           </main>
           <footer className="bg-gray-800 text-white py-4 text-center">
