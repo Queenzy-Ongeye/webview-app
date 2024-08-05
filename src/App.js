@@ -1,6 +1,5 @@
 import React from "react";
 import "./index.css";
-import TablePage from "./components/table/TablePage";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import Home from "./Home";
@@ -15,9 +14,9 @@ const App = () => {
               <Link to="/" className="text-lg font-semibold">
                 Home
               </Link>
-              <Link to="/table-page" className="text-lg font-semibold">
+              {/* <Link to="/table" className="text-lg font-semibold">
                 Data Table
-              </Link>
+              </Link> */}
             </div>
           </nav>
           <main className="flex-grow container mx-auto p-4">

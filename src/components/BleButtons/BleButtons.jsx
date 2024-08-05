@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 
@@ -17,21 +17,32 @@ const BleButtons = ({
     console.log("Detected Devices in BleButtons component:", detectedDevices);
   }, [detectedDevices]);
 
+  useEffect(() => {
+    console.log("isScanning state changed:", isScanning);
+  }, [isScanning]);
+
+  useEffect(() => {
+    console.log("BleButtons component rendered");
+  });
+
   const handleStartScanClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log("Start BLE Scan button clicked");
     startBleScan();
   };
 
   const handleStopScanClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log("Stop BLE Scan button clicked");
     stopBleScan();
   };
 
   const handleConnectClick = (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
+    console.log("Connect to Bluetooth device clicked", macAddress);
     connectToBluetoothDevice(macAddress);
   };
 
