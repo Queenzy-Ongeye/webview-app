@@ -40,6 +40,7 @@ const Home = () => {
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
+            console.log("Received data from 'print':", parsedData);
             const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
             dispatch({ type: "SET_BLE_DATA", payload: jsonData });
             responseCallback(jsonData);
@@ -48,15 +49,15 @@ const Home = () => {
           }
         });
 
-        bridge.registerHandler("findBleDevice", (data, responseCallback) => {
+        bridge.registerHandler("findBleDeviceCallBack", (data, responseCallback) => {
           try {
             const parsedData = JSON.parse(data);
+            console.log("Received data from 'findBleDeviceCallBack':", parsedData);
             const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
-            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
             dispatch({ type: "SET_DETECTED_DEVICES", payload: jsonData });
             responseCallback(jsonData);
           } catch (error) {
-            console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
+            console.error("Error parsing JSON data from 'findBleDeviceCallBack' handler:", error);
           }
         });
 
@@ -74,6 +75,7 @@ const Home = () => {
         "startBleScan",
         "",
         (responseData) => {
+          console.log("Response from startBleScan:", responseData);
           const jsonData = JSON.parse(responseData);
           dispatch({ type: "SET_BLE_DATA", payload: jsonData });
         }
@@ -130,6 +132,8 @@ const Home = () => {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
+
+  console.log("State in Home component:", state);
 
   return (
     <BleButtons
