@@ -19,14 +19,25 @@ const BleButtons = ({
     console.log("Detected Devices in BleButtons component:", detectedDevices);
   }, [detectedDevices]);
 
-  const handleViewClick = (deviceData) => {
-    navigate(`/device-details/${deviceData.macAddress}`, { state: deviceData });
+  const handleStartScanClick = (e) => {
+    e.preventDefault();
+    startBleScan();
+  };
+
+  const handleStopScanClick = (e) => {
+    e.preventDefault();
+    stopBleScan();
+  };
+
+  const handleConnectClick = (e, macAddress) => {
+    e.preventDefault();
+    connectToBluetoothDevice(macAddress);
   };
 
   return (
     <div className="flex flex-col items-center p-4 space-y-4">
       <button
-        onClick={startBleScan}
+        onClick={handleStartScanClick}
         className={`px-4 py-2 rounded-md text-white ${
           isScanning ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-600"
         } transition-colors duration-200`}
@@ -35,7 +46,7 @@ const BleButtons = ({
         {isScanning ? "Scanning..." : "Start BLE Scan"}
       </button>
       <button
-        onClick={stopBleScan}
+        onClick={handleStopScanClick}
         className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors duration-200"
         disabled={!isScanning}
       >
@@ -56,11 +67,12 @@ const BleButtons = ({
           {detectedDevices.map((device, index) => (
             <div key={index} className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300">
               <div>
-                <p className="font-semibold">{device.name}</p>
-                <p>MAC Address: {device.macAddress}</p>
+                <p className="font-semibold">{device?.name}</p>
+                <p>MAC Address: {device?.macAddress}</p>
+                <p>rssi Number: {device?.rssi}</p>
               </div>
               <button
-                onClick={() => connectToBluetoothDevice(device.macAddress)}
+                onClick={(e) => handleConnectClick(e, device.macAddress)}
                 className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200"
               >
                 Connect
