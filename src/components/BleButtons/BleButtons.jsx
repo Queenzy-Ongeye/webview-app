@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { columnsData } from "../table/columns";
 
 const BleButtons = ({
   startBleScan,
@@ -23,23 +22,6 @@ const BleButtons = ({
   const handleViewClick = (deviceData) => {
     navigate(`/device-details/${deviceData.macAddress}`, { state: deviceData });
   };
-
-  const columnsWithViewButton = [
-    ...columnsData,
-    {
-      Header: "Actions",
-      accessor: "actions",
-      Cell: ({ row }) => (
-        <button
-          onClick={() => handleViewClick(row.original)}
-          className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200"
-        >
-          View
-        </button>
-      ),
-      sortType: "basic",
-    },
-  ];
 
   return (
     <div className="flex flex-col items-center p-4 space-y-4">
@@ -70,30 +52,22 @@ const BleButtons = ({
         <h3 className="text-lg font-semibold mb-2">
           Detected Bluetooth Devices
         </h3>
-        <ul className="list-disc pl-5">
+        <div className="space-y-4">
           {detectedDevices.map((device, index) => (
-            <li key={index} onClick={() => setMacAddress(device.macAddress)}>
-              {device.fullName} - {device.macAddress}
-            </li>
+            <div key={index} className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300">
+              <div>
+                <p className="font-semibold">{device.name}</p>
+                <p>MAC Address: {device.macAddress}</p>
+              </div>
+              <button
+                onClick={() => connectToBluetoothDevice(device.macAddress)}
+                className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200"
+              >
+                Connect
+              </button>
+            </div>
           ))}
-        </ul>
-      </div>
-
-      <button
-        onClick={() => connectToBluetoothDevice(macAddress)}
-        className="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200"
-      >
-        Connect to BLE Device
-      </button>
-
-      {/* Display detected devices */}
-      <div className="mt-4 space-y-2">
-        {detectedDevices.map((device, index) => (
-          <div key={index} className="p-4 bg-white shadow-md rounded-lg">
-            <p className="font-semibold">Device: {device.fullName}</p>
-            <p>MAC Address: {device.macAddress}</p>
-          </div>
-        ))}
+        </div>
       </div>
     </div>
   );
