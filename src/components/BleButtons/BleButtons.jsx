@@ -1,9 +1,8 @@
-import React, { useEffect, useContext } from "react";
-import { StoreContext } from "./service/store"; // Ensure this path is correct
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BleButtons = ({
-  startBleScanProp, // renamed to avoid conflict
+  startBleScan,
   stopBleScan,
   toastMsg,
   bleData,
@@ -13,26 +12,8 @@ const BleButtons = ({
   startQrCode,
   jump2MainActivity
 }) => {
-  const { state, dispatch } = useContext(StoreContext);
+  const [macAddress, setMacAddress] = useState("");
   const navigate = useNavigate();
-
-  const startBleScan = () => {
-    dispatch({ type: "SET_IS_SCANNING", payload: true });
-
-    // Simulate BLE scan process
-    setTimeout(() => {
-      const device = { productId: "device1", name: "Device 1" }; // Simulated device data
-      console.log("Device found:", device); // Add logging
-      if (device && device.name) {
-        dispatch({
-          type: "SET_DETECTED_DEVICES",
-          payload: device,
-        });
-      } else {
-        console.error("Device data is invalid:", device);
-      }
-    }, 2000);
-  };
 
   useEffect(() => {
     console.log("Detected Devices in BleButtons component:", detectedDevices);
@@ -40,19 +21,16 @@ const BleButtons = ({
 
   const handleStartScanClick = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     startBleScan();
   };
 
   const handleStopScanClick = (e) => {
     e.preventDefault();
-    e.stopPropagation();
     stopBleScan();
   };
 
   const handleConnectClick = (e, macAddress) => {
     e.preventDefault();
-    e.stopPropagation();
     connectToBluetoothDevice(macAddress);
   };
 
@@ -89,8 +67,9 @@ const BleButtons = ({
           {detectedDevices.map((device, index) => (
             <div key={index} className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300">
               <div>
-                <p className="font-semibold">{device.name || "Unnamed Device"}</p>
+                <p className="font-semibold">{device.name}</p>
                 <p>MAC Address: {device.macAddress}</p>
+                <p>rssi Number: {device.rssi}</p>
               </div>
               <button
                 onClick={(e) => handleConnectClick(e, device.macAddress)}
