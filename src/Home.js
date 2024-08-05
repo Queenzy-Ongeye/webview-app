@@ -39,25 +39,53 @@ const Home = () => {
 
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
+            console.log("Raw data received from 'print':", data);
             const parsedData = JSON.parse(data);
-            console.log("Received data from 'print':", parsedData);
-            dispatch({ type: "SET_BLE_DATA", payload: parsedData.data });
-            responseCallback(parsedData.data);
+            console.log("Parsed data from 'print':", parsedData);
+            if (parsedData && parsedData.data) {
+              dispatch({ type: "SET_BLE_DATA", payload: parsedData.data });
+              responseCallback(parsedData.data);
+            } else {
+              throw new Error("Parsed data is not in the expected format.");
+            }
           } catch (error) {
-            console.error("Error parsing JSON data from 'print' handler:", error);
+            console.error(
+              "Error parsing JSON data from 'print' handler:",
+              error
+            );
           }
         });
 
-        bridge.registerHandler("findBleDeviceCallBack", (data, responseCallback) => {
-          try {
-            const parsedData = JSON.parse(data);
-            console.log("Received data from 'findBleDeviceCallBack':", parsedData);
-            dispatch({ type: "SET_DETECTED_DEVICES", payload: parsedData.data });
-            responseCallback(parsedData.data);
-          } catch (error) {
-            console.error("Error parsing JSON data from 'findBleDeviceCallBack' handler:", error);
+        bridge.registerHandler(
+          "findBleDeviceCallBack",
+          (data, responseCallback) => {
+            try {
+              console.log(
+                "Raw data received from 'findBleDeviceCallBack':",
+                data
+              );
+              const parsedData = JSON.parse(data);
+              console.log(
+                "Parsed data from 'findBleDeviceCallBack':",
+                parsedData
+              );
+              if (parsedData && parsedData.data) {
+                dispatch({
+                  type: "SET_DETECTED_DEVICES",
+                  payload: parsedData.data,
+                });
+                responseCallback(parsedData.data);
+              } else {
+                throw new Error("Parsed data is not in the expected format.");
+              }
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'findBleDeviceCallBack' handler:",
+                error
+              );
+            }
           }
-        });
+        );
 
         dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
         console.log("WebViewJavascriptBridge initialized.");
@@ -74,8 +102,15 @@ const Home = () => {
         "",
         (responseData) => {
           console.log("Response from startBleScan:", responseData);
-          const jsonData = JSON.parse(responseData);
-          dispatch({ type: "SET_BLE_DATA", payload: jsonData });
+          try {
+            const jsonData = JSON.parse(responseData);
+            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'startBleScan' response:",
+              error
+            );
+          }
         }
       );
       dispatch({ type: "SET_IS_SCANNING", payload: true });
@@ -107,8 +142,15 @@ const Home = () => {
         "toastMsg",
         "toastMsg",
         (responseData) => {
-          const jsonData = JSON.parse(responseData);
-          dispatch({ type: "SET_BLE_DATA", payload: jsonData });
+          try {
+            const jsonData = JSON.parse(responseData);
+            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'toastMsg' response:",
+              error
+            );
+          }
         }
       );
     } else {
@@ -122,8 +164,15 @@ const Home = () => {
         "connBleByMacAddress",
         macAddress,
         (responseData) => {
-          const parsedData = JSON.parse(responseData);
-          dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+          try {
+            const parsedData = JSON.parse(responseData);
+            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'connBleByMacAddress' response:",
+              error
+            );
+          }
         }
       );
     } else {
