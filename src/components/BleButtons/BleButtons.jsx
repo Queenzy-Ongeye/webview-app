@@ -1,5 +1,5 @@
 import React, { useEffect, useContext } from "react";
-import { StoreContext } from "../../service/store";
+import { useStore } from "./service/store";
 import { useNavigate } from "react-router-dom";
 
 const BleButtons = ({
@@ -10,7 +10,7 @@ const BleButtons = ({
   connectToBluetoothDevice,
   detectedDevices,
 }) => {
-  const { state, dispatch } = useContext(StoreContext);
+  const { state, dispatch } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
