@@ -41,9 +41,8 @@ const Home = () => {
           try {
             const parsedData = JSON.parse(data);
             console.log("Received data from 'print':", parsedData);
-            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
-            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
-            responseCallback(jsonData);
+            dispatch({ type: "SET_BLE_DATA", payload: parsedData.data });
+            responseCallback(parsedData.data);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
@@ -53,9 +52,8 @@ const Home = () => {
           try {
             const parsedData = JSON.parse(data);
             console.log("Received data from 'findBleDeviceCallBack':", parsedData);
-            const jsonData = JSON.parse(parsedData.data); // Ensure the nested JSON is parsed
-            dispatch({ type: "SET_DETECTED_DEVICES", payload: jsonData });
-            responseCallback(jsonData);
+            dispatch({ type: "SET_DETECTED_DEVICES", payload: parsedData.data });
+            responseCallback(parsedData.data);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDeviceCallBack' handler:", error);
           }
