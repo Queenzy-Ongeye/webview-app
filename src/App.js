@@ -9,7 +9,54 @@ const App = () => {
   const [bleData, setBleData] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [detectedDevices, setDetectedDevices] = useState([]);
-  console.log("------12------")
+  const [keyword, setKeyword] = useState("OVES");
+  const [macAddress, setMacAddress] = useState("");
+
+  const mainConfig = {
+    itemBackgroundColor: "#ffffff",
+    itemSelBackgroundColor: "#000000",
+    itemSelTextColor: "#202ED1",
+    itemTextColor: "#000000",
+    items: [
+      {
+        contentUrl: "https://www.baidu.com/",
+        iconSelUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        iconUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        itemText: "baidu",
+        sortIndex: 0,
+      },
+      {
+        contentUrl: "https://www.sougou.com/",
+        iconSelUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        iconUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        itemText: "sougou",
+        sortIndex: 3,
+      },
+      {
+        contentUrl: "https://cn.bing.com/",
+        iconSelUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        iconUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        itemText: "bing",
+        sortIndex: 1,
+      },
+      {
+        contentUrl: "https://www.google.com/",
+        iconSelUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        iconUrl:
+          "https://tse4-mm.cn.bing.net/th/id/OIP-C.MD5FdM4LTeNRm9dUmRasVgHaHa?rs=1&pid=ImgDetMain",
+        itemText: "google",
+        sortIndex: 2,
+      },
+    ],
+  };
+
   useEffect(() => {
     const connectWebViewJavascriptBridge = (callback) => {
       if (window.WebViewJavascriptBridge) {
@@ -33,7 +80,6 @@ const App = () => {
             );
           }
         }, 3000);
-        console.log("------36-----")
       }
     };
 
@@ -46,9 +92,7 @@ const App = () => {
         bridge.registerHandler("print", (responseData, responseCallback) => {
           try {
             const jsonData = JSON.parse(responseData.data);
-            // console.log("Data is here...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
-            // responseCallback(jsonData);
           } catch (error) {
             console.error("Error parsing JSON data from 'print' handler:", error);
           }
@@ -57,9 +101,10 @@ const App = () => {
         bridge.registerHandler("findBleDevice", (responseData, responseCallback) => {
           try {
             const jsonData = JSON.parse(responseData.data);
-            // console.log("Settings data layout...", jsonData);
             setBleData((prevData) => [...prevData, jsonData]);
             setDetectedDevices((prevDevices) => [...prevDevices, jsonData]);
+            setKeyword(jsonData.keyword || keyword);
+            setMacAddress(jsonData.macAddress || macAddress);
             responseCallback(jsonData);
           } catch (error) {
             console.error("Error parsing JSON data from 'findBleDevice' handler:", error);
@@ -72,23 +117,18 @@ const App = () => {
     };
 
     connectWebViewJavascriptBridge(setupBridge);
-  }, [bridgeInitialized]);
+  }, [bridgeInitialized, keyword, macAddress]);
 
   const startBleScan = () => {
-    console.log("----------7------")
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startBleScan",
-        "",
+        keyword,
         (responseData) => {
-          console.log(responseData, "------82------")
-          // const parsedData = JSON.parse(responseData.data)
-          // console.log(parsedData, "-----83----")
-          // setBleData((prevData) => [...prevData, parsedData]);
+          console.log(responseData);
         }
       );
       setIsScanning(true);
-      console.log("-----90-----")
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
@@ -117,8 +157,7 @@ const App = () => {
         "toastMsg",
         "toastMsg",
         (responseData) => {
-          const parsedData = JSON.parse(responseData);
-          setBleData((prevData) => [...prevData, parsedData]);
+          console.log(responseData);
         }
       );
     } else {
@@ -126,19 +165,45 @@ const App = () => {
     }
   };
 
-  const connectToBluetoothDevice = (macAddress) => {
-    console.log("-------128-----", macAddress)
+  const startQrCode = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress",
-        macAddress,
+        "startQrCodeScan",
+        999,
         (responseData) => {
-          const parsedData = JSON.parse(responseData);
-          setBleData((prevData) => [...prevData, parsedData]);
+          console.log(responseData);
         }
       );
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
+
+  const jump2MainActivity = () => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "jump2MainActivity",
+        JSON.stringify(mainConfig),
+        (responseData) => {
+          console.log(responseData);
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
+
+  const connectToBluetoothDevice = () => {
+    if (window.WebViewJavascriptBridge && macAddress) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        macAddress,
+        (responseData) => {
+          console.log(responseData);
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized or MAC address is not set.");
     }
   };
 
@@ -168,6 +233,8 @@ const App = () => {
                   isScanning={isScanning}
                   connectToBluetoothDevice={connectToBluetoothDevice}
                   detectedDevices={detectedDevices}
+                  startQrCode={startQrCode}
+                  jump2MainActivity={jump2MainActivity}
                 />
               }
             />
