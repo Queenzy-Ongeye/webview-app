@@ -9,6 +9,7 @@ const App = () => {
   const [bleData, setBleData] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [detectedDevices, setDetectedDevices] = useState([]);
+  const [keyword, setKeyword] = useState("OVES");
 
   useEffect(() => {
     const connectWebViewJavascriptBridge = (callback) => {
@@ -120,7 +121,7 @@ const App = () => {
   };
 
   const connectToBluetoothDevice = (macAddress) => {
-    console.log("-------123-----", macAddress)
+    console.log("-------123-----", macAddress);
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
