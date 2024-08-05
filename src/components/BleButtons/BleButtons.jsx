@@ -67,9 +67,9 @@ const BleButtons = ({
           {detectedDevices.map((device, index) => (
             <div key={index} className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300">
               <div>
-                <p className="font-semibold">{device?.name}</p>
-                <p>MAC Address: {device?.macAddress}</p>
-                <p>rssi Number: {device?.rssi}</p>
+                <p className="font-semibold">{device.name || "Unnamed Device"}</p>
+                <p>MAC Address: {device.macAddress}</p>
+                <p>rssi number: {device.rssi}</p>
               </div>
               <button
                 onClick={(e) => handleConnectClick(e, device.macAddress)}
