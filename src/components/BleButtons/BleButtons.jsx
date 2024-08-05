@@ -1,6 +1,6 @@
 import React, { useEffect, useContext } from "react";
+import { StoreContext } from "./service/store"; // Ensure this path is correct
 import { useNavigate } from "react-router-dom";
-import { StoreContext } from "./service/store";
 
 const BleButtons = ({
   startBleScanProp, // renamed to avoid conflict
@@ -11,16 +11,18 @@ const BleButtons = ({
   connectToBluetoothDevice,
   detectedDevices,
   startQrCode,
-  jump2MainActivity,
+  jump2MainActivity
 }) => {
   const { state, dispatch } = useContext(StoreContext);
+  const navigate = useNavigate();
 
   const startBleScan = () => {
     dispatch({ type: "SET_IS_SCANNING", payload: true });
 
     // Simulate BLE scan process
     setTimeout(() => {
-      const device = { id: "device1", name: "Device 1" }; // Simulated device data
+      const device = { productId: "device1", name: "Device 1" }; // Simulated device data
+      console.log("Device found:", device); // Add logging
       if (device && device.name) {
         dispatch({
           type: "SET_DETECTED_DEVICES",
@@ -85,14 +87,9 @@ const BleButtons = ({
         </h3>
         <div className="space-y-4">
           {detectedDevices.map((device, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
-            >
+            <div key={index} className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300">
               <div>
-                <p className="font-semibold">
-                  {device.name || "Unnamed Device"}
-                </p>
+                <p className="font-semibold">{device.name || "Unnamed Device"}</p>
                 <p>MAC Address: {device.macAddress}</p>
               </div>
               <button
