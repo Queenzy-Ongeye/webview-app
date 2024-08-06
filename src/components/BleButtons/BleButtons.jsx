@@ -72,9 +72,7 @@ const BleButtons = ({
       </button>
 
       <div className="mt-4 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-2">
-          Detected Bluetooth Devices
-        </h3>
+        <h3 className="text-lg font-semibold mb-2">Detected Bluetooth Devices</h3>
         <div className="space-y-4">
           {detectedDevices && detectedDevices.length > 0 ? (
             detectedDevices.map((device, index) => (
@@ -83,9 +81,7 @@ const BleButtons = ({
                 className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
               >
                 <div>
-                  <p className="font-semibold">
-                    {device.name || "Unnamed Device"}
-                  </p>
+                  <p className="font-semibold">{device.name || "Unnamed Device"}</p>
                   <p>MAC Address: {device.macAddress}</p>
                   <p>Rssi Number: {device.rssi}</p>
                 </div>
