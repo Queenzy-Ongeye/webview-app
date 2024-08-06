@@ -49,43 +49,26 @@ const Home = () => {
               throw new Error("Parsed data is not in the expected format.");
             }
           } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'print' handler:",
-              error
-            );
+            console.error("Error parsing JSON data from 'print' handler:", error);
           }
         });
 
-        bridge.registerHandler(
-          "findBleDeviceCallBack",
-          (data, responseCallback) => {
-            try {
-              console.log(
-                "Raw data received from 'findBleDeviceCallBack':",
-                data
-              );
-              const parsedData = JSON.parse(data);
-              console.log(
-                "Parsed data from 'findBleDeviceCallBack':",
-                parsedData
-              );
-              if (parsedData && parsedData.data) {
-                dispatch({
-                  type: "SET_DETECTED_DEVICES",
-                  payload: parsedData.data,
-                });
-                responseCallback(parsedData.data);
-              } else {
-                throw new Error("Parsed data is not in the expected format.");
-              }
-            } catch (error) {
-              console.error(
-                "Error parsing JSON data from 'findBleDeviceCallBack' handler:",
-                error
-              );
+        bridge.registerHandler("findBleDeviceCallBack", (data, responseCallback) => {
+          try {
+            console.log("Raw data received from 'findBleDeviceCallBack':", data);
+            const parsedData = JSON.parse(data);
+            console.log("Parsed data from 'findBleDeviceCallBack':", parsedData);
+            if (parsedData) {
+              dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
+              console.log("Updated detectedDevices state:", parsedData);
+              responseCallback(parsedData);
+            } else {
+              throw new Error("Parsed data is not in the expected format.");
             }
+          } catch (error) {
+            console.error("Error parsing JSON data from 'findBleDeviceCallBack' handler:", error);
           }
-        );
+        });
 
         dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
         console.log("WebViewJavascriptBridge initialized.");
@@ -106,10 +89,7 @@ const Home = () => {
             const jsonData = JSON.parse(responseData);
             dispatch({ type: "SET_BLE_DATA", payload: jsonData });
           } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'startBleScan' response:",
-              error
-            );
+            console.error("Error parsing JSON data from 'startBleScan' response:", error);
           }
         }
       );
@@ -146,10 +126,7 @@ const Home = () => {
             const jsonData = JSON.parse(responseData);
             dispatch({ type: "SET_BLE_DATA", payload: jsonData });
           } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'toastMsg' response:",
-              error
-            );
+            console.error("Error parsing JSON data from 'toastMsg' response:", error);
           }
         }
       );
@@ -168,10 +145,7 @@ const Home = () => {
             const parsedData = JSON.parse(responseData);
             dispatch({ type: "SET_BLE_DATA", payload: parsedData });
           } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'connBleByMacAddress' response:",
-              error
-            );
+            console.error("Error parsing JSON data from 'connBleByMacAddress' response:", error);
           }
         }
       );

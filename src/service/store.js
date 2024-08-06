@@ -15,7 +15,7 @@ const reducer = (state, action) => {
       return { ...state, isScanning: action.payload };
     case "SET_BLE_DATA":
       return { ...state, bleData: action.payload };
-    case "SET_DETECTED_DEVICES":
+    case "ADD_DETECTED_DEVICE":
       return { ...state, detectedDevices: [...state.detectedDevices, action.payload] };
     default:
       return state;
