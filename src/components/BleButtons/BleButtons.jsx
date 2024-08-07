@@ -49,11 +49,24 @@ const BleButtons = ({
     connectToBluetoothDevice(macAddress);
   };
 
-  const handleInitBleDataClick = (e, macAddress) => {
+  const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
     console.log("Initialize BLE data clicked", macAddress);
-    initBleData(macAddress);
+
+    try {
+      const response = await initBleData(macAddress);
+      console.log("BLE Data Initialization Response:", response);
+
+      // Check if the response contains the expected data structure
+      if (response && response.dataList) {
+        dispatch({ type: 'SET_INIT_BLE_DATA_RESPONSE', payload: response });
+      } else {
+        console.error("Invalid response format:", response);
+      }
+    } catch (error) {
+      console.error("Error during BLE Data Initialization:", error);
+    }
   };
 
   const navigateToPage = (page) => {
