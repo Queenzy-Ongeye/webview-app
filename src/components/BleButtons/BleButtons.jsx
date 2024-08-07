@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import './DataDisplay.css';
+import '../../components/DeviceDetails/DataDisplay.css';
 
 const BleButtons = ({
   startBleScan,
