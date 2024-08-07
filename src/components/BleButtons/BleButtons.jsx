@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
+import './DataDisplay.css';
 
 const BleButtons = ({
   startBleScan,
@@ -55,6 +56,10 @@ const BleButtons = ({
     initBleData(macAddress);
   };
 
+  const navigateToPage = (page) => {
+    navigate(page, { state: { data: initBleDataResponse.dataList } });
+  };
+
   return (
     <div className="flex flex-col items-center p-4 space-y-4">
       <button
@@ -87,7 +92,7 @@ const BleButtons = ({
             detectedDevices.map((device, index) => (
               <div
                 key={index}
-                className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
+                className="flex flex-col justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
               >
                 <div>
                   <p className="font-semibold">{device.name || "Unnamed Device"}</p>
@@ -110,8 +115,13 @@ const BleButtons = ({
                 </div>
                 {initBleDataResponse && initBleDataResponse.macAddress === device.macAddress && (
                   <div className="mt-2">
-                    <p>Initialization Data:</p>
-                    <pre>{JSON.stringify(initBleDataResponse, null, 2)}</pre>
+                    <div className="tabs">
+                      <button onClick={() => navigateToPage('/att')}>ATT</button>
+                      <button onClick={() => navigateToPage('/cmd')}>CMD</button>
+                      <button onClick={() => navigateToPage('/sts')}>STS</button>
+                      <button onClick={() => navigateToPage('/dta')}>DTA</button>
+                      <button onClick={() => navigateToPage('/dia')}>DIA</button>
+                    </div>
                   </div>
                 )}
               </div>
