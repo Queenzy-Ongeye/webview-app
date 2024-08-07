@@ -57,7 +57,12 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    navigate(page, { state: { data: initBleDataResponse.dataList } });
+    if (initBleDataResponse && initBleDataResponse.dataList) {
+      console.log("Navigating to page:", page, "with data:", initBleDataResponse.dataList);
+      navigate(page, { state: { data: initBleDataResponse.dataList } });
+    } else {
+      console.error("Initialization data is not available. Cannot navigate.");
+    }
   };
 
   return (
