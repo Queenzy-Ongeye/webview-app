@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import BleButtons from "./components/BleButtons/BleButtons";
 import { useStore } from "./service/store";
-import { type } from "@testing-library/user-event/dist/type";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -75,20 +74,40 @@ const Home = () => {
           }
         );
 
-        bridge.registerHandler("bleConnectSuccessCallBack", (data, responseCallback) =>{
+        bridge.registerHandler(
+          "bleConnectSuccessCallBack",
+          (data, responseCallback) => {
             console.log("Bluetooth connection successful:", data);
+            const macAddress = data.macAddress; // Assuming data contains the macAddress
+            initBleData(macAddress);
             responseCallback(data);
-        });
+          }
+        );
 
-        bridge.registerHandler("bleConnectFailCallBack", (data, responseCallback) =>{
+        bridge.registerHandler(
+          "bleConnectFailCallBack",
+          (data, responseCallback) => {
             console.log("Bluetooth connection failed:", data);
             responseCallback(data);
-        });
+          }
+        );
 
-        bridge.registerHandler("bleInitDataCallBack", (data, responseCallback) =>{
-            console.log("Bluetooth initialized data received :", data);
-            responseCallback(data);
-        });
+        bridge.registerHandler(
+          "bleInitDataCallBack",
+          (data, responseCallback) => {
+            console.log("Bluetooth initialization data received:", data);
+            try {
+              const parsedData = JSON.parse(data);
+              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+              responseCallback(parsedData);
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'bleInitDataCallBack' handler:",
+                error
+              );
+            }
+          }
+        );
 
         dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
         console.log("WebViewJavascriptBridge initialized.");
@@ -169,6 +188,10 @@ const Home = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
+            console.log("Bluetooth connection response:", parsedData);
+            if (parsedData.respCode === "200") {
+              initBleData(macAddress);
+            }
             dispatch({ type: "SET_BLE_DATA", payload: parsedData });
           } catch (error) {
             console.error(
@@ -183,22 +206,31 @@ const Home = () => {
     }
   };
 
-// data initialization
-const initBleData = (macAddress) =>{
-    if(window.WebViewJavascriptBridge){
-        window.WebViewJavascriptBridge.callHandler('initBleData', macAddress, (responseData) =>{
-            try {
-                const parsedData = JSON.parse(responseData);
-                console.log("BLE init response: ", parsedData);
-                dispatch({type: 'SET_BLE_DATA', payload: parsedData});
-            }catch(error){
-                console.error("Error parsing JSON data", error);
-            };
-        });
-    }else{
-        console.error("WebViewJavascriptBridge is not initialized.");
+  const initBleData = (macAddress) => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            console.log("Bluetooth initialization response:", parsedData);
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'initBleData' response:",
+              error
+            );
+          }
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
     }
-}
+  };
+
+  console.log("State in Home component:", state);
+
   return (
     <BleButtons
       startBleScan={startBleScan}
@@ -206,8 +238,9 @@ const initBleData = (macAddress) =>{
       toastMsg={toastMsg}
       isScanning={state.isScanning}
       connectToBluetoothDevice={connectToBluetoothDevice}
-      initBleData={initBleData}
       detectedDevices={state.detectedDevices}
+      initBleData={initBleData}
+      initBleDataResponse={state.initBleData}
     />
   );
 };

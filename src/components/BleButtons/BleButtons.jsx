@@ -8,8 +8,9 @@ const BleButtons = ({
   toastMsg,
   isScanning,
   connectToBluetoothDevice,
-  detectedDevices,
   initBleData,
+  detectedDevices,
+  initBleDataResponse,
 }) => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ const BleButtons = ({
     console.log("Connect to Bluetooth device clicked", macAddress);
     connectToBluetoothDevice(macAddress);
   };
+
   const handleInitBleDataClick = (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
@@ -79,9 +81,7 @@ const BleButtons = ({
       </button>
 
       <div className="mt-4 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-2">
-          Detected Bluetooth Devices
-        </h3>
+        <h3 className="text-lg font-semibold mb-2">Detected Bluetooth Devices</h3>
         <div className="space-y-4">
           {detectedDevices && detectedDevices.length > 0 ? (
             detectedDevices.map((device, index) => (
@@ -90,9 +90,7 @@ const BleButtons = ({
                 className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
               >
                 <div>
-                  <p className="font-semibold">
-                    {device.name || "Unnamed Device"}
-                  </p>
+                  <p className="font-semibold">{device.name || "Unnamed Device"}</p>
                   <p>MAC Address: {device.macAddress}</p>
                   <p>Rssi Number: {device.rssi}</p>
                 </div>
@@ -104,14 +102,18 @@ const BleButtons = ({
                     Connect
                   </button>
                   <button
-                    onClick={(e) =>
-                      handleInitBleDataClick(e, device.macAddress)
-                    }
+                    onClick={(e) => handleInitBleDataClick(e, device.macAddress)}
                     className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200"
                   >
                     Init BLE Data
                   </button>
                 </div>
+                {initBleDataResponse && initBleDataResponse.macAddress === device.macAddress && (
+                  <div className="mt-2">
+                    <p>Initialization Data:</p>
+                    <pre>{JSON.stringify(initBleDataResponse, null, 2)}</pre>
+                  </div>
+                )}
               </div>
             ))
           ) : (
