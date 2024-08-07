@@ -22,7 +22,11 @@ const App = () => {
           <main className="flex-grow container mx-auto p-4">
             <Routes>
               <Route path="/" element={<Home />} />
-              {/* <Route path="/table" element={<TablePage />} /> */}
+              <Route path="/att" element={<ATTPage />} />
+              <Route path="/cmd" element={<CMDPage />} />
+              <Route path="/sts" element={<STSPage />} />
+              <Route path="/dta" element={<DTAPage />} />
+              <Route path="/dia" element={<DIAPage />} />
             </Routes>
           </main>
           <footer className="bg-gray-800 text-white py-4 text-center">
