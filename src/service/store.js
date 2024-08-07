@@ -5,6 +5,7 @@ const initialState = {
   isScanning: false,
   bleData: [],
   detectedDevices: [],
+  initBleData: null, // State for initialization data
 };
 
 const reducer = (state, action) => {
@@ -17,6 +18,8 @@ const reducer = (state, action) => {
       return { ...state, bleData: action.payload };
     case "ADD_DETECTED_DEVICE":
       return { ...state, detectedDevices: [...state.detectedDevices, action.payload] };
+    case "SET_INIT_BLE_DATA":
+      return { ...state, initBleData: action.payload };
     default:
       return state;
   }
