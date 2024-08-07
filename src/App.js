@@ -3,6 +3,11 @@ import "./index.css";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import Home from "./Home";
+import ATTPage from "./components/DeviceDetails/ATTPage";
+import CMDPage from "./components/DeviceDetails/CMDPage";
+import STSPage from "./components/DeviceDetails/STSPage";
+import DTAPage from "./components/DeviceDetails/DTAPage";
+import DIAPage from "./components/DeviceDetails/DIAPage";
 
 const App = () => {
   return (
