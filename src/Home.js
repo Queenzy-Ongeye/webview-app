@@ -184,7 +184,7 @@ const Home = () => {
   };
 
 // data initialization
-const initData = (macAddress) =>{
+const initBleData = (macAddress) =>{
     if(window.WebViewJavascriptBridge){
         window.WebViewJavascriptBridge.callHandler('initBleData', macAddress, (responseData) =>{
             try {
