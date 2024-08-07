@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import '../../components/DeviceDetails/DataDisplay.css';
 
 const BleButtons = ({
   startBleScan,
@@ -49,33 +48,11 @@ const BleButtons = ({
     connectToBluetoothDevice(macAddress);
   };
 
-  const handleInitBleDataClick = async (e, macAddress) => {
+  const handleInitBleDataClick = (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
     console.log("Initialize BLE data clicked", macAddress);
-
-    try {
-      const response = await initBleData(macAddress);
-      console.log("BLE Data Initialization Response:", response);
-
-      // Check if the response contains the expected data structure
-      if (response && response.dataList) {
-        dispatch({ type: 'SET_INIT_BLE_DATA_RESPONSE', payload: response });
-      } else {
-        console.error("Invalid response format:", response);
-      }
-    } catch (error) {
-      console.error("Error during BLE Data Initialization:", error);
-    }
-  };
-
-  const navigateToPage = (page) => {
-    if (initBleDataResponse && initBleDataResponse.dataList) {
-      console.log("Navigating to page:", page, "with data:", initBleDataResponse.dataList);
-      navigate(page, { state: { data: initBleDataResponse.dataList } });
-    } else {
-      console.error("Initialization data is not available. Cannot navigate.");
-    }
+    initBleData(macAddress);
   };
 
   return (
@@ -110,7 +87,7 @@ const BleButtons = ({
             detectedDevices.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
+                className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
               >
                 <div>
                   <p className="font-semibold">{device.name || "Unnamed Device"}</p>
@@ -133,13 +110,8 @@ const BleButtons = ({
                 </div>
                 {initBleDataResponse && initBleDataResponse.macAddress === device.macAddress && (
                   <div className="mt-2">
-                    <div className="tabs">
-                      <button onClick={() => navigateToPage('/att')}>ATT</button>
-                      <button onClick={() => navigateToPage('/cmd')}>CMD</button>
-                      <button onClick={() => navigateToPage('/sts')}>STS</button>
-                      <button onClick={() => navigateToPage('/dta')}>DTA</button>
-                      <button onClick={() => navigateToPage('/dia')}>DIA</button>
-                    </div>
+                    <p>Initialization Data:</p>
+                    <pre>{JSON.stringify(initBleDataResponse, null, 2)}</pre>
                   </div>
                 )}
               </div>
