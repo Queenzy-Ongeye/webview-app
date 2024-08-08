@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +14,7 @@ const BleButtons = ({
 }) => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); // State for loading spinner
 
   useEffect(() => {
     console.log("Detected Devices in BleButtons component:", detectedDevices);
@@ -52,16 +53,23 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
     console.log("Initialize BLE data clicked", macAddress);
+    setLoading(true); // Start loading spinner
 
     try {
       const response = await initBleData(macAddress);
       console.log("BLE Data Initialization Response:", response);
 
       // Dispatch the response to the store
-      dispatch({ type: 'SET_INIT_BLE_DATA_RESPONSE', payload: response });
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
+    } finally {
+      setLoading(false); // Stop loading spinner
     }
+  };
+
+  const navigateToPage = (page) => {
+    navigate(page, { state: { data: initBleDataResponse.dataList } });
   };
 
   return (
@@ -98,7 +106,7 @@ const BleButtons = ({
             detectedDevices.map((device, index) => (
               <div
                 key={index}
-                className="flex justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
+                className="flex flex-col justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
               >
                 <div>
                   <p className="font-semibold">
@@ -126,8 +134,23 @@ const BleButtons = ({
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
                     <div className="mt-2">
-                      <p>Initialization Data:</p>
-                      <pre>{JSON.stringify(initBleDataResponse, null, 2)}</pre>
+                      <div className="tabs">
+                        <button onClick={() => navigateToPage("/att")}>
+                          ATT
+                        </button>
+                        <button onClick={() => navigateToPage("/cmd")}>
+                          CMD
+                        </button>
+                        <button onClick={() => navigateToPage("/sts")}>
+                          STS
+                        </button>
+                        <button onClick={() => navigateToPage("/dta")}>
+                          DTA
+                        </button>
+                        <button onClick={() => navigateToPage("/dia")}>
+                          DIA
+                        </button>
+                      </div>
                     </div>
                   )}
               </div>
@@ -137,6 +160,30 @@ const BleButtons = ({
           )}
         </div>
       </div>
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <svg
+            className="animate-spin h-10 w-10 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+        </div>
+      )}
     </div>
   );
 };
