@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const BleButtons = ({
   startBleScan,
@@ -15,6 +16,7 @@ const BleButtons = ({
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false); // State for loading spinner
+  const [connectingMacAddress, setConnectingMacAddress] = useState(null); // State for the device being connected
 
   useEffect(() => {
     console.log("Detected Devices in BleButtons component:", detectedDevices);
@@ -42,11 +44,21 @@ const BleButtons = ({
     stopBleScan();
   };
 
-  const handleConnectClick = (e, macAddress) => {
+  const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
     console.log("Connect to Bluetooth device clicked", macAddress);
-    connectToBluetoothDevice(macAddress);
+    setConnectingMacAddress(macAddress); // Set the connecting device's MAC address
+
+    try {
+      await connectToBluetoothDevice(macAddress);
+      console.log("Connected to Bluetooth device", macAddress);
+    } catch (error) {
+      console.error("Error connecting to Bluetooth device:", error);
+      alert("Failed to connect to Bluetooth device. Please try again.");
+    } finally {
+      setConnectingMacAddress(null); // Reset the connecting device's MAC address
+    }
   };
 
   const handleInitBleDataClick = async (e, macAddress) => {
@@ -119,10 +131,10 @@ const BleButtons = ({
                 <div className="space-x-2">
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
-                    className={`px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white transition-colors duration-200 ${
+                    className={`px-4 py-2 rounded-md border border-blue-500 text-blue-500 transition-colors duration-200 ${
                       connectingMacAddress === device.macAddress
                         ? "opacity-50 cursor-not-allowed"
-                        : ""
+                        : "hover:bg-blue-100"
                     }`}
                     disabled={connectingMacAddress === device.macAddress}
                   >
@@ -136,7 +148,7 @@ const BleButtons = ({
                     onClick={(e) =>
                       handleInitBleDataClick(e, device.macAddress)
                     }
-                    className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200"
+                    className="px-4 py-2 rounded-md border border-blue-500 text-blue-500 hover:bg-blue-100 transition-colors duration-200"
                   >
                     Init BLE Data
                   </button>
