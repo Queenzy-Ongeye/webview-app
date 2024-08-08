@@ -17,6 +17,7 @@ const BleButtons = ({
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null); // State for the device being connected
   const [initializingMacAddress, setInitializingMacAddress] = useState(null); // State for the device being initialized
+  const [loading, setLoading] = useState(false); // State for global loading spinner
 
   useEffect(() => {
     console.log("Detected Devices in BleButtons component:", detectedDevices);
@@ -51,6 +52,7 @@ const BleButtons = ({
     setConnectingMacAddress(macAddress); // Set the connecting device's MAC address
 
     try {
+      setLoading(true); // Start global loading spinner
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
     } catch (error) {
@@ -58,6 +60,7 @@ const BleButtons = ({
       alert("Failed to connect to Bluetooth device. Please try again.");
     } finally {
       setConnectingMacAddress(null); // Reset the connecting device's MAC address
+      setLoading(false); // Stop global loading spinner
     }
   };
 
@@ -68,6 +71,7 @@ const BleButtons = ({
     setInitializingMacAddress(macAddress); // Set the initializing device's MAC address
 
     try {
+      setLoading(true); // Start global loading spinner
       const response = await initBleData(macAddress);
       console.log("BLE Data Initialization Response:", response);
 
@@ -78,6 +82,7 @@ const BleButtons = ({
       alert("Failed to initialize BLE data. Please try again.");
     } finally {
       setInitializingMacAddress(null); // Reset the initializing device's MAC address
+      setLoading(false); // Stop global loading spinner
     }
   };
 
