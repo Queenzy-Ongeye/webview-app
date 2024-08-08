@@ -39,7 +39,9 @@ const Home = () => {
 
         bridge.registerHandler("print", (data, responseCallback) => {
           try {
+            console.log("Raw data received from 'print':", data);
             const parsedData = JSON.parse(data);
+            console.log("Parsed data from 'print':", parsedData);
             if (parsedData && parsedData.data) {
               dispatch({ type: "SET_BLE_DATA", payload: parsedData.data });
               responseCallback(parsedData.data);
@@ -53,9 +55,12 @@ const Home = () => {
 
         bridge.registerHandler("findBleDeviceCallBack", (data, responseCallback) => {
           try {
+            console.log("Raw data received from 'findBleDeviceCallBack':", data);
             const parsedData = JSON.parse(data);
+            console.log("Parsed data from 'findBleDeviceCallBack':", parsedData);
             if (parsedData) {
               dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
+              console.log("Updated detectedDevices state:", parsedData);
               responseCallback(parsedData);
             } else {
               throw new Error("Parsed data is not in the expected format.");
@@ -67,7 +72,7 @@ const Home = () => {
 
         bridge.registerHandler("bleConnectSuccessCallBack", (data, responseCallback) => {
           console.log("Bluetooth connection successful:", data);
-          const macAddress = data.macAddress;
+          const macAddress = data.macAddress; // Assuming data contains the macAddress
           if (macAddress) {
             initBleData(macAddress);
           } else {
