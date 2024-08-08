@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const BleButtons = ({
   startBleScan,
@@ -87,7 +87,7 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    navigate(page, { state: { data: initBleDataResponse.dataList } });
+    navigate(page, { state: { data: initBleDataResponse?.dataList } });
   };
 
   return (
