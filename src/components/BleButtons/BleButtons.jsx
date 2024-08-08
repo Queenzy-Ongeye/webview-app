@@ -48,11 +48,20 @@ const BleButtons = ({
     connectToBluetoothDevice(macAddress);
   };
 
-  const handleInitBleDataClick = (e, macAddress) => {
+  const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
     console.log("Initialize BLE data clicked", macAddress);
-    initBleData(macAddress);
+
+    try {
+      const response = await initBleData(macAddress);
+      console.log("BLE Data Initialization Response:", response);
+
+      // Dispatch the response to the store
+      dispatch({ type: 'SET_INIT_BLE_DATA_RESPONSE', payload: response });
+    } catch (error) {
+      console.error("Error during BLE Data Initialization:", error);
+    }
   };
 
   return (
