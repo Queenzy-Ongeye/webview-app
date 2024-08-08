@@ -17,6 +17,7 @@ const BleButtons = ({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false); // State for loading spinner
   const [connectingMacAddress, setConnectingMacAddress] = useState(null); // State for the device being connected
+  const [initializingMacAddress, setInitializingMacAddress] = useState(null); // State for the device being initialized
 
   useEffect(() => {
     console.log("Detected Devices in BleButtons component:", detectedDevices);
@@ -65,7 +66,7 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
     console.log("Initialize BLE data clicked", macAddress);
-    setLoading(true); // Start loading spinner
+    setInitializingMacAddress(macAddress); // Set the initializing device's MAC address
 
     try {
       const response = await initBleData(macAddress);
@@ -77,7 +78,7 @@ const BleButtons = ({
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
     } finally {
-      setLoading(false); // Stop loading spinner
+      setInitializingMacAddress(null); // Reset the initializing device's MAC address
     }
   };
 
@@ -132,25 +133,38 @@ const BleButtons = ({
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
                     className={`px-4 py-2 rounded-md border border-blue-500 text-blue-500 transition-colors duration-200 ${
-                      connectingMacAddress === device.macAddress
+                      connectingMacAddress === device.macAddress ||
+                      initializingMacAddress === device.macAddress
                         ? "opacity-50 cursor-not-allowed"
                         : "hover:bg-blue-100"
                     }`}
-                    disabled={connectingMacAddress === device.macAddress}
+                    disabled={
+                      connectingMacAddress === device.macAddress ||
+                      initializingMacAddress === device.macAddress
+                    }
                   >
-                    {connectingMacAddress === device.macAddress ? (
-                      <AiOutlineLoading3Quarters className="animate-spin h-5 w-5" />
-                    ) : (
-                      "Connect"
-                    )}
+                    {connectingMacAddress === device.macAddress
+                      ? "Connecting..."
+                      : "Connect"}
                   </button>
                   <button
                     onClick={(e) =>
                       handleInitBleDataClick(e, device.macAddress)
                     }
-                    className="px-4 py-2 rounded-md border border-blue-500 text-blue-500 hover:bg-blue-100 transition-colors duration-200"
+                    className={`px-4 py-2 rounded-md border border-blue-500 text-blue-500 transition-colors duration-200 ${
+                      initializingMacAddress === device.macAddress ||
+                      connectingMacAddress === device.macAddress
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:bg-blue-100"
+                    }`}
+                    disabled={
+                      initializingMacAddress === device.macAddress ||
+                      connectingMacAddress === device.macAddress
+                    }
                   >
-                    Init BLE Data
+                    {initializingMacAddress === device.macAddress
+                      ? "Initializing..."
+                      : "Init BLE Data"}
                   </button>
                 </div>
                 {initBleDataResponse &&
