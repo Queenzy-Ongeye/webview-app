@@ -63,6 +63,7 @@ const BleButtons = ({
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
+      alert("Failed to initialize BLE data. Please try again.");
     } finally {
       setLoading(false); // Stop loading spinner
     }
