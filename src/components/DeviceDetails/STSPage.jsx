@@ -1,42 +1,47 @@
-// src/AttPage.js
-import React from "react";
-import { useLocation } from "react-router-dom";
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 
-const STSPage = () => {
+const StsPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
 
-  const renderCharacterMap = (characterMap) => {
-    return Object.entries(characterMap).map(([uuid, char]) => (
-      <div key={uuid} className="characteristic">
-        <h4>UUID: {uuid}</h4>
-        <p>Description: {char.desc}</p>
-        <p>Real Value: {char.realVal}</p>
-        <p>Service UUID: {char.serviceUuid}</p>
-        <p>Value Type: {char.valType}</p>
-        <p>Values: {char.values.join(", ")}</p>
-        <p>Properties: {char.properties}</p>
-        <p>Enable Notify: {char.enableNotify.toString()}</p>
-        <p>Enable Read: {char.enableRead.toString()}</p>
-      </div>
-    ));
-  };
-
   return (
-    <div className="sts-page">
-      {data &&
-        data.map((service, index) => (
-          <div key={index} className="service">
-            <h3>Service UUID: {service.uuid}</h3>
-            <h3>Service Name Enum: {service.serviceNameEnum}</h3>
-            <h3>Service Property: {service.serviceProperty}</h3>
-            <div className="characteristics">
-              {renderCharacterMap(service.characterMap)}
-            </div>
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">STS Page</h2>
+      {data && data.length > 0 ? (
+        data.map((item, index) => (
+          <div key={index} className="mb-4 p-4 border rounded shadow">
+            {Object.keys(item.characterMap).map(uuid => (
+              <div key={uuid} className="mb-4">
+                <h3 className="text-lg font-semibold">UUID: {uuid}</h3>
+                <p><strong>Description:</strong> {item.characterMap[uuid].desc}</p>
+                <p><strong>Name:</strong> {item.characterMap[uuid].name}</p>
+                <p><strong>Service UUID:</strong> {item.characterMap[uuid].serviceUuid}</p>
+                <p><strong>Properties:</strong> {item.characterMap[uuid].properties}</p>
+                <p><strong>Enable Indicate:</strong> {item.characterMap[uuid].enableIndicate ? 'Yes' : 'No'}</p>
+                <p><strong>Enable Notify:</strong> {item.characterMap[uuid].enableNotify ? 'Yes' : 'No'}</p>
+                <p><strong>Enable Read:</strong> {item.characterMap[uuid].enableRead ? 'Yes' : 'No'}</p>
+                <p><strong>Enable Write:</strong> {item.characterMap[uuid].enableWrite ? 'Yes' : 'No'}</p>
+                <p><strong>Enable Write No Response:</strong> {item.characterMap[uuid].enableWriteNoResp ? 'Yes' : 'No'}</p>
+                <p><strong>Real Value:</strong> {item.characterMap[uuid].realVal}</p>
+                <div className="ml-4 mt-2">
+                  <strong>Desc Map:</strong>
+                  {Object.keys(item.characterMap[uuid].descMap).map(descKey => (
+                    <div key={descKey} className="ml-4 mt-2">
+                      <p><strong>UUID:</strong> {descKey}</p>
+                      <p><strong>Description:</strong> {item.characterMap[uuid].descMap[descKey].desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        ))
+      ) : (
+        <p>No data available</p>
+      )}
     </div>
   );
 };
 
-export default STSPage;
+export default StsPage;
