@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const BleButtons = ({
   startBleScan,
@@ -15,9 +15,9 @@ const BleButtons = ({
 }) => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
-  const [connectingMacAddress, setConnectingMacAddress] = useState(null); // State for the device being connected
-  const [initializingMacAddress, setInitializingMacAddress] = useState(null); // State for the device being initialized
-  const [loading, setLoading] = useState(false); // State for global loading spinner
+  const [connectingMacAddress, setConnectingMacAddress] = useState(null);
+  const [initializingMacAddress, setInitializingMacAddress] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     console.log("Detected Devices in BleButtons component:", detectedDevices);
@@ -49,18 +49,18 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
     console.log("Connect to Bluetooth device clicked", macAddress);
-    setConnectingMacAddress(macAddress); // Set the connecting device's MAC address
+    setConnectingMacAddress(macAddress);
 
     try {
-      setLoading(true); // Start global loading spinner
+      setLoading(true);
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
     } finally {
-      setConnectingMacAddress(null); // Reset the connecting device's MAC address
-      setLoading(false); // Stop global loading spinner
+      setConnectingMacAddress(null);
+      setLoading(false);
     }
   };
 
@@ -68,26 +68,28 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
     console.log("Initialize BLE data clicked", macAddress);
-    setInitializingMacAddress(macAddress); // Set the initializing device's MAC address
+    setInitializingMacAddress(macAddress);
 
     try {
-      setLoading(true); // Start global loading spinner
+      setLoading(true);
       const response = await initBleData(macAddress);
       console.log("BLE Data Initialization Response:", response);
 
-      // Dispatch the response to the store
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
     } finally {
-      setInitializingMacAddress(null); // Reset the initializing device's MAC address
-      setLoading(false); // Stop global loading spinner
+      setInitializingMacAddress(null);
+      setLoading(false);
     }
   };
 
-  const navigateToPage = (page) => {
-    navigate(page, { state: { data: initBleDataResponse?.dataList } });
+  const navigateToPage = (page, serviceNameEnum) => {
+    const filteredData = initBleDataResponse?.dataList.filter(
+      (item) => item.serviceNameEnum === serviceNameEnum
+    );
+    navigate(page, { state: { data: filteredData } });
   };
 
   return (
@@ -175,31 +177,41 @@ const BleButtons = ({
                   initBleDataResponse.macAddress === device.macAddress && (
                     <div className="mt-2 grid grid-cols-5 gap-4">
                       <button
-                        onClick={() => navigateToPage("/att")}
+                        onClick={() =>
+                          navigateToPage("/att", "ATT_SERVICE_NAME")
+                        }
                         className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         ATT
                       </button>
                       <button
-                        onClick={() => navigateToPage("/cmd")}
+                        onClick={() =>
+                          navigateToPage("/cmd", "CMD_SERVICE_NAME")
+                        }
                         className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         CMD
                       </button>
                       <button
-                        onClick={() => navigateToPage("/sts")}
+                        onClick={() =>
+                          navigateToPage("/sts", "STS_SERVICE_NAME")
+                        }
                         className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         STS
                       </button>
                       <button
-                        onClick={() => navigateToPage("/dta")}
+                        onClick={() =>
+                          navigateToPage("/dta", "DTA_SERVICE_NAME")
+                        }
                         className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         DTA
                       </button>
                       <button
-                        onClick={() => navigateToPage("/dia")}
+                        onClick={() =>
+                          navigateToPage("/dia", "DIA_SERVICE_NAME")
+                        }
                         className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         DIA
