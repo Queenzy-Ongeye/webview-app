@@ -25,12 +25,9 @@ const BleButtons = ({
     uniqueDevicesMap.set(device.macAddress == device);
   });
 
-  const uniqueDevice = Array.from(uniqueDevicesMap.values())
+  const uniqueDevice = Array.from(uniqueDevicesMap.values());
   useEffect(() => {
-    console.log(
-      "Detected Devices in BleButtons component:",
-      uniqueDevice
-    );
+    console.log("Detected Devices in BleButtons component:", uniqueDevice);
   }, [uniqueDevice]);
 
   useEffect(() => {
@@ -159,9 +156,14 @@ const BleButtons = ({
                       initializingMacAddress === device.macAddress
                     }
                   >
-                    {connectingMacAddress === device.macAddress
-                      ? "Connecting..."
-                      : "Connect"}
+                    {connectingMacAddress === device.macAddress ? (
+                      <>
+                        <AiOutlineLoading3Quarters className="animate-spin h-4 w-4 inline mr-2" />
+                        Connecting...
+                      </>
+                    ) : (
+                      "Connect"
+                    )}
                   </button>
                   <button
                     onClick={(e) =>
@@ -178,9 +180,14 @@ const BleButtons = ({
                       connectingMacAddress === device.macAddress
                     }
                   >
-                    {initializingMacAddress === device.macAddress
-                      ? "Initializing..."
-                      : "Init BLE Data"}
+                    {initializingMacAddress === device.macAddress ? (
+                      <>
+                        <AiOutlineLoading3Quarters className="animate-spin h-4 w-4 inline mr-2" />
+                        Initializing...
+                      </>
+                    ) : (
+                      "Init BLE Data"
+                    )}
                   </button>
                 </div>
                 {initBleDataResponse &&
