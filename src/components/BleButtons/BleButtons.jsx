@@ -19,9 +19,16 @@ const BleButtons = ({
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Create a Map to ensure uniqueness based on MAC Address
+  const uniqueDevicesMap = new Map();
+  detectedDevices.forEach((device) => {
+    uniqueDevicesMap.set(device.macAddress == device);
+  });
+
+  const uniqueDevice = Array.from(uniqueDevicesMap.values());
   useEffect(() => {
-    console.log("Detected Devices in BleButtons component:", detectedDevices);
-  }, [detectedDevices]);
+    console.log("Detected Devices in BleButtons component:", uniqueDevice);
+  }, [uniqueDevice]);
 
   useEffect(() => {
     console.log("isScanning state changed:", isScanning);
@@ -122,8 +129,8 @@ const BleButtons = ({
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
-          {detectedDevices && detectedDevices.length > 0 ? (
-            detectedDevices.map((device, index) => (
+          {uniqueDevice && uniqueDevice.length > 0 ? (
+            uniqueDevice.map((device, index) => (
               <div
                 key={index}
                 className="flex flex-col justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
@@ -149,9 +156,14 @@ const BleButtons = ({
                       initializingMacAddress === device.macAddress
                     }
                   >
-                    {connectingMacAddress === device.macAddress
-                      ? "Connecting..."
-                      : "Connect"}
+                    {connectingMacAddress === device.macAddress ? (
+                      <>
+                        <AiOutlineLoading3Quarters className="animate-spin h-4 w-4 inline mr-2" />
+                        Connecting...
+                      </>
+                    ) : (
+                      "Connect"
+                    )}
                   </button>
                   <button
                     onClick={(e) =>
@@ -168,9 +180,14 @@ const BleButtons = ({
                       connectingMacAddress === device.macAddress
                     }
                   >
-                    {initializingMacAddress === device.macAddress
-                      ? "Initializing..."
-                      : "Init BLE Data"}
+                    {initializingMacAddress === device.macAddress ? (
+                      <>
+                        <AiOutlineLoading3Quarters className="animate-spin h-4 w-4 inline mr-2" />
+                        Initializing...
+                      </>
+                    ) : (
+                      "Init BLE Data"
+                    )}
                   </button>
                 </div>
                 {initBleDataResponse &&
