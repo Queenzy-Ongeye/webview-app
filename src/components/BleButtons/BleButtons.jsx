@@ -27,39 +27,31 @@ const BleButtons = ({
 
   const uniqueDevice = Array.from(uniqueDevicesMap.values());
   useEffect(() => {
-    console.log("Detected Devices in BleButtons component:", uniqueDevice);
   }, [uniqueDevice]);
 
   useEffect(() => {
-    console.log("isScanning state changed:", isScanning);
   }, [isScanning]);
-
-  useEffect(() => {
-    console.log("BleButtons component rendered");
-  });
 
   const handleStartScanClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Start BLE Scan button clicked");
     startBleScan();
   };
 
   const handleStopScanClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Stop BLE Scan button clicked");
     stopBleScan();
   };
 
   const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Connect to Bluetooth device clicked", macAddress);
+
     setConnectingMacAddress(macAddress);
+    setLoading(true);
 
     try {
-      setLoading(true);
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
     } catch (error) {
@@ -74,14 +66,13 @@ const BleButtons = ({
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Initialize BLE data clicked", macAddress);
+
     setInitializingMacAddress(macAddress);
+    setLoading(true);
 
     try {
-      setLoading(true);
+      
       const response = await initBleData(macAddress);
-      console.log("BLE Data Initialization Response:", response);
-
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
