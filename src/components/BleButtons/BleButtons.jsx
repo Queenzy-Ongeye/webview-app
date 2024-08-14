@@ -129,7 +129,7 @@ const BleButtons = ({
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
-          {uniqueDevice && uniqueDevice.length > 0 ? (
+          {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
