@@ -22,7 +22,7 @@ const BleButtons = ({
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
   detectedDevices.forEach((device) => {
-    uniqueDevicesMap.set(device.macAddress == device);
+    uniqueDevicesMap.set(device.macAddress, device);
   });
 
   const uniqueDevice = Array.from(uniqueDevicesMap.values());
