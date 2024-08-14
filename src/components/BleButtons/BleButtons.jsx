@@ -252,4 +252,3 @@ const BleButtons = ({
 };
 
 export default BleButtons;
-l;
