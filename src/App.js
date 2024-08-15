@@ -10,6 +10,18 @@ import DTAPage from "./components/DeviceDetails/DTAPage";
 import DIAPage from "./components/DeviceDetails/DIAPage";
 
 const App = () => {
+  if('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register("/service/service-worker.js").then(
+        (registration) => {
+          console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        },
+        (err) => {
+          console.log("Service worker registration failed: ", err);
+        }
+      )
+    })
+  }
   return (
     <StoreProvider>
       <Router>
