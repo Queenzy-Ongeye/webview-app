@@ -12,6 +12,7 @@ const BleButtons = ({
   initBleData,
   detectedDevices,
   initBleDataResponse,
+  isLoading
 }) => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
@@ -140,7 +141,7 @@ const BleButtons = ({
                     }`}
                     disabled={connectingMacAddress === device.macAddress}
                   >
-                    {connectingMacAddress === device.macAddress
+                    {isLoading
                       ? "Connecting..."
                       : "Connect"}
                   </button>
@@ -155,7 +156,7 @@ const BleButtons = ({
                     }`}
                     disabled={initializingMacAddress === device.macAddress}
                   >
-                    {initializingMacAddress === device.macAddress
+                    {isLoading
                       ? "Initializing..."
                       : "Init BLE Data"}
                   </button>

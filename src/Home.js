@@ -219,6 +219,7 @@ const Home = () => {
       detectedDevices={state.detectedDevices}
       initBleData={initBleData}
       initBleDataResponse={state.initBleData}
+      isLoading={state.isLoading}
     />
   );
 };
