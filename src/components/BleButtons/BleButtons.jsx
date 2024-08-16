@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { BsQrCodeScan } from "react-icons/bs";
 
 const BleButtons = ({
   startBleScan,
@@ -12,7 +13,8 @@ const BleButtons = ({
   initBleData,
   detectedDevices,
   initBleDataResponse,
-  isLoading
+  isLoading,
+  startQrCode,
 }) => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
@@ -88,8 +90,14 @@ const BleButtons = ({
     navigate(page, { state: { data: filteredData } });
   };
 
+  const handleScanQrCodeClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startQrCode();
+  };
+
   return (
-    <div className="flex flex-col items-center p-4 space-y-4">
+    <div className="grid grid-cols-2 gap-4 items-center p-4 space-y-4">
       <button
         onClick={handleStartScanClick}
         className={`px-4 py-2 rounded-md text-white ${
@@ -111,6 +119,13 @@ const BleButtons = ({
         onClick={toastMsg}
       >
         Show Toast Message
+      </button>
+
+      <button
+        className="w-48 h-12 border-cyan-500 border-solid border-2 text-cyan-300 font-semibold rounded-lg"
+        onClick={handleScanQrCodeClick}
+      >
+        Scan QR-Code
       </button>
 
       <div className="mt-4 w-full max-w-md">
@@ -141,9 +156,7 @@ const BleButtons = ({
                     }`}
                     disabled={connectingMacAddress === device.macAddress}
                   >
-                    {isLoading
-                      ? "Connecting..."
-                      : "Connect"}
+                    {isLoading ? "Connecting..." : "Connect"}
                   </button>
                   <button
                     onClick={(e) =>
@@ -156,9 +169,7 @@ const BleButtons = ({
                     }`}
                     disabled={initializingMacAddress === device.macAddress}
                   >
-                    {isLoading
-                      ? "Initializing..."
-                      : "Init BLE Data"}
+                    {isLoading ? "Initializing..." : "Init BLE Data"}
                   </button>
                 </div>
                 {initBleDataResponse &&
