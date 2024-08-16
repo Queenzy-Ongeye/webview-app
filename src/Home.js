@@ -30,7 +30,7 @@ const Home = () => {
         }, 3000);
       }
     };
-
+// Setting up Javascript Bridge
     const setupBridge = (bridge) => {
       if (!state.bridgeInitialized) {
         bridge.init((message, responseCallback) => {
@@ -100,6 +100,15 @@ const Home = () => {
         dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
         console.log("WebViewJavascriptBridge initialized.");
       }
+
+      // Setting up QR Code scanner bridge
+      bridge.registerHandler("scanQrCodeResultCallBack", (data, responseCallback) => {
+        console.log("QR Code scan result:", data);
+        dispatch({type: "SET_QR_DATA", payload: data});
+        responseCallback(data)
+      });
+      dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
+      console.log("WebViewJavascriptBridge initialized.");
     };
 
     connectWebViewJavascriptBridge(setupBridge);
@@ -207,6 +216,23 @@ const Home = () => {
     }
   };
 
+  // QR Code onclick function
+  const startQrCode = () => {
+    if(window.WebViewJavascriptBridge){
+      window.WebViewJavascriptBridge.callHandler (
+        "startQrCodeScan",
+        999,
+        (responseData) => {
+          console.log("Response from startQrCodeScan", responseData);
+          dispatch({type: "SET_QR_DATA", payload: responseData})
+        }
+      );
+      dispatch({type: "SET_QR_SCANNING", payload: true})
+    } else{
+      console.error("Web view initialization failed");
+    }
+  }
+
   console.log("State in Home component:", state);
 
   return (
@@ -220,6 +246,7 @@ const Home = () => {
       initBleData={initBleData}
       initBleDataResponse={state.initBleData}
       isLoading={state.isLoading}
+      startQrCode={startQrCode}
     />
   );
 };
