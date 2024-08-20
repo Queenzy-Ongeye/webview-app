@@ -283,6 +283,10 @@ const Home = () => {
     }
   };
 
+  const handleSettings = ()=>{
+    alert("Settings selected")
+  }
+
   console.log("State in Home component:", state);
 
   return (
@@ -293,8 +297,12 @@ const Home = () => {
           startBleScan={startBleScan}
           stopBleScan={stopBleScan}
           toastMsg={toastMsg}
-          startQrCode={startQrCode}
           isScanning={state.isScanning}
+          connectToBluetoothDevice={connectToBluetoothDevice}
+          detectedDevices={state.detectedDevices}
+          initBleData={initBleData}
+          initBleDataResponse={state.initBleData}
+          isLoading={state.isLoading}
         />
       </div>
       <BottomActionBar
