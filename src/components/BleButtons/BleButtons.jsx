@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { BsQrCodeScan } from "react-icons/bs";
 
 const BleButtons = ({
   startBleScan,
@@ -16,7 +15,7 @@ const BleButtons = ({
   isLoading,
   startQrCode,
 }) => {
-  const { state, dispatch } = useStore();
+  const { dispatch } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
@@ -100,29 +99,31 @@ const BleButtons = ({
     <div className="grid grid-cols-2 gap-4 items-center p-4 space-y-4">
       <button
         onClick={handleStartScanClick}
-        className={`px-4 py-2 rounded-md text-white ${
+        className={`w-full sm:w-auto px-6 py-3 rounded-lg text-white text-lg font-medium ${
           isScanning ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-600"
-        } transition-colors duration-200`}
+        } transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75`}
         disabled={isScanning}
       >
         {isScanning ? "Scanning..." : "Start BLE Scan"}
       </button>
+
       <button
         onClick={handleStopScanClick}
-        className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors duration-200"
+        className="w-full sm:w-auto px-6 py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white text-lg font-medium transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
         disabled={!isScanning}
       >
         Stop BLE Scan
       </button>
+
       <button
-        className="w-48 h-12 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75"
+        className="w-full sm:w-auto px-6 py-3 bg-yellow-500 text-white text-lg font-medium rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75"
         onClick={toastMsg}
       >
         Show Toast Message
       </button>
 
       <button
-        className="w-48 h-12 border-cyan-500 border-solid border-2 text-cyan-300 font-semibold rounded-lg"
+        className="w-full sm:w-auto px-6 py-3 border-cyan-500 border-2 text-cyan-300 text-lg font-medium rounded-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-opacity-75"
         onClick={handleScanQrCodeClick}
       >
         Scan QR-Code
@@ -133,7 +134,7 @@ const BleButtons = ({
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
-          {uniqueDevice.length > 0 ? (
+          {uniqueDevice && uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
@@ -154,7 +155,7 @@ const BleButtons = ({
                         ? "bg-gray-500"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    disabled={connectingMacAddress === device.macAddress}
+                    disabled={isLoading}
                   >
                     {isLoading ? "Connecting..." : "Connect"}
                   </button>
@@ -167,7 +168,7 @@ const BleButtons = ({
                         ? "bg-gray-500"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    disabled={initializingMacAddress === device.macAddress}
+                    disabled={isLoading}
                   >
                     {isLoading ? "Initializing..." : "Init BLE Data"}
                   </button>

@@ -7,7 +7,8 @@ const initialState = {
   detectedDevices: [],
   initBleData: null, // State for initialization data
   isQRScanning: false, // New state for QR scanning
-  qrData: null // state to hold QR Data
+  qrData: null, // state to hold QR Data
+  isLoading: false
 };
 
 const reducer = (state, action) => {
@@ -18,6 +19,8 @@ const reducer = (state, action) => {
       return { ...state, isScanning: action.payload };
     case "SET_BLE_DATA":
       return { ...state, bleData: action.payload };
+    case "SET_IS_LOADING":
+      return {...state, isLoading: action.payload}
     case "ADD_DETECTED_DEVICE":
       return { ...state, detectedDevices: [...state.detectedDevices, action.payload] };
     case "SET_INIT_BLE_DATA":
