@@ -24,3 +24,21 @@ function openDB() {
     });
 };
 
+function addData(data) {
+    return openDB().then((db) => {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, "readwrite");
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.add(data);
+
+            request.onsuccess = () => {
+                resolve(request.result);
+            };
+
+            request.onerror = (event) => {
+                reject(event.target.erro)
+            };
+
+        });
+    });
+};
