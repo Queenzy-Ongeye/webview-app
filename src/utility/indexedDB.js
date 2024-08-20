@@ -42,3 +42,42 @@ function addData(data) {
         });
     });
 };
+
+function getData(id) {
+    return openDB().then((db) => {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, "readonly");
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.objectStore(STORE_NAME);
+
+            request.onsuccess = () =>{
+                resolve(request.result);
+            };
+
+            request.onerror = (event) => {
+                reject(event.target.error)
+            };
+        });
+    });
+};
+
+function getAllData(){
+    return openDB().then((db) =>{
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, "readonly");
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.objectStore(STORE_NAME);
+            
+            request.onsuccess = () => {
+                resolve(request.result);
+            };
+
+            request.onerror = (event) => {
+                reject(event.target.error);
+            };
+        });
+    });
+};
+
+
+
