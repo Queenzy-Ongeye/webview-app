@@ -2,7 +2,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 
-const StsPage = () => {
+const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
 
@@ -45,4 +45,4 @@ const StsPage = () => {
   );
 };
 
-export default StsPage;
+export default CMDPage;

@@ -1,51 +1,29 @@
+// src/App.js
+
 import React from "react";
-import "./index.css";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import Home from "./Home";
-import ATTPage from "./components/DeviceDetails/ATTPage";
+import AttPage from "./components/DeviceDetails/ATTPage";
+import StsPage from "./components/DeviceDetails/STSPage";
 import CMDPage from "./components/DeviceDetails/CMDPage";
-import STSPage from "./components/DeviceDetails/STSPage";
 import DTAPage from "./components/DeviceDetails/DTAPage";
 import DIAPage from "./components/DeviceDetails/DIAPage";
 
+
 const App = () => {
-  if('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register("/service/service-worker.js").then(
-        (registration) => {
-          console.log('ServiceWorker registration successful with scope: ', registration.scope);
-        },
-        (err) => {
-          console.log("Service worker registration failed: ", err);
-        }
-      )
-    })
-  }
   return (
     <StoreProvider>
       <Router>
-        <div className="min-h-screen bg-gray-100 flex flex-col">
-          <nav className="bg-blue-600 text-white py-4">
-            <div className="container mx-auto flex justify-between items-center">
-              <Link to="/" className="text-lg font-semibold">
-                Home
-              </Link>
-              {/* <Link to="/table" className="text-lg font-semibold">
-                Data Table
-              </Link> */}
-            </div>
-          </nav>
-          <main className="flex-grow container mx-auto p-4">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/att" element={<ATTPage />} />
-              <Route path="/cmd" element={<CMDPage />} />
-              <Route path="/sts" element={<STSPage />} />
-              <Route path="/dta" element={<DTAPage />} />
-              <Route path="/dia" element={<DIAPage />} />
-            </Routes>
-          </main>
+        <div className="min-h-screen flex flex-col bg-gray-100">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/att" element={<AttPage />} />
+            <Route path="/cmd" element={<CMDPage />} />
+            <Route path="/sts" element={<StsPage />} />
+            <Route path="/dta" element={<DTAPage />} />
+            <Route path="/dia" element={<DIAPage />} />
+          </Routes>
           <footer className="bg-gray-800 text-white py-4 text-center">
             &copy; 2024 Omnivoltaic Energy Solutions. All rights reserved.
           </footer>
