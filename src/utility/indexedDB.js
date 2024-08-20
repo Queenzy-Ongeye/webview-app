@@ -79,5 +79,23 @@ function getAllData(){
     });
 };
 
+function deleteData(id) {
+    return openDB().then((db) => {
+        return new Promise((resolve, reject) => {
+            const transaction= db.transaction(STORE_NAME, "readwrite");
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.delete(id)
 
+            request.onsuccess = () => {
+                resolve();
+            };
+
+            request.onerror = (event) => {
+                reject(event.target.error);
+            };
+        });
+    });
+};
+
+export {addData, getData, getAllData, deleteData}
 
