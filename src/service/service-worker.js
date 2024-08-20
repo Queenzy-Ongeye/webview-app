@@ -1,3 +1,5 @@
+import { addData } from "../utility/indexedDB";
+
 const CACHE_NAME = "ble-app-cache-v1";
 const urlsToCache = [
     "/",
@@ -38,6 +40,14 @@ self.addEventListener("fetch", (event) => {
                 caches.open(CACHE_NAME).then((cache) => {
                     cache.put(event.request, responseToCache);
                 });
+
+                // Store response data in IndexedDB if it's JSON
+                if(response.headers.get("content-type").includes("application/json")){
+                    response.clone().json().then((data) => {
+                        // Saving data in the indexedDB
+                        addData(data)
+                    })
+                }
                 return response;
             });
         })
