@@ -3,11 +3,17 @@ import BleButtons from "./components/BleButtons/BleButtons";
 import { useStore } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
+import { getAllData } from "./utility/indexedDB";
 
 const Home = () => {
   const { state, dispatch } = useStore();
 
   useEffect(() => {
+    getAllData().then((data) => {
+      if (data && data.length > 0) {
+        dispatch({ type: "SET_BLE_DATA", payload: data });
+      }
+    });
     const connectWebViewJavascriptBridge = (callback) => {
       if (window.WebViewJavascriptBridge) {
         callback(window.WebViewJavascriptBridge);
@@ -283,9 +289,9 @@ const Home = () => {
     }
   };
 
-  const handleSettings = ()=>{
-    alert("Settings selected")
-  }
+  const handleSettings = () => {
+    alert("Settings selected");
+  };
 
   console.log("State in Home component:", state);
 
@@ -302,6 +308,7 @@ const Home = () => {
           detectedDevices={state.detectedDevices}
           initBleData={initBleData}
           initBleDataResponse={state.initBleData}
+          startQrCode={startQrCode}
           isLoading={state.isLoading}
         />
       </div>
