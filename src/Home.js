@@ -308,6 +308,7 @@ const Home = () => {
           detectedDevices={state.detectedDevices}
           initBleData={initBleData}
           initBleDataResponse={state.initBleData}
+          startQrCode={startQrCode}
           isLoading={state.isLoading}
         />
       </div>
