@@ -45,14 +45,22 @@ function addData(data) {
 }
 
 function getData(id) {
+  if (typeof id === "undefined" || id === null) {
+    return Promise.reject("Invalid key provided for getData");
+  }
+
   return openDB().then((db) => {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, "readonly");
       const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(id);
+      const request = store.get(id); // Ensure 'id' is a valid key
 
       request.onsuccess = () => {
-        resolve(request.result);
+        if (request.result !== undefined) {
+          resolve(request.result);
+        } else {
+          reject("No matching record found");
+        }
       };
 
       request.onerror = (event) => {
@@ -96,6 +104,6 @@ function deleteData(id) {
       };
     });
   });
-};
+}
 
 export { addData, getData, getAllData, deleteData };

@@ -3,13 +3,13 @@ import BleButtons from "./components/BleButtons/BleButtons";
 import { useStore } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
-import { getData } from "./utility/indexedDB";
+import { getAllData } from "./utility/indexedDB";
 
 const Home = () => {
   const { state, dispatch } = useStore();
 
   useEffect(() => {
-    getData().then((data) => {
+    getAllData().then((data) => {
       if (data && data.length > 0) {
         dispatch({ type: "SET_BLE_DATA", payload: data });
       }
