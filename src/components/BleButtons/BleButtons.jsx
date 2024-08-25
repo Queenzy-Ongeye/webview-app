@@ -81,7 +81,7 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
               >
                 <div>
                   <p className="font-semibold">
@@ -90,15 +90,15 @@ const BleButtons = ({
                   <p>MAC Address: {device.macAddress}</p>
                   <p>Rssi Number: {device.rssi}</p>
                 </div>
-                <div className="space-x-2">
+                <div className="space-x-2 grid grid-cols-2">
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
-                    className={`px-4 py-2 rounded-md text-white transition-colors duration-200 ${
+                    className={`px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
                       connectingMacAddress === device.macAddress
-                        ? "bg-gray-500"
-                        : "bg-blue-500 hover:bg-blue-600"
+                        ? "bg-gray-600"
+                        : "border-cyan-800 hover:bg-blue-600"
                     }`}
-                    disabled={connectingMacAddress === device.macAddress}
+                    disabled={isLoading}
                   >
                     {isLoading ? "Connecting..." : "Connect"}
                   </button>
@@ -106,12 +106,12 @@ const BleButtons = ({
                     onClick={(e) =>
                       handleInitBleDataClick(e, device.macAddress)
                     }
-                    className={`px-4 py-2 rounded-md text-white transition-colors duration-200 ${
+                    className={`px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
                       initializingMacAddress === device.macAddress
                         ? "bg-gray-500"
-                        : "bg-blue-500 hover:bg-blue-600"
+                        : "border-cyan-800 hover:bg-blue-600"
                     }`}
-                    disabled={initializingMacAddress === device.macAddress}
+                    disabled={isLoading}
                   >
                     {isLoading ? "Initializing..." : "Init BLE Data"}
                   </button>
