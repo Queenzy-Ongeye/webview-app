@@ -1,5 +1,3 @@
-// src/App.js
-
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { StoreProvider } from "./service/store";
@@ -9,7 +7,7 @@ import StsPage from "./components/DeviceDetails/STSPage";
 import CMDPage from "./components/DeviceDetails/CMDPage";
 import DTAPage from "./components/DeviceDetails/DTAPage";
 import DIAPage from "./components/DeviceDetails/DIAPage";
-
+import ScanData from "./components/scanQr-Barcode/ScanData";
 
 const App = () => {
   return (
@@ -23,6 +21,7 @@ const App = () => {
             <Route path="/sts" element={<StsPage />} />
             <Route path="/dta" element={<DTAPage />} />
             <Route path="/dia" element={<DIAPage />} />
+            <Route path="/scan-data" element={<ScanData />} />
           </Routes>
           <footer className="bg-gray-800 text-white py-4 text-center">
             &copy; 2024 Omnivoltaic Energy Solutions. All rights reserved.
