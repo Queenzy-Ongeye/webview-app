@@ -106,4 +106,27 @@ function deleteData(id) {
   });
 }
 
-export { addData, getData, getAllData, deleteData };
+function getDataByBarcode(barcode) {
+  return openDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, "readonly");
+      const store = transaction.objectStore(STORE_NAME);
+      const index = store.index("barcode");
+      const request = index.get(barcode);
+
+      request.onsuccess = () => {
+        if (request.result) {
+          resolve(request.result);
+        } else {
+          reject("No matching record found for barcode");
+        }
+      };
+
+      request.error = (event) => {
+        reject(event.target.error);
+      };
+    });
+  });
+}
+
+export { addData, getData, getAllData, deleteData, getDataByBarcode };
