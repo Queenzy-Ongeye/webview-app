@@ -134,7 +134,7 @@ const BleButtons = ({
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
-          {uniqueDevice && uniqueDevice.length > 0 ? (
+          {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
@@ -155,7 +155,7 @@ const BleButtons = ({
                         ? "bg-gray-500"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    disabled={isLoading}
+                    disabled={connectingMacAddress === device.macAddress}
                   >
                     {isLoading ? "Connecting..." : "Connect"}
                   </button>
@@ -168,7 +168,7 @@ const BleButtons = ({
                         ? "bg-gray-500"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    disabled={isLoading}
+                    disabled={initializingMacAddress === device.macAddress}
                   >
                     {isLoading ? "Initializing..." : "Init BLE Data"}
                   </button>

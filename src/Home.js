@@ -331,18 +331,17 @@ const Home = () => {
     // Make an API call or query your IndexedDB/local storage
     // to get product details using the barcode
     getDataByBarcode(barcode)
-    .then((product) => {
-      if (product) {
-        dispatch({ type: "SET_PRODUCT_DATA", payload: product });
-      } else {
-        console.error("Product not found for barcode:", barcode);
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching product details: ", error);
-    });
+      .then((product) => {
+        if (product) {
+          dispatch({ type: "SET_PRODUCT_DATA", payload: product });
+        } else {
+          console.error("Product not found for barcode:", barcode);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching product details: ", error);
+      });
   };
-
 
   const handleSettings = () => {
     alert("Settings selected");
@@ -352,7 +351,6 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <NavigationBar />
       <div className="flex-grow">
         <BleButtons
           startBleScan={startBleScan}
