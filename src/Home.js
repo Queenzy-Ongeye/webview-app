@@ -353,22 +353,17 @@ const Home = () => {
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow">
         <BleButtons
-          startBleScan={startBleScan}
-          stopBleScan={stopBleScan}
-          toastMsg={toastMsg}
-          isScanning={state.isScanning}
           connectToBluetoothDevice={connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
           initBleData={initBleData}
           initBleDataResponse={state.initBleData}
-          startQrCode={startQrCode}
           isLoading={state.isLoading}
         />
       </div>
       <BottomActionBar
         onStartScan={startBleScan}
         onStopScan={stopBleScan}
-        onSettings={handleSettings}
+        onScanData={startQrCode}
         isScanning={state.isScanning}
       />
     </div>

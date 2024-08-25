@@ -1,34 +1,28 @@
-import React from "react";
+import React from 'react';
+import Button from './Button';
 
-const BottomActionBar = ({
-  onStartScan,
-  onStopScan,
-  onSettings,
-  isScanning,
-}) => {
+const BottomActionBar = ({ onStartScan, onStopScan, onScanData, isScanning }) => {
   return (
-    <div className="bg-cyan-500 text-white py-2 flex justify-around">
-      <button
-        className={`py-2 px-4 bg-white text-cyan-500 rounded hover:bg-gray-100 ${
-            isScanning ? "bg-gray-500 text-white" : "bg-white"
-          } transition-colors duration-200 ease-in-out`}
+    <div className="bg-cyan-900 text-white py-2 flex justify-around">
+      <Button
         onClick={onStartScan}
         disabled={isScanning}
+        className={isScanning ? 'bg-gray-500 text-white' : 'bg-white text-cyan-700'}
       >
-        {isScanning ? "Scanning..." : "Start BLE Scan"}
-      </button>
-      <button
-        className="py-2 px-4 bg-white text-cyan-500 rounded hover:bg-gray-100"
+        {isScanning ? 'Scanning...' : 'Start BLE Scan'}
+      </Button>
+      <Button
         onClick={onStopScan}
+        className="bg-white text-cyan-700"
       >
         Stop Scan
-      </button>
-      <button
-        className="py-2 px-4 bg-white text-cyan-500 rounded hover:bg-gray-100"
-        onClick={onSettings}
+      </Button>
+      <Button
+        onClick={onScanData}
+        className="bg-white text-cyan-700"
       >
-        Settings
-      </button>
+        ScanQrCode
+      </Button>
     </div>
   );
 };
