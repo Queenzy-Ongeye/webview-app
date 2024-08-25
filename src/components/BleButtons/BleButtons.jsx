@@ -71,9 +71,9 @@ const BleButtons = ({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 items-center p-4 space-y-4">
-      <div className="mt-4 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-2">
+    <div>
+      <div className="mt-8 w-full max-w-md">
+        <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
@@ -83,17 +83,17 @@ const BleButtons = ({
                 key={index}
                 className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
               >
-                <div>
+                <div className="w-full">
                   <p className="font-semibold">
                     {device.name || "Unnamed Device"}
                   </p>
                   <p>MAC Address: {device.macAddress}</p>
                   <p>Rssi Number: {device.rssi}</p>
                 </div>
-                <div className="space-x-2 grid grid-cols-2">
+                <div className="space-x-2 grid grid-cols-2 w-full">
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
-                    className={`px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
+                    className={`w-full px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
                       connectingMacAddress === device.macAddress
                         ? "bg-gray-600"
                         : "border-cyan-800 hover:bg-blue-600"
@@ -106,7 +106,7 @@ const BleButtons = ({
                     onClick={(e) =>
                       handleInitBleDataClick(e, device.macAddress)
                     }
-                    className={`px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
+                    className={`w-full px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
                       initializingMacAddress === device.macAddress
                         ? "bg-gray-500"
                         : "border-cyan-800 hover:bg-blue-600"
@@ -118,7 +118,7 @@ const BleButtons = ({
                 </div>
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
-                    <div className="mt-2 grid grid-cols-5 gap-4">
+                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-5 gap-4 w-full">
                       <button
                         onClick={() =>
                           navigateToPage("/att", "ATT_SERVICE_NAME")
