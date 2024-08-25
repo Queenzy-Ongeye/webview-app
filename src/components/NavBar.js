@@ -12,7 +12,7 @@ const NavigationBar = () => {
     <div>
       {/* Hamburger Menu Button */}
       <button
-        className="text-white bg-cyan-700 px-4 py-2 focus:outline-none fixed top-4 left-4 z-50"
+        className="text-white bg-cyan-700 px-2 py-2 focus:outline-none fixed top-0 left-0 z-50"
         onClick={toggleMenu}
       >
         ☰
