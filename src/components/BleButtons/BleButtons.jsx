@@ -4,16 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const BleButtons = ({
-  startBleScan,
-  stopBleScan,
-  toastMsg,
-  isScanning,
   connectToBluetoothDevice,
   initBleData,
   detectedDevices,
   initBleDataResponse,
   isLoading,
-  startQrCode,
 }) => {
   const { dispatch } = useStore();
   const navigate = useNavigate();
@@ -29,20 +24,6 @@ const BleButtons = ({
 
   const uniqueDevice = Array.from(uniqueDevicesMap.values());
   useEffect(() => {}, [uniqueDevice]);
-
-  useEffect(() => {}, [isScanning]);
-
-  const handleStartScanClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    startBleScan();
-  };
-
-  const handleStopScanClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    stopBleScan();
-  };
 
   const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
@@ -89,52 +70,14 @@ const BleButtons = ({
     navigate(page, { state: { data: filteredData } });
   };
 
-  const handleScanQrCodeClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    startQrCode();
-  };
-
   return (
     <div className="grid grid-cols-2 gap-4 items-center p-4 space-y-4">
-      <button
-        onClick={handleStartScanClick}
-        className={`w-full sm:w-auto px-6 py-3 rounded-lg text-white text-lg font-medium ${
-          isScanning ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-600"
-        } transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75`}
-        disabled={isScanning}
-      >
-        {isScanning ? "Scanning..." : "Start BLE Scan"}
-      </button>
-
-      <button
-        onClick={handleStopScanClick}
-        className="w-full sm:w-auto px-6 py-3 rounded-lg bg-red-500 hover:bg-red-600 text-white text-lg font-medium transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
-        disabled={!isScanning}
-      >
-        Stop BLE Scan
-      </button>
-
-      <button
-        className="w-full sm:w-auto px-6 py-3 bg-yellow-500 text-white text-lg font-medium rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75"
-        onClick={toastMsg}
-      >
-        Show Toast Message
-      </button>
-
-      <button
-        className="w-full sm:w-auto px-6 py-3 border-cyan-500 border-2 text-cyan-300 text-lg font-medium rounded-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-opacity-75"
-        onClick={handleScanQrCodeClick}
-      >
-        Scan QR-Code
-      </button>
-
       <div className="mt-4 w-full max-w-md">
         <h3 className="text-lg font-semibold mb-2">
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
-          {uniqueDevice && uniqueDevice.length > 0 ? (
+          {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
@@ -155,7 +98,7 @@ const BleButtons = ({
                         ? "bg-gray-500"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    disabled={isLoading}
+                    disabled={connectingMacAddress === device.macAddress}
                   >
                     {isLoading ? "Connecting..." : "Connect"}
                   </button>
@@ -168,7 +111,7 @@ const BleButtons = ({
                         ? "bg-gray-500"
                         : "bg-blue-500 hover:bg-blue-600"
                     }`}
-                    disabled={isLoading}
+                    disabled={initializingMacAddress === device.macAddress}
                   >
                     {isLoading ? "Initializing..." : "Init BLE Data"}
                   </button>
@@ -180,7 +123,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/att", "ATT_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         ATT
                       </button>
@@ -188,7 +131,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/cmd", "CMD_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         CMD
                       </button>
@@ -196,7 +139,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/sts", "STS_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         STS
                       </button>
@@ -204,7 +147,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/dta", "DTA_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         DTA
                       </button>
@@ -212,7 +155,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/dia", "DIA_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-500 text-blue-500 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         DIA
                       </button>

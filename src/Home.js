@@ -3,7 +3,7 @@ import BleButtons from "./components/BleButtons/BleButtons";
 import { useStore } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
-import { getAllData } from "./utility/indexedDB";
+import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -289,6 +289,60 @@ const Home = () => {
     }
   };
 
+  const handleScanData = (data) => {
+    console.log("Scanned data received: ", data);
+
+    if (isBarcode(data)) {
+      fetchProductDetails(data);
+    } else if (isQrCode(data)) {
+      dispatch({ type: "SET_QR_DATA", payload: data });
+    }
+  };
+
+  const isBarcode = (data) => {
+    const numericPattern = /^[0-9]+$/;
+    const barcodeLengths = [12, 13, 8]; // Adjust lengths as necessary for your application
+
+    return numericPattern.test(data) && barcodeLengths.includes(data.length);
+  };
+
+  const isQrCode = (data) => {
+    const urlPattern = /^(http|https):\/\/[^ "]+$/;
+    const structuredDataPattern =
+      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/;
+    const nonNumericPattern = /[^0-9]/;
+
+    if (urlPattern.test(data)) {
+      return true;
+    }
+
+    if (structuredDataPattern.test(data)) {
+      return true;
+    }
+
+    if (data.length > 20 && nonNumericPattern.test(data)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const fetchProductDetails = (barcode) => {
+    // Make an API call or query your IndexedDB/local storage
+    // to get product details using the barcode
+    getDataByBarcode(barcode)
+      .then((product) => {
+        if (product) {
+          dispatch({ type: "SET_PRODUCT_DATA", payload: product });
+        } else {
+          console.error("Product not found for barcode:", barcode);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching product details: ", error);
+      });
+  };
+
   const handleSettings = () => {
     alert("Settings selected");
   };
@@ -297,25 +351,20 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <NavigationBar />
       <div className="flex-grow">
         <BleButtons
-          startBleScan={startBleScan}
-          stopBleScan={stopBleScan}
-          toastMsg={toastMsg}
-          isScanning={state.isScanning}
           connectToBluetoothDevice={connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
           initBleData={initBleData}
           initBleDataResponse={state.initBleData}
-          startQrCode={startQrCode}
           isLoading={state.isLoading}
         />
       </div>
       <BottomActionBar
         onStartScan={startBleScan}
         onStopScan={stopBleScan}
-        onSettings={handleSettings}
+        onScanData={startQrCode}
+        isScanning={state.isScanning}
       />
     </div>
   );
