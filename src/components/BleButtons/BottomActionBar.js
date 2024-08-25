@@ -7,7 +7,7 @@ const BottomActionBar = ({ onStartScan, onStopScan, onScanData, isScanning }) =>
       <Button
         onClick={onStartScan}
         disabled={isScanning}
-        className={isScanning ? 'bg-gray-500 text-white' : 'bg-white text-cyan-700'}
+        className={isScanning ? 'bg-gray-700 text-white' : 'bg-white text-cyan-700'}
       >
         {isScanning ? 'Scanning...' : 'Start BLE Scan'}
       </Button>
