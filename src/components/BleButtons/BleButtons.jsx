@@ -72,7 +72,7 @@ const BleButtons = ({
 
   return (
     <div>
-      <div className="mt-8 w-full max-w-md">
+      <div className="mt-8 w-full max-w-md mx-2">
         <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
@@ -81,7 +81,7 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-md rounded-lg border border-gray-300"
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-md border border-gray-300"
               >
                 <div className="w-full">
                   <p className="font-semibold">
@@ -93,10 +93,10 @@ const BleButtons = ({
                 <div className="space-x-2 grid grid-cols-2 w-full">
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
-                    className={`w-full px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
+                    className={`w-full px-4 py-2 border-cyan-800 rounded-md text-cyan-700 transition-colors duration-200 ${
                       connectingMacAddress === device.macAddress
                         ? "bg-gray-600"
-                        : "border-cyan-800 hover:bg-blue-600"
+                        : "border-cyan-800 text-cyan-900"
                     }`}
                     disabled={isLoading}
                   >
@@ -106,10 +106,10 @@ const BleButtons = ({
                     onClick={(e) =>
                       handleInitBleDataClick(e, device.macAddress)
                     }
-                    className={`w-full px-4 py-2 rounded-md text-cyan-700 transition-colors duration-200 ${
+                    className={`w-full px-4 py-2 border-cyan-800 rounded-md text-cyan-900 transition-colors duration-200 ${
                       initializingMacAddress === device.macAddress
                         ? "bg-gray-500"
-                        : "border-cyan-800 hover:bg-blue-600"
+                        : "border-cyan-800 text-cyan-900"
                     }`}
                     disabled={isLoading}
                   >
