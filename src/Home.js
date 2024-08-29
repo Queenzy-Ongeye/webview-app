@@ -4,9 +4,11 @@ import { useStore } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { state, dispatch } = useStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     getAllData().then((data) => {
@@ -281,6 +283,7 @@ const Home = () => {
         (responseData) => {
           console.log("Response from startQrCodeScan", responseData);
           dispatch({ type: "SET_QR_DATA", payload: responseData });
+          navigate("/scan-data", {state: {scannedData: responseData}})
         }
       );
       dispatch({ type: "SET_QR_SCANNING", payload: true });
