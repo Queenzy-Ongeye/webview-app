@@ -1,4 +1,4 @@
-import React from 'react';
+import mqtt from 'mqtt/*';
 
 const MQTT_BROKER_URL = 'http://mqtt.omnivoltaic.com:1883';
 const MQTT_OPTIONS = {
