@@ -1,5 +1,4 @@
 import mqtt from 'mqtt/*';
-
 const MQTT_BROKER_URL = 'http://mqtt.omnivoltaic.com:1883';
 const MQTT_OPTIONS = {
     clientId: `mqttjs_${Math.random().toString(16).slice(3)},`
