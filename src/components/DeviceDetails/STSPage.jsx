@@ -42,7 +42,7 @@ const StsPage = () => {
   const handlePublishClick = () => {
     console.log("Button clicked!");
     if (state.data) {
-      const stsData = JSON.stringify(state.data.STS);
+      const stsData = JSON.stringify(state.data.STS_SERVICE_NAME);
       console.log("Publishing data:", stsData);
       setIsPublishing(true);
       setPublishSuccess(false);
