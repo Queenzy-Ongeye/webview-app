@@ -5,7 +5,7 @@ import NavigationBar from "./components/NavBar";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
-import mqtt from "mqtt/*";
+import mqtt from "mqtt";
 
 const Home = () => {
   const { state, dispatch } = useStore();
