@@ -1,104 +1,122 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useStore } from "../../service/store";
 
 const StsPage = () => {
+  const location = useLocation();
+  const { data } = location.state || {};
   const { state } = useStore();
-  const [selectedData, setSelectedData] = useState({});
 
   useEffect(() => {
-    console.log("initBleData:", state.initBleData);
-    console.log("initBleData.STS:", state.initBleData?.STS);
-  }, [state.initBleData]);
+    const publishHeartbeat = () => {
+      if (state.data) {
+        const stsData = JSON.stringify(state.data.STS);
+        state.mqttClient.publish("devices/sts", stsData, (err) => {
+          if (err) {
+            console.error("Publish STS error: ", err);
+          } else {
+            console.log("STS data published to MQTT");
+          }
+        });
+      }
+    };
 
-  // Function to handle checkbox changes
-  const handleCheckboxChange = (uuid) => {
-    setSelectedData((prevState) => ({
-      ...prevState,
-      [uuid]: !prevState[uuid],
-    }));
-    console.log("Selected Data:", selectedData);
-  };
+    // Initial publish
+    publishHeartbeat();
 
-  // Function to handle the form submission and send data to MQTT
-  const handleSubmit = () => {
-    const client = state.mqttClient;
-    if (client) {
-      Object.keys(selectedData).forEach((uuid) => {
-        if (selectedData[uuid]) {
-          const dataToSend = state.initBleData.STS[uuid];
-          console.log(`Publishing data for UUID ${uuid}:`, dataToSend);
-          client.publish(
-            "devices/sts",
-            JSON.stringify({ uuid, data: dataToSend }),
-            (err) => {
-              if (err) {
-                console.error(
-                  `Failed to publish message for UUID ${uuid}:`,
-                  err
-                );
-              } else {
-                console.log(
-                  `Message for UUID ${uuid} successfully published to MQTT`
-                );
-              }
-            }
-          );
+    // Set interval for publishing heartbeat every 60 seconds
+    const intervalID = setInterval(publishHeartbeat, 60000);
+    return () => clearInterval(intervalID);
+  }, [state.data, state.mqttClient]);
+
+  const handlePublishClick = () => {
+    if (state.data) {
+      const stsData = JSON.stringify(state.data.STS);
+      state.mqttClient.publish("devices/sts", stsData, (err) => {
+        if (err) {
+          console.error("Publish STS error: ", err);
+        } else {
+          console.log("STS data manually published to MQTT");
         }
       });
-    } else {
-      console.error("MQTT client is not available.");
     }
   };
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">STS Data</h2>
-      <form>
-        {state.initBleData && state.initBleData.STS ? (
-          Object.keys(state.initBleData.STS).map((uuid, index) => (
-            <div key={index} className="mb-4 p-4 border rounded shadow">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={!!selectedData[uuid]}
-                  onChange={() => handleCheckboxChange(uuid)}
-                />
-                <span className="ml-2 font-semibold">UUID: {uuid}</span>
-              </label>
-              <div className="ml-4 mt-2">
+      <h2 className="text-2xl font-bold mb-4">STS Page</h2>
+      {data && data.length > 0 ? (
+        data.map((item, index) => (
+          <div key={index} className="mb-4 p-4 border rounded shadow">
+            {Object.keys(item.characterMap).map((uuid) => (
+              <div key={uuid} className="mb-4">
+                <h3 className="text-lg font-semibold">UUID: {uuid}</h3>
                 <p>
-                  <strong>Description:</strong>{" "}
-                  {state.initBleData.STS[uuid].desc}
+                  <strong>Description:</strong> {item.characterMap[uuid].desc}
                 </p>
                 <p>
-                  <strong>Name:</strong> {state.initBleData.STS[uuid].name}
+                  <strong>Name:</strong> {item.characterMap[uuid].name}
                 </p>
                 <p>
                   <strong>Service UUID:</strong>{" "}
-                  {state.initBleData.STS[uuid].serviceUuid}
+                  {item.characterMap[uuid].serviceUuid}
                 </p>
                 <p>
                   <strong>Properties:</strong>{" "}
-                  {state.initBleData.STS[uuid].properties}
+                  {item.characterMap[uuid].properties}
                 </p>
                 <p>
-                  <strong>Real Value:</strong>{" "}
-                  {state.initBleData.STS[uuid].realVal}
+                  <strong>Enable Indicate:</strong>{" "}
+                  {item.characterMap[uuid].enableIndicate ? "Yes" : "No"}
                 </p>
+                <p>
+                  <strong>Enable Notify:</strong>{" "}
+                  {item.characterMap[uuid].enableNotify ? "Yes" : "No"}
+                </p>
+                <p>
+                  <strong>Enable Read:</strong>{" "}
+                  {item.characterMap[uuid].enableRead ? "Yes" : "No"}
+                </p>
+                <p>
+                  <strong>Enable Write:</strong>{" "}
+                  {item.characterMap[uuid].enableWrite ? "Yes" : "No"}
+                </p>
+                <p>
+                  <strong>Enable Write No Response:</strong>{" "}
+                  {item.characterMap[uuid].enableWriteNoResp ? "Yes" : "No"}
+                </p>
+                <p>
+                  <strong>Real Value:</strong> {item.characterMap[uuid].realVal}
+                </p>
+                <div className="ml-4 mt-2">
+                  <strong>Desc Map:</strong>
+                  {Object.keys(item.characterMap[uuid].descMap).map(
+                    (descKey) => (
+                      <div key={descKey} className="ml-4 mt-2">
+                        <p>
+                          <strong>UUID:</strong> {descKey}
+                        </p>
+                        <p>
+                          <strong>Description:</strong>{" "}
+                          {item.characterMap[uuid].descMap[descKey].desc}
+                        </p>
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p>No STS data available</p>
-        )}
-        <button
-          type="button"
-          onClick={handleSubmit}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
-        >
-          Send Selected Data to MQTT
-        </button>
-      </form>
+            ))}
+          </div>
+        ))
+      ) : (
+        <p>No data available</p>
+      )}
+      <button
+        onClick={handlePublishClick}
+        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition duration-200"
+      >
+        Publish Data to MQTT
+      </button>
     </div>
   );
 };
