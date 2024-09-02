@@ -373,14 +373,16 @@ const Home = () => {
   };
 
   // Publishing mqtt data
-  const publishMqttData = (topic, msg) => {
+  const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
     if (client) {
-      client.publish(topic, msg, (err) => {
+      client.publish(topic, message, { qos: 1 }, (err) => {
         if (err) {
-          console.error("Publish error: ", err);
+          console.error("Failed to publish message:", err);
         } else {
-          console.log(`Message "${msg}" published to topic "${topic}"`);
+          console.log(
+            `Message "${message}" successfully published to topic "${topic}"`
+          );
         }
       });
     }
