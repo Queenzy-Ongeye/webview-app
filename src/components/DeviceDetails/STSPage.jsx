@@ -5,12 +5,18 @@ const StsPage = () => {
   const { state } = useStore();
   const [selectedData, setSelectedData] = useState({});
 
+  useEffect(() => {
+    console.log("initBleData:", state.initBleData);
+    console.log("initBleData.STS:", state.initBleData?.STS);
+  }, [state.initBleData]);
+
   // Function to handle checkbox changes
   const handleCheckboxChange = (uuid) => {
     setSelectedData((prevState) => ({
       ...prevState,
       [uuid]: !prevState[uuid],
     }));
+    console.log("Selected Data:", selectedData);
   };
 
   // Function to handle the form submission and send data to MQTT
@@ -19,7 +25,8 @@ const StsPage = () => {
     if (client) {
       Object.keys(selectedData).forEach((uuid) => {
         if (selectedData[uuid]) {
-          const dataToSend = state.initBleData.STS[uuid]; // Adjust according to your actual data structure
+          const dataToSend = state.initBleData.STS[uuid];
+          console.log(`Publishing data for UUID ${uuid}:`, dataToSend);
           client.publish(
             "devices/sts",
             JSON.stringify({ uuid, data: dataToSend }),
@@ -38,6 +45,8 @@ const StsPage = () => {
           );
         }
       });
+    } else {
+      console.error("MQTT client is not available.");
     }
   };
 
