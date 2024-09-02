@@ -12,7 +12,7 @@ const StsPage = () => {
 
   useEffect(() => {
     const publishHeartbeat = () => {
-      if (state.data) {
+      if (state.data && state.data.STS) {
         const stsData = JSON.stringify(state.data.STS);
         setIsPublishing(true);
         state.mqttClient.publish("devices/sts", stsData, (err) => {
@@ -37,7 +37,7 @@ const StsPage = () => {
   }, [state.data, state.mqttClient]);
 
   const handlePublishClick = () => {
-    if (state.data) {
+    if (state.data && state.data.STS) {
       const stsData = JSON.stringify(state.data.STS);
       setIsPublishing(true);
       setPublishSuccess(false);
@@ -132,7 +132,11 @@ const StsPage = () => {
         ) : publishSuccess ? (
           <AiOutlineCheckCircle className="h-5 w-5 mr-2" />
         ) : null}
-        {isPublishing ? "Publishing..." : publishSuccess ? "Published!" : "Publish Data to MQTT"}
+        {isPublishing
+          ? "Publishing..."
+          : publishSuccess
+          ? "Published!"
+          : "Publish Data to MQTT"}
       </button>
     </div>
   );
