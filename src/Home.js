@@ -5,6 +5,7 @@ import NavigationBar from "./components/NavBar";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
+import mqtt from "mqtt/*";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -157,6 +158,33 @@ const Home = () => {
     connectWebViewJavascriptBridge(setupBridge);
   }, [state.bridgeInitialized, dispatch]);
 
+  // MQTT Data intergration
+  useEffect(() => {
+    const client = mqtt.client("mqtt.omnvoltaic.com", {
+      username: "Scanner1",
+      port: 1883,
+      password: "!mqttsc.2024#",
+    });
+
+    client.on("connect", () => {
+      console.log("Connected to MQTT broker");
+    });
+
+    client.on("error", (err) => {
+      console.error("MQTT connection error:", err);
+    });
+
+    client.on("disconnect", () => {
+      console.log("Disconneted to mqtt");
+    });
+
+    dispatch({ type: "SET_MQTT_CLIENT", payload: client });
+
+    return () => {
+      if (client) client.end();
+    };
+  }, [dispatch]);
+
   const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
@@ -283,7 +311,7 @@ const Home = () => {
         (responseData) => {
           console.log("Response from startQrCodeScan", responseData);
           dispatch({ type: "SET_QR_DATA", payload: responseData });
-          navigate("/scan-data", {state: {scannedData: responseData}})
+          navigate("/scan-data", { state: { scannedData: responseData } });
         }
       );
       dispatch({ type: "SET_QR_SCANNING", payload: true });
@@ -346,9 +374,29 @@ const Home = () => {
       });
   };
 
-  const handleSettings = () => {
-    alert("Settings selected");
+  // Publishing mqtt data
+  const publishMqttData = (topic, msg) => {
+    const client = state.mqttClient;
+    if (client) {
+      client.publish(topic, msg, (err) => {
+        if (err) {
+          console.error("Publish error: ", err);
+        } else {
+          console.log(`Message "${msg}" published to topic "${topic}"`);
+        }
+      });
+    }
   };
+
+  useEffect(() => {
+    if (state.initBleData) {
+      publishMqttData("devices/att", JSON.stringify(state.initBleData.ATT));
+      publishMqttData("devices/sts", JSON.stringify(state.initBleData.STS));
+      publishMqttData("devices/cmd", JSON.stringify(state.initBleData.CMD));
+      publishMqttData("devices/dia", JSON.stringify(state.initBleData.DIA));
+      publishMqttData("devices/dta", JSON.stringify(state.initBleData.DTA));
+    }
+  }, [state.initBleData]);
 
   console.log("State in Home component:", state);
 
