@@ -8,7 +8,8 @@ const initialState = {
   initBleData: null, // State for initialization data
   isQRScanning: false, // New state for QR scanning
   qrData: null, // state to hold QR Data
-  isLoading: false
+  isLoading: false,
+  mqttClient: null
 };
 
 const reducer = (state, action) => {
@@ -28,7 +29,9 @@ const reducer = (state, action) => {
     case "SET_QR_SCANNING":
       return {...state, isQRScanning: action.payload};
     case "SET_QR_DATA":
-      return {...state, qrData: action.payload}
+      return {...state, qrData: action.payload};
+    case "SET_MQTT_CLIENT":
+      return {...state, mqttClient: action.payload}
     default:
       return state;
   }
