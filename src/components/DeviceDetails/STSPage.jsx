@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useStore } from "../../service/store";
-import { AiOutlineCheckCircle, AiOutlineLoading3Quarters } from "react-icons/ai";
+import {
+  AiOutlineCheckCircle,
+  AiOutlineLoading3Quarters,
+} from "react-icons/ai";
 
 const StsPage = () => {
   const location = useLocation();
@@ -37,8 +40,10 @@ const StsPage = () => {
   }, [state.data, state.mqttClient]);
 
   const handlePublishClick = () => {
-    if (state.data && state.data.STS) {
+    console.log("Button clicked!");
+    if (state.data) {
       const stsData = JSON.stringify(state.data.STS);
+      console.log("Publishing data:", stsData);
       setIsPublishing(true);
       setPublishSuccess(false);
       state.mqttClient.publish("devices/sts", stsData, (err) => {
@@ -51,6 +56,8 @@ const StsPage = () => {
           setPublishSuccess(true);
         }
       });
+    } else {
+      console.error("No data available to publish.");
     }
   };
 
