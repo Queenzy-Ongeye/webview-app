@@ -1,21 +1,28 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useStore } from "../../service/store";
+import { AiOutlineCheckCircle, AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const StsPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
   const { state } = useStore();
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishSuccess, setPublishSuccess] = useState(false);
 
   useEffect(() => {
     const publishHeartbeat = () => {
       if (state.data) {
         const stsData = JSON.stringify(state.data.STS);
+        setIsPublishing(true);
         state.mqttClient.publish("devices/sts", stsData, (err) => {
+          setIsPublishing(false);
           if (err) {
             console.error("Publish STS error: ", err);
+            setPublishSuccess(false);
           } else {
             console.log("STS data published to MQTT");
+            setPublishSuccess(true);
           }
         });
       }
@@ -32,11 +39,16 @@ const StsPage = () => {
   const handlePublishClick = () => {
     if (state.data) {
       const stsData = JSON.stringify(state.data.STS);
+      setIsPublishing(true);
+      setPublishSuccess(false);
       state.mqttClient.publish("devices/sts", stsData, (err) => {
+        setIsPublishing(false);
         if (err) {
           console.error("Publish STS error: ", err);
+          setPublishSuccess(false);
         } else {
           console.log("STS data manually published to MQTT");
+          setPublishSuccess(true);
         }
       });
     }
@@ -113,9 +125,14 @@ const StsPage = () => {
       )}
       <button
         onClick={handlePublishClick}
-        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition duration-200"
+        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition duration-200 flex items-center"
       >
-        Publish Data to MQTT
+        {isPublishing ? (
+          <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
+        ) : publishSuccess ? (
+          <AiOutlineCheckCircle className="h-5 w-5 mr-2" />
+        ) : null}
+        {isPublishing ? "Publishing..." : publishSuccess ? "Published!" : "Publish Data to MQTT"}
       </button>
     </div>
   );
