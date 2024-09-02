@@ -72,7 +72,7 @@ const BleButtons = ({
 
   return (
     <div>
-      <div className="mt-8 w-full max-w-md mx-2">
+      <div className="mt-8 w-full max-w-md mx-auto">
         <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
@@ -81,49 +81,55 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-md border border-gray-300"
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105"
               >
                 <div className="w-full">
                   <p className="font-semibold">
                     {device.name || "Unnamed Device"}
                   </p>
-                  <p>MAC Address: {device.macAddress}</p>
-                  <p>Rssi Number: {device.rssi}</p>
+                  <p className="text-sm text-gray-500">
+                    MAC Address: {device.macAddress}
+                  </p>
+                  <p className="text-sm text-gray-500">RSSI: {device.rssi}</p>
                 </div>
-                <div className="space-x-2 grid grid-cols-2 w-full">
+                <div className="space-x-2 grid grid-cols-2 w-full mt-4">
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
-                    className={`w-full px-4 py-2 border-cyan-800 rounded-md text-cyan-700 transition-colors duration-200 ${
+                    className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       connectingMacAddress === device.macAddress
-                        ? "bg-gray-600"
-                        : "border-cyan-800 text-cyan-900"
+                        ? "bg-gray-600 text-white cursor-not-allowed"
+                        : "bg-cyan-600 text-white hover:bg-cyan-700"
                     }`}
                     disabled={isLoading}
                   >
-                    {isLoading ? "Connecting..." : "Connect"}
+                    {connectingMacAddress === device.macAddress
+                      ? "Connecting..."
+                      : "Connect"}
                   </button>
                   <button
                     onClick={(e) =>
                       handleInitBleDataClick(e, device.macAddress)
                     }
-                    className={`w-full px-4 py-2 border-cyan-800 rounded-md text-cyan-900 transition-colors duration-200 ${
+                    className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       initializingMacAddress === device.macAddress
-                        ? "bg-gray-500"
-                        : "border-cyan-800 text-cyan-900"
+                        ? "bg-gray-500 text-white cursor-not-allowed"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
                     }`}
                     disabled={isLoading}
                   >
-                    {isLoading ? "Initializing..." : "Init BLE Data"}
+                    {initializingMacAddress === device.macAddress
+                      ? "Initializing..."
+                      : "Init BLE Data"}
                   </button>
                 </div>
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
-                    <div className="mt-2 grid grid-cols-2 sm:grid-cols-5 gap-4 w-full">
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-4 w-full">
                       <button
                         onClick={() =>
                           navigateToPage("/att", "ATT_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         ATT
                       </button>
@@ -131,7 +137,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/cmd", "CMD_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         CMD
                       </button>
@@ -139,7 +145,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/sts", "STS_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         STS
                       </button>
@@ -147,7 +153,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/dta", "DTA_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         DTA
                       </button>
@@ -155,7 +161,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/dia", "DIA_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-900 text-blue-900 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
                       >
                         DIA
                       </button>
