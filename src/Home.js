@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import BleButtons from "./components/BleButtons/BleButtons";
 import { useStore } from "./service/store";
-import NavigationBar from "./components/NavBar";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
@@ -160,7 +159,7 @@ const Home = () => {
 
   // MQTT Data intergration
   useEffect(() => {
-    const client = mqtt.client("mqtt.omnvoltaic.com", {
+    const client = mqtt.connect("mqtt://mqtt.omnvoltaic.com", {
       username: "Scanner1",
       port: 1883,
       password: "!mqttsc.2024#",
