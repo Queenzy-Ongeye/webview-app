@@ -4,7 +4,7 @@ import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
-import mqtt from "mqtt";
+import mqtt from "mqtt/dist/mqtt";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -163,6 +163,7 @@ const Home = () => {
       port: 1883,
       username: "Scanner1",
       password: "!mqttsc.2024#",
+      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
     };
     const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
 
