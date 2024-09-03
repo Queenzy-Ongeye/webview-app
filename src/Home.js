@@ -159,7 +159,7 @@ const Home = () => {
 
   // MQTT Data intergration
   useEffect(() => {
-    const client = mqtt.connect("wss://mqtt.omnivoltaic.com:1883/mqtt", {
+    const client = mqtt.connect("ws://mqtt.omnivoltaic.com:1883/mqtt", {
       username: "Scanner1",
       password: "!mqttsc.2024#",
     });

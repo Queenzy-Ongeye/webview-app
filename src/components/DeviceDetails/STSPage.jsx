@@ -14,15 +14,22 @@ const StsPage = () => {
   const [publishSuccess, setPublishSuccess] = useState(false);
 
   useEffect(() => {
+    console.log("Received data:", data); // Log the data received from location.state
+
     if (data && data.length > 0) {
       dispatch({ type: "SET_DATA", payload: data });
+    } else {
+      console.error("No data found in location.state.");
     }
   }, [data, dispatch]);
 
-  const stsDataObject  = data.find(item => item.serviceNameEnum === "STS_SERVICE_NAME")
+  const stsDataObject = data
+    ? data.find((item) => item.serviceNameEnum === "STS_SERVICE_NAME")
+    : null;
 
   useEffect(() => {
-    console.log("Received data:", data); // Log received data from location.state
+    console.log("STS Data Object:", stsDataObject); // Log the stsDataObject to verify
+
     const publishHeartbeat = () => {
       if (stsDataObject && stsDataObject.STS) {
         const stsData = JSON.stringify(stsDataObject.STS);
@@ -37,22 +44,26 @@ const StsPage = () => {
             setPublishSuccess(true);
           }
         });
+      } else {
+        console.error("No STS data available to publish.");
       }
     };
 
-    // Initial publish
-    publishHeartbeat();
+    // Initial publish if stsDataObject exists
+    if (stsDataObject) {
+      publishHeartbeat();
+    }
 
     // Set interval for publishing heartbeat every 60 seconds
     const intervalID = setInterval(publishHeartbeat, 60000);
     return () => clearInterval(intervalID);
-  }, [data, state.mqttClient]);
+  }, [stsDataObject, state.mqttClient]);
 
   const handlePublishClick = () => {
-    console.log("Button clicked!");
+    console.log("Publish button clicked!");
     if (stsDataObject && stsDataObject.STS) {
       const stsData = JSON.stringify(stsDataObject.STS);
-      console.log("sts dtata is here:", stsData);
+      console.log("Publishing STS data:", stsData); // Log the data being published
       setIsPublishing(true);
       setPublishSuccess(false);
       state.mqttClient.publish("bleData/sts", stsData, (err) => {
@@ -66,7 +77,8 @@ const StsPage = () => {
         }
       });
     } else {
-      console.error("No data available to publish.");
+      console.error("No STS data available to publish.");
+      alert("No STS data available to publish.");
     }
   };
 
