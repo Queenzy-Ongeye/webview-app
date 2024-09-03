@@ -31,7 +31,7 @@ const StsPage = () => {
   const handlePublishClick = () => {
     const client = state.mqttClient;
     const stsDataString = JSON.stringify(state.initBleData.STS);
-    retryPublish(client, "devices/sts", stsDataString);
+    retryPublish(client, "bleData/sts", stsDataString);
   };
   
 
