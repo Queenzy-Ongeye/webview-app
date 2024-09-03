@@ -6,20 +6,24 @@ const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
 
-  const { state, dispatch } = useStore();
+  const { state } = useStore();
 
-  const handleSendDTAData = () => {
-    console.log("state data is here: ", data.CMD);
-    if (data && data.CMD) {
+  // Find the CMD data within the data object
+  const cmdData = data.characterMap
+    ? Object.values(data.characterMap).find((item) => item.ServiceNameEnum === "CMD_SERVICE_NAME")
+    : null;
+
+  const handleSendCMDData = () => {
+    if (cmdData) {
       const topic = "bleData/cmd";
-      const message = JSON.stringify(data.CMD);
+      const message = JSON.stringify(cmdData);
 
-      // Publish the STS data to MQTT
+      // Publish the CMD data to MQTT
       const client = state.mqttClient;
       if (client) {
         client.publish(topic, message, { qos: 1 }, (err) => {
           if (err) {
-            console.error("Failed to publish DTA message:", err);
+            console.error("Failed to publish CMD message:", err);
           } else {
             console.log(
               `CMD data "${message}" successfully published to topic "${topic}"`
@@ -30,7 +34,7 @@ const CMDPage = () => {
         console.error("MQTT client is not connected");
       }
     } else {
-      console.error("No DTA data available to send");
+      console.error("No CMD data available to send");
     }
   };
 
@@ -104,8 +108,8 @@ const CMDPage = () => {
         <p>No data available</p>
       )}
 
-      <button onClick={handleSendDTAData} className="btn-send-dta">
-        Send DTA Data
+      <button onClick={handleSendCMDData} className="btn-send-dta">
+        Send CMD Data
       </button>
     </div>
   );
