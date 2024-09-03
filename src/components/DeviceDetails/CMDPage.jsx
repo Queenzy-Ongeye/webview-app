@@ -31,7 +31,7 @@ const CMDPage = () => {
 
     if(!client || !client.connected) {
       const options = {
-        port: 1883,
+        port: 8083,
         username: "Scanner1",
         password: "!mqttsc.2024#",
         clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
