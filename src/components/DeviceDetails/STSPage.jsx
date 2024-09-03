@@ -14,9 +14,11 @@ const StsPage = () => {
   const [publishSuccess, setPublishSuccess] = useState(false);
 
   useEffect(() => {
+    console.log("Received data:", data); // Log received data from location.state
+    console.log("State data:", state.data);
     const publishHeartbeat = () => {
-      if (state.data && state.data.STS) {
-        const stsData = JSON.stringify(state.data.STS);
+      if (data && data.STS) {
+        const stsData = JSON.stringify(data.STS);
         setIsPublishing(true);
         state.mqttClient.publish("devices/sts", stsData, (err) => {
           setIsPublishing(false);
