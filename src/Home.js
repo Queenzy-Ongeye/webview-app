@@ -160,12 +160,13 @@ const Home = () => {
   // MQTT Data intergration
   useEffect(() => {
     const options = {
-      port: 1883,
+      port: 8883, // Use the secure WebSocket port, typically 8883
       username: "Scanner1",
       password: "!mqttsc.2024#",
-      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
+      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
+      protocol: "wss"
     };
-    const client = mqtt.connect("mqtt://mqtt.omnivoltaic.com", options);
+    const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");
