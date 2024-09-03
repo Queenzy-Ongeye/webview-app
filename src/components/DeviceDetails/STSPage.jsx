@@ -9,7 +9,7 @@ import {
 const StsPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
 
