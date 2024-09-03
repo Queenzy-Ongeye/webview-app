@@ -9,114 +9,25 @@ import {
 const StsPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  const { state, dispatch } = useStore();
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [publishSuccess, setPublishSuccess] = useState(false);
-
-  useEffect(() => {
-    console.log("Received data:", data); // Log the data received from location.state
-    if (data && data.length > 0) {
-      dispatch({ type: "SET_DATA", payload: data });
-    } else {
-      console.error("No data found in location.state.");
-    }
-  }, [data, dispatch]);
-
-  // Extracting the STS data from characterMap
-  const extractStsData = () => {
-    const stsObject = data
-      ? data.find((item) => item.serviceNameEnum === "STS_SERVICE_NAME")
-      : null;
-
-    if (stsObject && stsObject.characterMap) {
-      const stsData = {};
-      for (let uuid in stsObject.characterMap) {
-        const characteristic = stsObject.characterMap[uuid];
-        // Assuming you want to publish some properties from the characteristic
-        stsData[uuid] = {
-          description: characteristic.desc,
-          value: characteristic.realVal, // or any other property you're interested in
-        };
-      }
-      return stsData;
-    }
-    console.error("STS Object or characterMap is undefined.");
-    return null;
-  };
-
-  const stsData = extractStsData();
-
-  useEffect(() => {
-    console.log("Extracted STS Data:", stsData); // Log the extracted STS data to verify
-
-    const publishHeartbeat = () => {
-      if (stsData && state.mqttClient && state.mqttClient.connected) {
-        const stsDataString = JSON.stringify(stsData);
-        setIsPublishing(true);
-        state.mqttClient.publish(
-          "bleData/sts",
-          stsDataString,
-          { qos: 1 },
-          (err) => {
-            setIsPublishing(false);
-            if (err) {
-              console.error("Publish STS error: ", err.message || err);
-              setPublishSuccess(false);
-            } else {
-              console.log("STS data published to MQTT");
-              setPublishSuccess(true);
-            }
-          }
-        );
-      } else {
-        console.error("No STS data available to publish or MQTT client is not connected.");
-        console.log("STS Data:", stsData);  // Log stsData to see what's inside
-        console.log("MQTT Client:", state.mqttClient);  // Log MQTT client state
-        console.log("MQTT Client Connected:", state.mqttClient ? state.mqttClient.connected : "Client is null");
-      }
-    };
-
-    // Initial publish if stsData exists
-    if (stsData) {
-      publishHeartbeat();
-    }
-
-    // Set interval for publishing heartbeat every 60 seconds
-    const intervalID = setInterval(publishHeartbeat, 60000);
-    return () => clearInterval(intervalID);
-  }, [stsData, state.mqttClient]);
+  const {state} = useStore();
 
   const handlePublishClick = () => {
-    console.log("Publish button clicked!");
-    if (stsData && state.mqttClient && state.mqttClient.connected) {
-      const stsDataString = JSON.stringify(stsData);
-      console.log("Publishing STS data:", stsDataString); // Log the data being published
-      setIsPublishing(true);
-      setPublishSuccess(false);
-      state.mqttClient.publish(
-        "bleData/sts",
-        stsDataString,
-        { qos: 1 },
-        (err) => {
-          setIsPublishing(false);
-          if (err) {
-            console.error("Publish STS error: ", err.message || err);
-            setPublishSuccess(false);
-          } else {
-            console.log("STS data manually published to MQTT");
-            setPublishSuccess(true);
-          }
+    const client = state.mqttClient;
+
+    if (client && client.connected) {
+      const stsDataString = JSON.stringify(state.data.STS);
+      client.publish("bleData/sts", stsDataString, { qos: 1 },  (err) => {
+        if (err) {
+          console.error("Failed to publish STS data: ", err);
+        } else{
+          console.log("STS data successfully published to MQTT");
         }
-      );
-    } else {
-      console.error(
-        "No STS data available to publish or MQTT client is not connected."
-      );
-      alert(
-        "No STS data available to publish or MQTT client is not connected."
-      );
+      })
+    }else {
+      console.error("MQTT cleint is not connected");
     }
-  };
+  }
+
 
   return (
     <div className="p-4">
@@ -189,23 +100,9 @@ const StsPage = () => {
       )}
       <button
         onClick={handlePublishClick}
-        className={`mt-4 px-4 py-2 text-white rounded transition duration-200 flex items-center ${
-          isPublishing
-            ? "bg-gray-500 cursor-not-allowed"
-            : "bg-green-500 hover:bg-green-600"
-        }`}
-        disabled={isPublishing}
+        className={`mt-4 px-4 py-2 text-cyan-800 border border-cyan-800 rounded transition duration-200 flex items-center`}
       >
-        {isPublishing ? (
-          <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
-        ) : publishSuccess ? (
-          <AiOutlineCheckCircle className="h-5 w-5 mr-2" />
-        ) : null}
-        {isPublishing
-          ? "Publishing..."
-          : publishSuccess
-          ? "Published!"
-          : "Publish Data to MQTT"}
+        Publish Data
       </button>
     </div>
   );
