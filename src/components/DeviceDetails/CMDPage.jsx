@@ -9,9 +9,10 @@ const CMDPage = () => {
   const { state, dispatch } = useStore();
 
   const handleSendDTAData = () => {
-    if (state.initBleData && state.initBleData.DTA) {
+    console.log("state data is here: ", state.data);
+    if (state.data && state.data.CMD) {
       const topic = "bleData/cmd";
-      const message = JSON.stringify(state.initBleData.DTA);
+      const message = JSON.stringify(state.data.CMD);
 
       // Publish the STS data to MQTT
       const client = state.mqttClient;
