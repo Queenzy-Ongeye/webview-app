@@ -35,7 +35,7 @@ const CMDPage = () => {
       if (client) {
         client.publish(topic, message, { qos: 1 }, (err) => {
           if (err) {
-            console.error("Failed to publish CMD message:", err);
+            console.error("Failed to publish CMD message:", err.message);
           } else {
             console.log(
               `CMD data "${message}" successfully published to topic "${topic}"`
