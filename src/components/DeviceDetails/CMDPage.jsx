@@ -9,9 +9,14 @@ const CMDPage = () => {
   const { state } = useStore();
 
   // Find the CMD data within the data object
-  const cmdData = data.characterMap
-    ? Object.values(data.characterMap).find((item) => item.serviceNameEnum === "CMD_SERVICE_NAME")
-    : null;
+  let cmdData = null;
+  if (data.characterMap) {
+    Object.values(data.characterMap).forEach((item) => {
+      if (item.serviceNameEnum === "CMD_SERVICE_NAME") {
+        cmdData = item;
+      }
+    });
+  }
 
   console.log("CMD Data found:", cmdData);
 
