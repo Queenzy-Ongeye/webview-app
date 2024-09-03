@@ -53,8 +53,8 @@ const CMDPage = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">CMD Page</h2>
-      {data  && data.length > 0 ? (
-        data.dataList.map((item, index) => (
+      {data && data.length > 0 ? (
+        data.map((item, index) => (
           <div key={index} className="mb-4 p-4 border rounded shadow">
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4">
