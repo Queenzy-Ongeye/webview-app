@@ -12,8 +12,8 @@ const CMDPage = () => {
 
   // Find the correct object in dataList
   let cmdData = null;
-  if (data.dataList) {
-    const cmdServiceObject = data.dataList.find(
+  if (data) {
+    const cmdServiceObject = data.find(
       (item) => item.serviceNameEnum === "CMD_SERVICE_NAME"
     );
     if (cmdServiceObject) {
@@ -53,7 +53,7 @@ const CMDPage = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">CMD Page</h2>
-      {data && data.dataList && data.dataList.length > 0 ? (
+      {data  && data.length > 0 ? (
         data.dataList.map((item, index) => (
           <div key={index} className="mb-4 p-4 border rounded shadow">
             {Object.keys(item.characterMap).map((uuid) => (
