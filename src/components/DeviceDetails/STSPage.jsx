@@ -69,9 +69,10 @@ const StsPage = () => {
           }
         );
       } else {
-        console.error(
-          "No STS data available to publish or MQTT client is not connected."
-        );
+        console.error("No STS data available to publish or MQTT client is not connected.");
+        console.log("STS Data:", stsData);  // Log stsData to see what's inside
+        console.log("MQTT Client:", state.mqttClient);  // Log MQTT client state
+        console.log("MQTT Client Connected:", state.mqttClient ? state.mqttClient.connected : "Client is null");
       }
     };
 
