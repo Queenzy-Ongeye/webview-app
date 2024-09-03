@@ -8,17 +8,22 @@ const CMDPage = () => {
 
   const { state } = useStore();
 
-  // Find the CMD data within the data object
+  console.log("Full Data object:", data);
+
+  // Find the correct object in dataList
   let cmdData = null;
-  if (data.characterMap) {
-    Object.values(data.characterMap).forEach((item) => {
-      if (item.serviceNameEnum === "CMD_SERVICE_NAME") {
-        cmdData = item;
-      }
-    });
+  if (data.dataList) {
+    const cmdServiceObject = data.dataList.find(
+      (item) => item.serviceNameEnum === "CMD_SERVICE_NAME"
+    );
+    if (cmdServiceObject) {
+      // Now, find the specific data within the characterMap
+      cmdData = cmdServiceObject.characterMap;
+      console.log("CMD Data found:", cmdData);
+    }
   }
 
-  console.log("CMD Data found:", cmdData);
+
 
   const handleSendCMDData = () => {
     if (cmdData) {
@@ -48,8 +53,8 @@ const CMDPage = () => {
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">CMD Page</h2>
-      {data && data.length > 0 ? (
-        data.map((item, index) => (
+      {data && data.dataList && data.dataList.length > 0 ? (
+        data.dataList.map((item, index) => (
           <div key={index} className="mb-4 p-4 border rounded shadow">
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4">
