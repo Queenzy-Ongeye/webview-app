@@ -165,7 +165,7 @@ const Home = () => {
       password: "!mqttsc.2024#",
       clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
     };
-    const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+    const client = mqtt.connect("mqtt://mqtt.omnivoltaic.com", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");
