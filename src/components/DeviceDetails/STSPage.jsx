@@ -19,13 +19,13 @@ const StsPage = () => {
     }
   }, [data, dispatch]);
 
+  const stsDataObject  = data.find(item => item.serviceNameEnum === "STS_SERVICE_NAME")
+
   useEffect(() => {
     console.log("Received data:", data); // Log received data from location.state
-    console.log("State data:", state.data);
     const publishHeartbeat = () => {
-      const dataToPublish = state.data || data;
-      if (dataToPublish && dataToPublish.STS) {
-        const stsData = JSON.stringify(dataToPublish.STS);
+      if (stsDataObject && stsDataObject.STS) {
+        const stsData = JSON.stringify(stsDataObject.STS);
         setIsPublishing(true);
         state.mqttClient.publish("bleData/sts", stsData, (err) => {
           setIsPublishing(false);
@@ -50,10 +50,9 @@ const StsPage = () => {
 
   const handlePublishClick = () => {
     console.log("Button clicked!");
-    const dataToPublish = state.data || data;
-    if (dataToPublish && dataToPublish.STS) {
-      const stsData = JSON.stringify(dataToPublish.STS);
-      console.log("Publishing data:", stsData);
+    if (stsDataObject && stsDataObject.STS) {
+      const stsData = JSON.stringify(stsDataObject.STS);
+      console.log("sts dtata is here:", stsData);
       setIsPublishing(true);
       setPublishSuccess(false);
       state.mqttClient.publish("bleData/sts", stsData, (err) => {
