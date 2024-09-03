@@ -13,6 +13,7 @@ const StsPage = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
 
+
   useEffect(() => {
     console.log("Received data:", data); // Log the data received from location.state
 
@@ -23,14 +24,15 @@ const StsPage = () => {
     }
   }, [data, dispatch]);
 
+  // Extracting the STS data from characterMap
   const extractStsData = () => {
-    const stsObject = data.find(
+    const stsObject = data ? data.find(
       (item) => item.serviceNameEnum === "STS_SERVICE_NAME"
-    );
+    ) : null;
 
-    if (stsObject) {
+    if (stsObject && stsObject.characterMap) {
       const stsData = {};
-      for (let uuid in stsData.Object.characterMap) {
+      for (let uuid in stsObject.characterMap) {
         const characteristic = stsObject.characterMap[uuid];
         // Assuming you want to publish some properties from the characteristic
         stsData[uuid] = {
@@ -40,12 +42,14 @@ const StsPage = () => {
       }
       return stsData;
     }
+    console.error("STS Object or characterMap is undefined.");
     return null;
   };
 
   const stsData = extractStsData();
+
   useEffect(() => {
-    console.log("STS Data Object:", stsData); // Log the stsDataObject to verify
+    console.log("Extracted STS Data:", stsData); // Log the extracted STS data to verify
 
     const publishHeartbeat = () => {
       if (stsData) {
@@ -66,7 +70,7 @@ const StsPage = () => {
       }
     };
 
-    // Initial publish if stsDataObject exists
+    // Initial publish if stsData exists
     if (stsData) {
       publishHeartbeat();
     }
