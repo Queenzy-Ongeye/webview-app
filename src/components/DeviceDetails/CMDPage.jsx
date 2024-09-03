@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { useStore } from "../../service/store";
+import mqtt from "mqtt"
 
 const CMDPage = () => {
   const location = useLocation();
@@ -24,27 +25,48 @@ const CMDPage = () => {
   }
 
 
+  const handleSendCMDData = () =>{
+    let client = state.mqttClient;
+    console.log("MQTT Client Connected:", client ? client.connected : "No client");
 
-  const handleSendCMDData = () => {
+    if(!client || !client.connected) {
+      const options = {
+        port: 1883,
+        username: "Scanner1",
+        password: "!mqttsc.2024#",
+        clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
+      }
+      client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+      client.on("connect", () =>{
+        console.log("Reconnected to MQTT broker");
+        dispatchEvent({type: "SET_MQTT_CLIENT", payload: client});
+        publishCMD(client);
+      });
+
+      client.on("error", (err) => {
+        console.error("MQTT connection error:", err.message || err);
+      });
+
+      client.on("disconnect", () => {
+        console.log("Disconnected from MQTT broker");
+      });
+    }
+  }
+
+  const publishCMD = (client) => {
     if (cmdData) {
       const topic = "bleData/cmd";
       const message = JSON.stringify(cmdData);
-
       // Publish the CMD data to MQTT
-      const client = state.mqttClient;
-      if (client) {
-        client.publish(topic, message, { qos: 1 }, (err) => {
-          if (err) {
-            console.error("Failed to publish CMD message:", err.message);
-          } else {
-            console.log(
-              `CMD data "${message}" successfully published to topic "${topic}"`
-            );
-          }
-        });
-      } else {
-        console.error("MQTT client is not connected");
-      }
+      client.publish(topic, message, { qos: 1 }, (err) => {
+        if (err) {
+          console.error("Failed to publish CMD message:", err.message);
+        } else {
+          console.log(
+            `CMD data "${message}" successfully published to topic "${topic}"`
+          );
+        }
+      });
     } else {
       console.error("No CMD data available to send");
     }
