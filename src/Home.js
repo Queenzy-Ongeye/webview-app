@@ -171,7 +171,7 @@ const Home = () => {
     });
 
     client.on("error", (err) => {
-      console.error("MQTT connection error:", err);
+      console.error("MQTT connection error:", err.message || err);
     });
 
     client.on("disconnect", () => {

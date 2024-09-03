@@ -11,22 +11,29 @@ const StsPage = () => {
   const { data } = location.state || {};
   const {state} = useStore();
 
+  const retryPublish = (client, topic, message, retries = 5) => {
+    if (client && client.connected) {
+      client.publish(topic, message, { qos: 1 }, (err) => {
+        if (err) {
+          console.error("Failed to publish message:", err);
+        } else {
+          console.log(`Message "${message}" successfully published to topic "${topic}"`);
+        }
+      });
+    } else if (retries > 0) {
+      console.log(`Retrying to publish, attempts left: ${retries}`);
+      setTimeout(() => retryPublish(client, topic, message, retries - 1), 1000);
+    } else {
+      console.error("MQTT client is not connected after multiple attempts.");
+    }
+  };
+  
   const handlePublishClick = () => {
     const client = state.mqttClient;
-
-    if (client && client.connected) {
-      const stsDataString = JSON.stringify(state.data.STS);
-      client.publish("bleData/sts", stsDataString, { qos: 1 },  (err) => {
-        if (err) {
-          console.error("Failed to publish STS data: ", err);
-        } else{
-          console.log("STS data successfully published to MQTT");
-        }
-      })
-    }else {
-      console.error("MQTT cleint is not connected");
-    }
-  }
+    const stsDataString = JSON.stringify(state.initBleData.STS);
+    retryPublish(client, "devices/sts", stsDataString);
+  };
+  
 
 
   return (
