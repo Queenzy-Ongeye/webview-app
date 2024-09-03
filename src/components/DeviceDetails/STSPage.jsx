@@ -67,7 +67,7 @@ const StsPage = () => {
     };
 
     // Initial publish if stsDataObject exists
-    if (stsDataObject) {
+    if (stsData) {
       publishHeartbeat();
     }
 
