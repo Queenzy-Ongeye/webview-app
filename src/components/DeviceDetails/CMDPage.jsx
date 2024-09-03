@@ -8,10 +8,15 @@ const CMDPage = () => {
 
   const { state } = useStore();
 
+  console.log("Data object:", data);
+  console.log("CharacterMap:", data.characterMap);
   // Find the CMD data within the data object
   const cmdData = data.characterMap
-    ? Object.values(data.characterMap).find((item) => item.ServiceNameEnum === "CMD_SERVICE_NAME")
+    ? Object.values(data.characterMap).find(
+        (item) => item.ServiceNameEnum === "CMD_SERVICE_NAME"
+      )
     : null;
+  console.log("CMD Data found:", cmdData);
 
   const handleSendCMDData = () => {
     if (cmdData) {
