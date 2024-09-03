@@ -14,20 +14,44 @@ const StsPage = () => {
   const [publishSuccess, setPublishSuccess] = useState(false);
 
   useEffect(() => {
+    console.log("Received data:", data); // Log the data received from location.state
+
     if (data && data.length > 0) {
       dispatch({ type: "SET_DATA", payload: data });
+    } else {
+      console.error("No data found in location.state.");
     }
   }, [data, dispatch]);
 
-  const stsDataObject  = data.find(item => item.serviceNameEnum === "STS_SERVICE_NAME")
+  const extractStsData = () => {
+    const stsObject = data.find(
+      (item) => item.serviceNameEnum === "STS_SERVICE_NAME"
+    );
 
+    if (stsObject) {
+      const stsData = {};
+      for (let uuid in stsData.Object.characterMap) {
+        const characteristic = stsObject.characterMap[uuid];
+        // Assuming you want to publish some properties from the characteristic
+        stsData[uuid] = {
+          description: characteristic.desc,
+          value: characteristic.realVal, // or any other property you're interested in
+        };
+      }
+      return stsData;
+    }
+    return null;
+  };
+
+  const stsData = extractStsData();
   useEffect(() => {
-    console.log("Received data:", data); // Log received data from location.state
+    console.log("STS Data Object:", stsData); // Log the stsDataObject to verify
+
     const publishHeartbeat = () => {
-      if (stsDataObject && stsDataObject.STS) {
-        const stsData = JSON.stringify(stsDataObject.STS);
+      if (stsData) {
+        const stsDataString = JSON.stringify(stsData);
         setIsPublishing(true);
-        state.mqttClient.publish("bleData/sts", stsData, (err) => {
+        state.mqttClient.publish("bleData/sts", stsDataString, (err) => {
           setIsPublishing(false);
           if (err) {
             console.error("Publish STS error: ", err);
@@ -37,25 +61,29 @@ const StsPage = () => {
             setPublishSuccess(true);
           }
         });
+      } else {
+        console.error("No STS data available to publish.");
       }
     };
 
-    // Initial publish
-    publishHeartbeat();
+    // Initial publish if stsDataObject exists
+    if (stsData) {
+      publishHeartbeat();
+    }
 
     // Set interval for publishing heartbeat every 60 seconds
     const intervalID = setInterval(publishHeartbeat, 60000);
     return () => clearInterval(intervalID);
-  }, [data, state.mqttClient]);
+  }, [stsData, state.mqttClient]);
 
   const handlePublishClick = () => {
-    console.log("Button clicked!");
-    if (stsDataObject && stsDataObject.STS) {
-      const stsData = JSON.stringify(stsDataObject.STS);
-      console.log("sts dtata is here:", stsData);
+    console.log("Publish button clicked!");
+    if (stsData) {
+      const stsDataString = JSON.stringify(stsData);
+      console.log("Publishing STS data:", stsDataString); // Log the data being published
       setIsPublishing(true);
       setPublishSuccess(false);
-      state.mqttClient.publish("bleData/sts", stsData, (err) => {
+      state.mqttClient.publish("bleData/sts", stsDataString, (err) => {
         setIsPublishing(false);
         if (err) {
           console.error("Publish STS error: ", err);
@@ -66,7 +94,8 @@ const StsPage = () => {
         }
       });
     } else {
-      console.error("No data available to publish.");
+      console.error("No STS data available to publish.");
+      alert("No STS data available to publish.");
     }
   };
 
@@ -141,7 +170,12 @@ const StsPage = () => {
       )}
       <button
         onClick={handlePublishClick}
-        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition duration-200 flex items-center"
+        className={`mt-4 px-4 py-2 text-white rounded transition duration-200 flex items-center ${
+          isPublishing
+            ? "bg-gray-500 cursor-not-allowed"
+            : "bg-green-500 hover:bg-green-600"
+        }`}
+        disabled={isPublishing}
       >
         {isPublishing ? (
           <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
