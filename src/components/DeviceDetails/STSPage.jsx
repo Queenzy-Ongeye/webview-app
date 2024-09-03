@@ -9,18 +9,25 @@ import {
 const StsPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      dispatch({ type: "SET_DATA", payload: data });
+    }
+  }, [data, dispatch]);
 
   useEffect(() => {
     console.log("Received data:", data); // Log received data from location.state
     console.log("State data:", state.data);
     const publishHeartbeat = () => {
-      if (data && data.STS) {
-        const stsData = JSON.stringify(data.STS);
+      const dataToPublish = state.data || data;
+      if (dataToPublish && dataToPublish.STS) {
+        const stsData = JSON.stringify(dataToPublish.STS);
         setIsPublishing(true);
-        state.mqttClient.publish("devices/sts", stsData, (err) => {
+        state.mqttClient.publish("bleData/sts", stsData, (err) => {
           setIsPublishing(false);
           if (err) {
             console.error("Publish STS error: ", err);
@@ -43,12 +50,13 @@ const StsPage = () => {
 
   const handlePublishClick = () => {
     console.log("Button clicked!");
-    if (data && data.STS) {
-      const stsData = JSON.stringify(data.STS);
+    const dataToPublish = state.data || data;
+    if (dataToPublish && dataToPublish.STS) {
+      const stsData = JSON.stringify(dataToPublish.STS);
       console.log("Publishing data:", stsData);
       setIsPublishing(true);
       setPublishSuccess(false);
-      state.mqttClient.publish("devices/sts", stsData, (err) => {
+      state.mqttClient.publish("bleData/sts", stsData, (err) => {
         setIsPublishing(false);
         if (err) {
           console.error("Publish STS error: ", err);
