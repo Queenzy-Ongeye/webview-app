@@ -390,13 +390,27 @@ const Home = () => {
 
   useEffect(() => {
     if (state.initBleData) {
-      publishMqttData("devices/att", JSON.stringify(state.initBleData.ATT));
-      publishMqttData("devices/sts", JSON.stringify(state.initBleData.STS));
-      publishMqttData("devices/cmd", JSON.stringify(state.initBleData.CMD));
-      publishMqttData("devices/dia", JSON.stringify(state.initBleData.DIA));
-      publishMqttData("devices/dta", JSON.stringify(state.initBleData.DTA));
+      console.log("Publishing MQTT data:", state.initBleData); // Add this line to log the data
+      if (state.initBleData.ATT) {
+        publishMqttData("devices/att", JSON.stringify(state.initBleData.ATT));
+      }
+      if (state.initBleData.STS) {
+        publishMqttData("devices/sts", JSON.stringify(state.initBleData.STS));
+      }
+      if (state.initBleData.CMD) {
+        publishMqttData("devices/cmd", JSON.stringify(state.initBleData.CMD));
+      }
+      if (state.initBleData.DIA) {
+        publishMqttData("devices/dia", JSON.stringify(state.initBleData.DIA));
+      }
+      if (state.initBleData.DTA) {
+        publishMqttData("devices/dta", JSON.stringify(state.initBleData.DTA));
+      }
+    } else {
+      console.error("No BLE data available to publish to MQTT."); // Log this if there's no data
     }
   }, [state.initBleData]);
+  
 
   console.log("State in Home component:", state);
 
