@@ -37,12 +37,12 @@ const StsPage = () => {
     // Set interval for publishing heartbeat every 60 seconds
     const intervalID = setInterval(publishHeartbeat, 60000);
     return () => clearInterval(intervalID);
-  }, [state.data, state.mqttClient]);
+  }, [data, state.mqttClient]);
 
   const handlePublishClick = () => {
     console.log("Button clicked!");
-    if (state.data) {
-      const stsData = JSON.stringify(state.data.STS);
+    if (data && data.STS) {
+      const stsData = JSON.stringify(data.STS);
       console.log("Publishing data:", stsData);
       setIsPublishing(true);
       setPublishSuccess(false);
