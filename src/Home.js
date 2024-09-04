@@ -39,6 +39,74 @@ const Home = () => {
         }, 3000);
       }
     };
+
+    // MQTT Data intergration
+  useEffect(() => {
+    const options = {
+      port: 1883, // Use the secure WebSocket port, typically 8883
+      username: "Scanner1",
+      password: "!mqttsc.2024#",
+      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
+    };
+    const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+
+    client.on("connect", () => {
+      console.log("Connected to MQTT broker");
+    });
+
+    client.on("error", (err) => {
+      console.error("MQTT connection error:", err.message || err);
+    });
+
+    client.on("disconnect", () => {
+      console.log("Disconneted to mqtt");
+    });
+
+    dispatch({ type: "SET_MQTT_CLIENT", payload: client });
+
+    return () => {
+      if (client) client.end();
+    };
+  }, [dispatch]);
+
+  // Publishing mqtt data
+  const publishMqttData = (topic, message) => {
+    const client = state.mqttClient;
+    if (client) {
+      client.publish(topic, message, { qos: 1 }, (err) => {
+        if (err) {
+          console.error("Failed to publish message:", err);
+        } else {
+          console.log(
+            `Message "${message}" successfully published to topic "${topic}"`
+          );
+        }
+      });
+    }
+  };
+
+ useEffect(() => {
+    if (state.initBleData) {
+      console.log("Publishing MQTT data:", state.initBleData); // Add this line to log the data
+      if (state.initBleData.ATT) {
+        publishMqttData("bleData/att", JSON.stringify(state.initBleData.ATT));
+      }
+      if (state.initBleData.STS) {
+        publishMqttData("bleData/sts", JSON.stringify(state.initBleData.STS));
+      }
+      if (state.initBleData.CMD) {
+        publishMqttData("bleData/cmd", JSON.stringify(state.initBleData.CMD));
+      }
+      if (state.initBleData.DIA) {
+        publishMqttData("bleData/dia", JSON.stringify(state.initBleData.DIA));
+      }
+      if (state.initBleData.DTA) {
+        publishMqttData("bleData/dta", JSON.stringify(state.initBleData.DTA));
+      }
+    } else {
+      console.error("No BLE data available to publish to MQTT."); // Log this if there's no data
+    }
+  }, [state.initBleData]);
     // Setting up Javascript Bridge
     const setupBridge = (bridge) => {
       if (!state.bridgeInitialized) {
