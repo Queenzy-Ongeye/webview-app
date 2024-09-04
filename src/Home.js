@@ -160,10 +160,10 @@ const Home = () => {
       // MQTT Data intergration
   useEffect(() => {
     const options = {
-      username: "BleScan",
-      password: "blescan@2024",
+      username: "Scanner1",
+      password: "!mqttsc.2024#"
     };
-    const client = mqtt.connect("wss://emqx.omnivoltaic.com:8084/mqtt", options);
+    const client = mqtt.connect("wss://mqtt.omnivoltaic.com:1883/mqtt", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");
@@ -187,7 +187,7 @@ const Home = () => {
   const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
     if (client) {
-      client.publish(topic, message, { qos: 1 }, (err) => {
+      client.publish(topic, message, { qos }, (err) => {
         if (err) {
           console.error("Failed to publish message:", err);
         } else {
@@ -203,19 +203,19 @@ const Home = () => {
   console.log("BLE Dta is here: ", state.initBleData);
     if (state.initBleData) {
       console.log("Publishing MQTT data:", state.initBleData); // Add this line to log the data
-      if (state.initBleData.ATT) {
+      if (state.initBleData.ATT_SERVICE_NAME) {
         publishMqttData("emit/bleData/att", JSON.stringify(state.initBleData.ATT_SERVICE_NAME));
       }
-      if (state.initBleData.STS) {
+      if (state.initBleData.STS_SERVICE_NAME) {
         publishMqttData("emit/bleData/sts", JSON.stringify(state.initBleData.STS_SERVICE_NAME));
       }
-      if (state.initBleData.CMD) {
+      if (state.initBleData.CMD_SERVICE_NAME) {
         publishMqttData("bleData/cmd", JSON.stringify(state.initBleData.CMD_SERVICE_NAME));
       }
-      if (state.initBleData.DIA) {
+      if (state.initBleData.DIA_SERVICE_NAME) {
         publishMqttData("emit/bleData/dia", JSON.stringify(state.initBleData.DIA_SERVICE_NAME));
       }
-      if (state.initBleData.DTA) {
+      if (state.initBleData.DTA_SERVICE_NAME) {
         publishMqttData("emit/bleData/dta", JSON.stringify(state.initBleData.DTA_SERVICE_NAME));
       }
     } else {
