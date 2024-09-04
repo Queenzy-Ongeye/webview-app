@@ -30,6 +30,7 @@ const CMDPage = () => {
 
     if (!client || !client.connected) {
       const options = {
+        port: 1883,
         username: "Scanner1",
         password: "!mqttsc.2024#",
       };
