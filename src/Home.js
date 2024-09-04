@@ -162,7 +162,7 @@ const Home = () => {
     const options = {
       username: "Scanner1",
       password: "!mqttsc.2024#",
-      rejectUnauthorized: true,
+      rejectUnauthorized: false,
     };
 
     const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8883", options);
