@@ -200,6 +200,7 @@ const Home = () => {
 
     // Extract array from the correct property of dataList (adjust according to the structure)
     const dataListArray = dataList.items || [];  // Adjust based on structure
+    console.log("Datalist is here: ", dataListArray);
   
     // Now check if we have a valid array
     if (Array.isArray(dataListArray)) {
