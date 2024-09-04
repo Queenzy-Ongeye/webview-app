@@ -45,7 +45,7 @@ const CMDPage = () => {
       return;
     }
 
-    client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+    client = mqtt.connect("ws://mqtt.omnivoltaic.com", options);
 
     client.on("connect", () => {
       console.log("Reconnected to MQTT broker");
