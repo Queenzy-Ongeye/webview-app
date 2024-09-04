@@ -196,27 +196,13 @@ const Home = () => {
   }, [dispatch]);
 
   const publishAllServices = (dataList) => {
-    // Log the full structure of dataList
-    console.log("DataList (full structure):", JSON.stringify(dataList, null, 2));
-    
-    // Check the type and whether it's an array
-    console.log("Type of dataList:", typeof dataList);
-    console.log("Is dataList an array?", Array.isArray(dataList));
+    console.log("DataList object structure:", JSON.stringify(dataList, null, 2)); // Log structure
+
+    // Extract array from the correct property of dataList (adjust according to the structure)
+    const dataListArray = dataList.items || [];  // Adjust based on structure
   
-    let dataListArray = dataList;
-  
-    // If dataList is not an array, try to convert it
-    if (!Array.isArray(dataList)) {
-      try {
-        dataListArray = Array.from(dataList); // Convert array-like object to an array
-        console.log("Converted dataList to array using Array.from:", dataListArray);
-      } catch (error) {
-        console.error("Failed to convert dataList to array:", error);
-      }
-    }
-  
-    // Ensure we are working with an array now
-    if (Array.isArray(dataListArray) && dataListArray.length > 0) {
+    // Now check if we have a valid array
+    if (Array.isArray(dataListArray)) {
       dataListArray.forEach((item) => {
         const serviceNameEnum = item.serviceNameEnum;
         const serviceProperty = item.serviceProperty;
@@ -236,6 +222,7 @@ const Home = () => {
       console.warn("No data to publish or dataListArray is not an array.");
     }
   };
+  
 
   const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
