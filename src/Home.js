@@ -196,33 +196,34 @@ const Home = () => {
   }, [dispatch]);
 
   const publishAllServices = (dataList) => {
-    console.log(
-      "DataList object structure:",
-      JSON.stringify(dataList, null, 2)
-    ); // Log structure
-
+    console.log("DataList object structure:", JSON.stringify(dataList, null, 2)); // Log structure
+  
     if (typeof dataList === "object" && dataList !== null) {
       // Convert the object to an array if needed
       const dataListArray = Object.values(dataList); // Converts object values to an array
-
+  
       if (dataListArray.length > 0) {
-        const filteredData = dataList.filter(
-          (item) => item.serviceNameEnum === serviceNameEnum
-        );
-        const topic = `emit/bleData/${filteredData.toLowerCase()}`;
-        console.log("Publishing to topic:", topic);
-
-        const msgData = dataList.filter(
-          (item) =>
-            item.serviceProperty === serviceProperty && item.uuid === uuid
-        );
-        const message = JSON.stringify({ filteredData, msgData });
-        publishMqttData(topic, message);
+        // Filter out items that have a serviceNameEnum
+        const filteredData = dataListArray.filter((item) => !item.serviceNameEnum);
+  
+        if (filteredData.length > 0) {
+          const topic = `emit/bleData/general`; // Use a generic topic since serviceNameEnum is not available
+          console.log("Publishing to topic:", topic);
+  
+          // Prepare the message
+          const message = JSON.stringify({ filteredData });
+          publishMqttData(topic, message);
+        } else {
+          console.warn("No items found without serviceNameEnum.");
+        }
       } else {
-        console.warn("DataList is either null or not a valid object.");
+        console.warn("DataList array is empty.");
       }
+    } else {
+      console.warn("DataList is either null or not a valid object.");
     }
   };
+  
 
   const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
