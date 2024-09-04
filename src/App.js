@@ -1,8 +1,9 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { StoreProvider } from "./service/store";
+import { StoreProvider, useStore } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import mqtt from "mqtt";
 
 const Home = lazy(() => import("./Home"));
 const AttPage = lazy(() => import("./components/DeviceDetails/ATTPage"));
@@ -12,9 +13,44 @@ const DTAPage = lazy(() => import("./components/DeviceDetails/DTAPage"));
 const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanData"));
 
+const MQTTInitializer = () => {
+  const { dispatch } = useStore();
+  useEffect(() => {
+    const options = {
+      username: "Scanner2",
+      password: "!mqttsc.2024#",
+      clientId: "emqx_MDY1Mz",
+    };
+
+    const client = mqtt.connect(
+      "wss://emqx.omnivoltaic.com.8084/mqtt",
+      options
+    );
+
+    client.on("connect", () => {
+      console.log("Connected to MQTT Broker");
+      dispatch({ type: "SET_MQTT_CLIENT", payload: client });
+    });
+
+    client.on("error", (err) => {
+      console.error("MQTT Connection error: ", err.message);
+    });
+
+    client.on("disconnect", () => {
+      console.log("Disconnected from MQTT broker");
+    });
+
+    return () => {
+      if (client) client.end();
+    };
+  }, [dispatch]);
+
+  return null;
+};
 const App = () => {
   return (
     <StoreProvider>
+      <MQTTInitializer/>
       <Router>
         <div className="min-h-screen flex">
           <NavigationBar />
@@ -37,7 +73,7 @@ const App = () => {
               </Routes>
             </Suspense>
           </div>
-        </div>{" "}
+        </div>
       </Router>
     </StoreProvider>
   );

@@ -4,7 +4,6 @@ import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
-import mqtt from "mqtt";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -157,7 +156,6 @@ const Home = () => {
     connectWebViewJavascriptBridge(setupBridge);
   }, [state.bridgeInitialized, dispatch]);
 
-
   const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
@@ -284,7 +282,7 @@ const Home = () => {
         (responseData) => {
           console.log("Response from startQrCodeScan", responseData);
           dispatch({ type: "SET_QR_DATA", payload: responseData });
-          navigate("/scan-data", { state: { scannedData: responseData } });
+          navigate("/scan-data", {state: {scannedData: responseData}})
         }
       );
       dispatch({ type: "SET_QR_SCANNING", payload: true });
@@ -347,7 +345,9 @@ const Home = () => {
       });
   };
 
-  
+  const handleSettings = () => {
+    alert("Settings selected");
+  };
 
   console.log("State in Home component:", state);
 
