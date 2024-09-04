@@ -206,21 +206,37 @@ const Home = () => {
       const dataListArray = Object.values(dataList); // Converts object values to an array
 
       if (dataListArray.length > 0) {
-        dataListArray.forEach((item) => {
-          const serviceNameEnum = item.serviceNameEnum;
-          const serviceProperty = item.serviceProperty;
-          const uuid = item.uuid;
+        const filteredData = initBleDataResponse?.dataList.filter(
+          (item) => item.serviceNameEnum === serviceNameEnum
+        );
 
-          const message = JSON.stringify({
-            serviceProperty: serviceProperty,
-            uuid: uuid,
+        if (filteredData.length > 0) {
+          filteredData.forEach((item) => {
+            const serviceNameEnum = item.serviceNameEnum;
+            const serviceProperty = item.serviceProperty;
+            const uuid = item.uuid;
+
+            const message = JSON.stringify({
+              serviceProperty: serviceProperty,
+              uuid: uuid,
+            });
+
+            // Ensure serviceNameEnum exists before using it
+            if (serviceNameEnum) {
+              const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
+              console.log("Publishing to topic:", topic);
+
+              publishMqttData(topic, message);
+            } else {
+              console.warn("serviceNameEnum is missing for item:", item);
+            }
           });
-
-          const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
-          console.log("Publishing to topic:", topic);
-
-          publishMqttData(topic, message);
-        });
+        } else {
+          console.warn(
+            "No matching filtered data found for serviceNameEnum:",
+            serviceNameEnum
+          );
+        }
       } else {
         console.warn("No data available to publish.");
       }
