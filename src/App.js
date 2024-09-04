@@ -18,9 +18,9 @@ const MQTTInitializer = () => {
   useEffect(() => {
     const options = {
       port: 1883,
-      username: "Scanner2",
+      username: "Scanner1",
       password: "!mqttsc.2024#",
-      clientId: "emqx_MDY1Mz",
+      clientId: "mqtt-explorer-451dc7fb",
     };
 
     const client = mqtt.connect(
@@ -30,6 +30,7 @@ const MQTTInitializer = () => {
 
     client.on("connect", () => {
       console.log("Connected to MQTT Broker");
+      console.log("Dispatching MQTT client to global state");
       dispatch({ type: "SET_MQTT_CLIENT", payload: client });
     });
 
