@@ -30,12 +30,10 @@ const CMDPage = () => {
 
     if (!client || !client.connected) {
       const options = {
-        port: 1883,
         username: "Scanner1",
         password: "!mqttsc.2024#",
-        clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
       };
-      client = mqtt.connect("wss://mqtt.omnivoltaic.com/mqtt", options);
+      client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
 
       client.on("connect", () => {
         console.log("Reconnected to MQTT broker");
@@ -57,7 +55,7 @@ const CMDPage = () => {
 
   const publishCMD = (client) => {
     if (cmdData) {
-      const topic = `emit/bleData/cmd/`;
+      const topic = 'emit/bleData/cmd/';
       const message = JSON.stringify(cmdData);
       // Publish the CMD data to MQTT
       client.publish(topic, message, { qos: 1 }, (err) => {
