@@ -1,13 +1,13 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useMQTT } from "../../service/MQTTContext"; // Assuming you have an MQTTContext
+import { useStore } from "../../service/store";
+import mqtt from "mqtt"
 
 const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  
-  // Use MQTTContext to get the client
-  const { mqttClient } = useMQTT();
+
+  const { state, dispatch } = useStore();
 
   console.log("Full Data object:", data);
 
@@ -24,44 +24,40 @@ const CMDPage = () => {
     }
   }
 
-
-  useEffect(() => {
-    console.log("MQTT Client from Context:", mqttClient);
-    if (!mqttClient) {
+  const handleSendCMDData = () => {
+    let client = state.mqttClient;
+    if (!client) {
       console.error("MQTT client is not initialized");
       return;
     }
-
-    console.log("MQTT Client Connected:", mqttClient.connected);
-
-    if (mqttClient.connected) {
-      publishCMD(mqttClient);
+  
+    console.log("MQTT Client Connected:", client.connected);
+  
+    if (client.connected) {
+      publishCMD(client);
     } else {
       console.error("MQTT client is not connected");
     }
+  };
 
-    // Function to publish CMD data
-    const publishCMD = (client) => {
-      if (cmdData) {
-        const topic = "emit/bleData/cmd/";
-        const message = JSON.stringify(cmdData);
-        // Publish the CMD data to MQTT
-        client.publish(topic, message, { qos: 1 }, (err) => {
-          if (err) {
-            console.error("Failed to publish CMD message:", err.message);
-          } else {
-            console.log(
-              `CMD data "${message}" successfully published to topic "${topic}"`
-            );
-          }
-        });
-      } else {
-        console.error("No CMD data available to send");
-      }
-    };
-
-    console.log("MQTT CLIENT: ", mqttClient);
-  }, [mqttClient, cmdData]); // useEffect will re-run if mqttClient or cmdData changes
+  const publishCMD = (client) => {
+    if (cmdData) {
+      const topic = "emit/bleData/cmd/";
+      const message = JSON.stringify(cmdData);
+      // Publish the CMD data to MQTT
+      client.publish(topic, message, { qos: 1 }, (err) => {
+        if (err) {
+          console.error("Failed to publish CMD message:", err.message);
+        } else {
+          console.log(
+            `CMD data "${message}" successfully published to topic "${topic}"`
+          );
+        }
+      });
+    } else {
+      console.error("No CMD data available to send");
+    }
+  };
 
   return (
     <div className="p-4">
@@ -79,25 +75,32 @@ const CMDPage = () => {
                   <strong>Name:</strong> {item.characterMap[uuid].name}
                 </p>
                 <p>
-                  <strong>Service UUID:</strong> {item.characterMap[uuid].serviceUuid}
+                  <strong>Service UUID:</strong>{" "}
+                  {item.characterMap[uuid].serviceUuid}
                 </p>
                 <p>
-                  <strong>Properties:</strong> {item.characterMap[uuid].properties}
+                  <strong>Properties:</strong>{" "}
+                  {item.characterMap[uuid].properties}
                 </p>
                 <p>
-                  <strong>Enable Indicate:</strong> {item.characterMap[uuid].enableIndicate ? "Yes" : "No"}
+                  <strong>Enable Indicate:</strong>{" "}
+                  {item.characterMap[uuid].enableIndicate ? "Yes" : "No"}
                 </p>
                 <p>
-                  <strong>Enable Notify:</strong> {item.characterMap[uuid].enableNotify ? "Yes" : "No"}
+                  <strong>Enable Notify:</strong>{" "}
+                  {item.characterMap[uuid].enableNotify ? "Yes" : "No"}
                 </p>
                 <p>
-                  <strong>Enable Read:</strong> {item.characterMap[uuid].enableRead ? "Yes" : "No"}
+                  <strong>Enable Read:</strong>{" "}
+                  {item.characterMap[uuid].enableRead ? "Yes" : "No"}
                 </p>
                 <p>
-                  <strong>Enable Write:</strong> {item.characterMap[uuid].enableWrite ? "Yes" : "No"}
+                  <strong>Enable Write:</strong>{" "}
+                  {item.characterMap[uuid].enableWrite ? "Yes" : "No"}
                 </p>
                 <p>
-                  <strong>Enable Write No Response:</strong> {item.characterMap[uuid].enableWriteNoResp ? "Yes" : "No"}
+                  <strong>Enable Write No Response:</strong>{" "}
+                  {item.characterMap[uuid].enableWriteNoResp ? "Yes" : "No"}
                 </p>
                 <p>
                   <strong>Real Value:</strong> {item.characterMap[uuid].realVal}
@@ -107,8 +110,13 @@ const CMDPage = () => {
                   {Object.keys(item.characterMap[uuid].descMap).map(
                     (descKey) => (
                       <div key={descKey} className="ml-4 mt-2">
-                        <p><strong>UUID:</strong> {descKey}</p>
-                        <p><strong>Description:</strong> {item.characterMap[uuid].descMap[descKey].desc}</p>
+                        <p>
+                          <strong>UUID:</strong> {descKey}
+                        </p>
+                        <p>
+                          <strong>Description:</strong>{" "}
+                          {item.characterMap[uuid].descMap[descKey].desc}
+                        </p>
                       </div>
                     )
                   )}
@@ -121,10 +129,9 @@ const CMDPage = () => {
         <p>No data available</p>
       )}
 
-      {/* You can enable the button for manual CMD publishing if needed */}
-      {/* <button onClick={handleSendCMDData} className="btn-send-dta">
+      <button onClick={handleSendCMDData} className="btn-send-dta">
         Send CMD Data
-      </button> */}
+      </button>
     </div>
   );
 };
