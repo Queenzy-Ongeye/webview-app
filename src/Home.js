@@ -448,27 +448,21 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {loading ? (
-        <div>Loading connections...</div>
-      ) : (
-        <>
-          <div className="flex-grow">
-            <BleButtons
-              connectToBluetoothDevice={connectToBluetoothDevice}
-              detectedDevices={state.detectedDevices}
-              initBleData={initBleData}
-              initBleDataResponse={state.initBleData}
-              isLoading={state.isLoading}
-            />
-          </div>
-          <BottomActionBar
-            onStartScan={startBleScan}
-            onStopScan={stopBleScan}
-            onScanData={startQrCode}
-            isScanning={state.isScanning}
-          />
-        </>
-      )}
+      <div className="flex-grow">
+        <BleButtons
+          connectToBluetoothDevice={connectToBluetoothDevice}
+          detectedDevices={state.detectedDevices}
+          initBleData={initBleData}
+          initBleDataResponse={state.initBleData}
+          isLoading={state.isLoading}
+        />
+      </div>
+      <BottomActionBar
+        onStartScan={startBleScan}
+        onStopScan={stopBleScan}
+        onScanData={startQrCode}
+        isScanning={state.isScanning}
+      />
     </div>
   );
 };
