@@ -27,7 +27,7 @@ const CMDPage = () => {
 
   const handleSendCMDData = () =>{
     let client = state.mqttClient;
-    console.log("MQTT Client Connected:", client ? client.connected : "No client");
+    console.log("MQTT Client Connected:", client);
 
     if(!client || !client.connected) {
       const options = {
