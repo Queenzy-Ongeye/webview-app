@@ -26,25 +26,31 @@ const CMDPage = () => {
 
   const handleSendCMDData = () => {
     let client = state.mqttClient;
-    console.log("MQTT Client Connected:", client ? client.connected : "No client");
-
+    console.log(
+      "MQTT Client Connected:",
+      client ? client.connected : "No client"
+    );
     const options = {
       // Use the correct WebSocket port for MQTT (check your broker documentation for WebSocket port, often 9001)
-      port: 9001, 
-      protocol: 'wss', // Ensure you're using WebSocket Secure
+      port: 8884,
       username: "Scanner1",
       password: "!mqttsc.2024#",
       clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
       reconnectPeriod: 5000, // Automatically attempt reconnect after 5 seconds
-      connectTimeout: 30 * 1000 // Timeout after 30 seconds
+      connectTimeout: 30 * 1000, // Timeout after 30 seconds
     };
-  
+    // Check if client is already connected
+    if (client && client.connected) {
+      publishCMD(client);
+      return;
+    }
+
     client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
-  
+
     client.on("connect", () => {
-      console.log("Connected to MQTT broker");
+      console.log("Reconnected to MQTT broker");
       dispatch({ type: "SET_MQTT_CLIENT", payload: client });
-      publishCMD(client); // Publish the data after connection
+      publishCMD(client); // Publish after reconnecting
     });
 
     client.on("error", (err) => {
@@ -55,13 +61,10 @@ const CMDPage = () => {
       console.log("Disconnected from MQTT broker");
     });
 
-    publishCMD(client);
-
-    // if (!client || !client.connected) {
-      
-    // } else {
-      
-    // }
+    // Attempt to publish immediately after connecting
+    client.on("connect", () => {
+      publishCMD(client);
+    });
   };
 
   const publishCMD = (client) => {
