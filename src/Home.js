@@ -213,6 +213,7 @@ const Home = () => {
 
         // Choose topic name based on the service name
         const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
+        console.log("Topic publish is here: ", topic);
 
         // Publish the message
         publishMqttData(topic, message);
