@@ -162,9 +162,9 @@ const Home = () => {
     const options = {
       username: "Scanner1",
       password: "!mqttsc.2024#",
-      rejectUnauthorized: false, 
+      rejectUnauthorized: false,
     };
-    
+
     const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8883", options);
 
     client.on("connect", () => {
@@ -174,7 +174,10 @@ const Home = () => {
 
     client.on("error", (err) => {
       console.error("MQTT connection error:", err.message || err);
-      if (err.message.includes("WebSocket") || err.message.includes("ECONNREFUSED")) {
+      if (
+        err.message.includes("WebSocket") ||
+        err.message.includes("ECONNREFUSED")
+      ) {
         console.error("Check broker URL, port, and WebSocket configuration.");
       }
     });
@@ -194,39 +197,44 @@ const Home = () => {
 
   const publishAllServices = (dataList) => {
     console.log("Data received for publishing:", dataList); // Log dataList to check
-    if (dataList && dataList.length > 0) {
-      dataList.forEach((item) => {
-        const serviceNameEnum = item.serviceNameEnum;
-        const serviceProperty = item.serviceProperty;
-        const uuid = item.uuid;
+    if (Array.isArray(dataList) && dataList.length > 0) {
+      dataList.forEach((item, index) => {
+        if (item) {
+          console.log(`Item at index ${index}:`, item);
+          const serviceNameEnum = item.serviceNameEnum;
+          const serviceProperty = item.serviceProperty;
+          const uuid = item.uuid;
 
-        const message = JSON.stringify({
-          serviceProperty: serviceProperty,
-          uuid: uuid,
-        });
+          const message = JSON.stringify({
+            serviceProperty: serviceProperty,
+            uuid: uuid,
+          });
 
-        const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
-        console.log("Publishing to topic:", topic);
+          const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
+          console.log("Publishing to topic:", topic);
 
-        publishMqttData(topic, message);
+          publishMqttData(topic, message);
+        } else {
+          console.warn(`Item at index ${index} is undefined or null`);
+        }
       });
     } else {
-      console.warn("No data to publish.");
+      console.warn("No data to publish or dataList is not an array.");
     }
   };
 
   const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
     if (client) {
-        client.publish(topic, message, (err) => {
-            if (err) {
-                console.error('Publish error: ', err);
-            } else {
-                console.log(`Message "${message}" published to topic "${topic}"`);
-            }
-        });
+      client.publish(topic, message, (err) => {
+        if (err) {
+          console.error("Publish error: ", err);
+        } else {
+          console.log(`Message "${message}" published to topic "${topic}"`);
+        }
+      });
     } else {
-        console.error("MQTT client is not connected.");
+      console.error("MQTT client is not connected.");
     }
   };
 
