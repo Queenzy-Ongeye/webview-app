@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 import { useStore } from "../../service/store";
-import mqtt from "mqtt";
+import mqtt from "mqtt"
 
 const CMDPage = () => {
   const location = useLocation();
@@ -24,23 +24,23 @@ const CMDPage = () => {
     }
   }
 
-  const handleSendCMDData = () => {
+
+  const handleSendCMDData = () =>{
     let client = state.mqttClient;
     console.log("MQTT Client Connected:", client ? client.connected : "No client");
 
-    if (!client || !client.connected) {
+    if(!client || !client.connected) {
       const options = {
         port: 1883,
         username: "Scanner1",
         password: "!mqttsc.2024#",
-        clientId: "mqtt-explorer-451dc7fb"
-      };
+        clientId: mqttjs_`${Math.random().toString(16).substr(2, 8)}`
+      }
       client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
-
-      client.on("connect", () => {
+      client.on("connect", () =>{
         console.log("Reconnected to MQTT broker");
-        dispatch({ type: "SET_MQTT_CLIENT", payload: client });
-        publishCMD(client); // Publish after reconnecting
+        dispatch({type: "SET_MQTT_CLIENT", payload: client});
+        publishCMD(client);
       });
 
       client.on("error", (err) => {
@@ -50,14 +50,12 @@ const CMDPage = () => {
       client.on("disconnect", () => {
         console.log("Disconnected from MQTT broker");
       });
-    } else {
-      publishCMD(client);
     }
-  };
+  }
 
   const publishCMD = (client) => {
     if (cmdData) {
-      const topic = 'emit/bleData/cmd/';
+      const topic = "emit/bleData/cmd/";
       const message = JSON.stringify(cmdData);
       // Publish the CMD data to MQTT
       client.publish(topic, message, { qos: 1 }, (err) => {
