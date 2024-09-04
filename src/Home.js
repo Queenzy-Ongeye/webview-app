@@ -4,6 +4,7 @@ import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
+import mqtt from "mqtt"
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -46,12 +47,12 @@ const Home = () => {
       port: 1883, // Use the secure WebSocket port, typically 8883
       username: "Scanner1",
       password: "!mqttsc.2024#",
-      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
     };
     const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");
+      dispatch({ type: "SET_MQTT_CLIENT", payload: client });
     });
 
     client.on("error", (err) => {
@@ -61,8 +62,6 @@ const Home = () => {
     client.on("disconnect", () => {
       console.log("Disconneted to mqtt");
     });
-
-    dispatch({ type: "SET_MQTT_CLIENT", payload: client });
 
     return () => {
       if (client) client.end();
@@ -86,22 +85,23 @@ const Home = () => {
   };
 
  useEffect(() => {
+  console.log("BLE Dta is here: ", state.initBleData);
     if (state.initBleData) {
       console.log("Publishing MQTT data:", state.initBleData); // Add this line to log the data
       if (state.initBleData.ATT) {
-        publishMqttData("bleData/att", JSON.stringify(state.initBleData.ATT));
+        publishMqttData("emit/bleData/att", JSON.stringify(state.initBleData.ATT_SERVICE_NAME));
       }
       if (state.initBleData.STS) {
-        publishMqttData("bleData/sts", JSON.stringify(state.initBleData.STS));
+        publishMqttData("emit/bleData/sts", JSON.stringify(state.initBleData.STS_SERVICE_NAME));
       }
       if (state.initBleData.CMD) {
-        publishMqttData("bleData/cmd", JSON.stringify(state.initBleData.CMD));
+        publishMqttData("bleData/cmd", JSON.stringify(state.initBleData.CMD_SERVICE_NAME));
       }
       if (state.initBleData.DIA) {
-        publishMqttData("bleData/dia", JSON.stringify(state.initBleData.DIA));
+        publishMqttData("emit/bleData/dia", JSON.stringify(state.initBleData.DIA_SERVICE_NAME));
       }
       if (state.initBleData.DTA) {
-        publishMqttData("bleData/dta", JSON.stringify(state.initBleData.DTA));
+        publishMqttData("emit/bleData/dta", JSON.stringify(state.initBleData.DTA_SERVICE_NAME));
       }
     } else {
       console.error("No BLE data available to publish to MQTT."); // Log this if there's no data
