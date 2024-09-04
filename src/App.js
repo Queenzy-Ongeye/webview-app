@@ -24,7 +24,7 @@ const MQTTInitializer = () => {
     };
 
     const client = mqtt.connect(
-      "wss://mqtt.omnivoltaic.com",
+      "mqtt://mqtt.omnivoltaic.com",
       options
     );
 
