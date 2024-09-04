@@ -1,13 +1,13 @@
 import React, { useEffect, useContext } from "react";
 import { useLocation } from "react-router-dom";
-import { MQTTContext } from "../../service/MQTTContext"; // Assuming you have an MQTTContext
+import { useMQTT } from "../../service/MQTTContext"; // Assuming you have an MQTTContext
 
 const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
   
   // Use MQTTContext to get the client
-  const { mqttClient } = useContext(MQTTContext);
+  const { mqttClient } = useMQTT();
 
   console.log("Full Data object:", data);
 
