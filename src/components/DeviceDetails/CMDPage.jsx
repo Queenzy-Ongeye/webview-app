@@ -25,32 +25,21 @@ const CMDPage = () => {
   }
 
 
-  const handleSendCMDData = () =>{
+  const handleSendCMDData = () => {
     let client = state.mqttClient;
-    console.log("MQTT Client Connected:", client);
-
-    if(!client || !client.connected) {
-      const options = {
-        username: "Scanner2",
-        password: "!mqttsc.2024#",
-        clientId: 'emqx_MDY1Mz'
-      }
-      client = mqtt.connect("wss://emqx.omnivoltaic.com:8084/mqtt", options);
-      client.on("connect", () =>{
-        console.log("Reconnected to MQTT broker");
-        dispatch({type: "SET_MQTT_CLIENT", payload: client});
-        publishCMD(client);
-      });
-
-      client.on("error", (err) => {
-        console.error("MQTT connection error:", err.message || err);
-      });
-
-      client.on("disconnect", () => {
-        console.log("Disconnected from MQTT broker");
-      });
+    if (!client) {
+      console.error("MQTT client is not initialized");
+      return;
     }
-  }
+  
+    console.log("MQTT Client Connected:", client.connected);
+  
+    if (client.connected) {
+      publishCMD(client);
+    } else {
+      console.error("MQTT client is not connected");
+    }
+  };
 
   const publishCMD = (client) => {
     if (cmdData) {
