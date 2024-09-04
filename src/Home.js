@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import BleButtons from "./components/BleButtons/BleButtons";
 import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
@@ -9,6 +9,7 @@ import mqtt from "mqtt";
 const Home = () => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true); // New loading state
 
   useEffect(() => {
     getAllData().then((data) => {
@@ -153,66 +154,70 @@ const Home = () => {
       dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
       console.log("WebViewJavascriptBridge initialized.");
     };
+    // connectWebViewJavascriptBridge(setupBridge);
 
-    connectWebViewJavascriptBridge(setupBridge);
+    // MQTT Data intergration
+    const initConnections = async () => {
+      try {
+        // Initialize WebView bridge
+        await new Promise((resolve, reject) => {
+          connectWebViewJavascriptBridge((bridge) => {
+            setupBridge(bridge);
+            resolve();
+          });
+        });
+
+        // Initialize MQTT connection
+        const options = {
+          username: "Scanner1",
+          password: "!mqttsc.2024#",
+          rejectUnauthorized: true,
+        };
+
+        const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8883", options);
+
+        client.on("connect", () => {
+          console.log("Connected to MQTT broker");
+          dispatch({ type: "SET_MQTT_CLIENT", payload: client });
+          setLoading(false); // Stop loading once both MQTT and WebView bridge are initialized
+        });
+
+        client.on("error", (err) => {
+          console.error("MQTT connection error:", err.message || err);
+        });
+
+        client.on("offline", () => {
+          console.warn("MQTT client went offline. Attempting to reconnect...");
+          client.reconnect(); // Reconnect if offline
+        });
+
+        client.on("disconnect", () => {
+          console.log("Disconnected from MQTT broker");
+        });
+
+        return () => {
+          if (client) client.end();
+        };
+      } catch (error) {
+        console.error("Error during initialization:", error);
+      }
+    };
+
+    initConnections();
   }, [state.bridgeInitialized, dispatch]);
 
-  // MQTT Data intergration
-  useEffect(() => {
-    const options = {
-      username: "Scanner1",
-      password: "!mqttsc.2024#",
-      rejectUnauthorized: false,
-    };
-
-    const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8883", options);
-
-    client.on("connect", () => {
-      console.log("Connected to MQTT broker");
-      dispatch({ type: "SET_MQTT_CLIENT", payload: client });
-    });
-
-    client.on("error", (err) => {
-      console.error("MQTT connection error:", err.message || err);
-      if (
-        err.message.includes("WebSocket") ||
-        err.message.includes("ECONNREFUSED")
-      ) {
-        console.error("Check broker URL, port, and WebSocket configuration.");
-      }
-    });
-
-    client.on("offline", () => {
-      console.warn("MQTT client went offline.");
-    });
-
-    client.on("disconnect", () => {
-      console.log("Disconnected from MQTT broker");
-    });
-
-    return () => {
-      if (client) client.end();
-    };
-  }, [dispatch]);
-
   const publishAllServices = (dataList) => {
-    console.log("DataList object structure:", JSON.stringify(dataList, null, 2)); // Log structure
-  
     if (typeof dataList === "object" && dataList !== null) {
-      // Convert the object to an array if needed
-      const dataListArray = Object.values(dataList); // Converts object values to an array
-  
+      const dataListArray = Object.values(dataList);
+
       if (dataListArray.length > 0) {
-        // Filter out items that have a serviceNameEnum
-        const filteredData = dataListArray.filter((item) => !item.serviceNameEnum);
-  
+        const filteredData = dataListArray.filter(
+          (item) => !item.serviceNameEnum
+        );
+
         if (filteredData.length > 0) {
-          const topic = `emit/bleData/general`; // Use a generic topic since serviceNameEnum is not available
-          console.log("Publishing to topic:", topic);
-  
-          // Prepare the message
+          const topic = `emit/bleData/general`;
           const message = JSON.stringify({ filteredData });
-          console.log("message published: ", message);
           publishMqttData(topic, message);
         } else {
           console.warn("No items found without serviceNameEnum.");
@@ -224,13 +229,9 @@ const Home = () => {
       console.warn("DataList is either null or not a valid object.");
     }
   };
-  
 
   const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
-    if (client) {
-      console.log("MQTT client connection state:", client.connected);
-    }
     if (client && client.connected) {
       client.publish(topic, message, (err) => {
         if (err) {
@@ -243,12 +244,9 @@ const Home = () => {
       console.error("MQTT client is not connected.");
     }
   };
-  
 
-  // Assuming state.initBleData contains your dataList
   useEffect(() => {
     if (state.initBleData) {
-      console.log("Publishing MQTT data:", state.initBleData);
       publishAllServices(state.initBleData);
     }
   }, [state.initBleData]);
@@ -450,21 +448,27 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-grow">
-        <BleButtons
-          connectToBluetoothDevice={connectToBluetoothDevice}
-          detectedDevices={state.detectedDevices}
-          initBleData={initBleData}
-          initBleDataResponse={state.initBleData}
-          isLoading={state.isLoading}
-        />
-      </div>
-      <BottomActionBar
-        onStartScan={startBleScan}
-        onStopScan={stopBleScan}
-        onScanData={startQrCode}
-        isScanning={state.isScanning}
-      />
+      {loading ? (
+        <div>Loading connections...</div>
+      ) : (
+        <>
+          <div className="flex-grow">
+            <BleButtons
+              connectToBluetoothDevice={connectToBluetoothDevice}
+              detectedDevices={state.detectedDevices}
+              initBleData={initBleData}
+              initBleDataResponse={state.initBleData}
+              isLoading={state.isLoading}
+            />
+          </div>
+          <BottomActionBar
+            onStartScan={startBleScan}
+            onStopScan={stopBleScan}
+            onScanData={startQrCode}
+            isScanning={state.isScanning}
+          />
+        </>
+      )}
     </div>
   );
 };
