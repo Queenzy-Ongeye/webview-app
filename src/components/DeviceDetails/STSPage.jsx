@@ -6,7 +6,7 @@ import { AiOutlineCheckCircle, AiOutlineLoading3Quarters } from "react-icons/ai"
 const StsPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  const { state } = useStore();
+  const { state, dispatch } = useStore();
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishSuccess, setPublishSuccess] = useState(false);
 
