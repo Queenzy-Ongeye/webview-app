@@ -17,13 +17,14 @@ const MQTTInitializer = () => {
   const { dispatch } = useStore();
   useEffect(() => {
     const options = {
+      port: 1883,
       username: "Scanner2",
       password: "!mqttsc.2024#",
       clientId: "emqx_MDY1Mz",
     };
 
     const client = mqtt.connect(
-      "wss://emqx.omnivoltaic.com.8084/mqtt",
+      "wss://mqtt.omnivoltaic.com",
       options
     );
 
