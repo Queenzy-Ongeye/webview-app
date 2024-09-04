@@ -202,9 +202,9 @@ const Home = () => {
   const publishAllServices = (dataList) => {
     if (dataList && dataList.length > 0) {
       dataList.forEach((item, index) => {
-        const serviceNameEnum = item.characterMap.serviceNameEnum;
-        const serviceProperty = item.characterMap.serviceProperty;
-        const uuid = item.characterMap.uuid;
+        const serviceNameEnum = item.serviceNameEnum;
+        const serviceProperty = item.serviceProperty;
+        const uuid = item.uuid;
 
         const message = JSON.stringify({
           serviceProperty: serviceProperty,
@@ -222,9 +222,9 @@ const Home = () => {
 
   // Assuming state.initBleData contains your dataList
   useEffect(() => {
-    if (state.initBleData && state.initBleData.dataList) {
+    if (state.initBleData) {
       console.log("Publishing MQTT data:", state.initBleData);
-      publishAllServices(state.initBleData.dataList);
+      publishAllServices(state.initBleData);
     }
   }, [state.initBleData]);
 
