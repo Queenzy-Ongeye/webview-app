@@ -164,7 +164,7 @@ const Home = () => {
       password: "!mqttsc.2024#",
     };
     const client = mqtt.connect(
-      "wss://mqtt.omnivoltaic.com:1883/mqtt",
+      "wss://mqtt.omnivoltaic.com:1883",
       options
     );
 
@@ -197,6 +197,8 @@ const Home = () => {
             }
         });
     }
+
+    console.log("client mqtt is her: ", client);
 };
 
   const publishAllServices = (dataList) => {
