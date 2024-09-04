@@ -197,30 +197,48 @@ const Home = () => {
 
   const publishAllServices = (dataList) => {
     console.log("Data received for publishing:", dataList); // Log dataList to check
-    if (Array.isArray(dataList) && dataList.length > 0) {
-      dataList.forEach((item, index) => {
-        if (item) {
-          console.log(`Item at index ${index}:`, item);
+    const publishAllServices = (dataList) => {
+      // Log the full structure of dataList
+      console.log("DataList (full structure):", JSON.stringify(dataList, null, 2));
+      
+      // Check the type and whether it's an array
+      console.log("Type of dataList:", typeof dataList);
+      console.log("Is dataList an array?", Array.isArray(dataList));
+    
+      let dataListArray = dataList;
+    
+      // If dataList is not an array, try to convert it
+      if (!Array.isArray(dataList)) {
+        try {
+          dataListArray = Array.from(dataList); // Convert array-like object to an array
+          console.log("Converted dataList to array using Array.from:", dataListArray);
+        } catch (error) {
+          console.error("Failed to convert dataList to array:", error);
+        }
+      }
+    
+      // Ensure we are working with an array now
+      if (Array.isArray(dataListArray) && dataListArray.length > 0) {
+        dataListArray.forEach((item) => {
           const serviceNameEnum = item.serviceNameEnum;
           const serviceProperty = item.serviceProperty;
           const uuid = item.uuid;
-
+    
           const message = JSON.stringify({
             serviceProperty: serviceProperty,
             uuid: uuid,
           });
-
+    
           const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
           console.log("Publishing to topic:", topic);
-
+    
           publishMqttData(topic, message);
-        } else {
-          console.warn(`Item at index ${index} is undefined or null`);
-        }
-      });
-    } else {
-      console.warn("No data to publish or dataList is not an array.");
-    }
+        });
+      } else {
+        console.warn("No data to publish or dataListArray is not an array.");
+      }
+    };
+    
   };
 
   const publishMqttData = (topic, message) => {
