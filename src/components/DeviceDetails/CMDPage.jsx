@@ -30,7 +30,6 @@ const CMDPage = () => {
       console.error("MQTT client is not initialized");
       return;
     }
-  
     console.log("MQTT Client Connected:", client.connected);
   
     if (client.connected) {
