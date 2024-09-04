@@ -1,62 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useLocation } from "react-router-dom";
-import { useStore } from "../../service/store";
-import mqtt from "mqtt"
 
 const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-
-  const { state, dispatch } = useStore();
-
-  console.log("Full Data object:", data);
-
-  // Find the correct object in dataList
-  let cmdData = null;
-  if (data) {
-    const cmdServiceObject = data.find(
-      (item) => item.serviceNameEnum === "CMD_SERVICE_NAME"
-    );
-    if (cmdServiceObject) {
-      // Now, find the specific data within the characterMap
-      cmdData = cmdServiceObject.characterMap;
-      console.log("CMD Data found:", cmdData);
-    }
-  }
-
-  const handleSendCMDData = () => {
-    let client = state.mqttClient;
-    if (!client) {
-      console.error("MQTT client is not initialized");
-      return;
-    }
-    console.log("MQTT Client Connected:", client.connected);
-  
-    if (client.connected) {
-      publishCMD(client);
-    } else {
-      console.error("MQTT client is not connected");
-    }
-  };
-
-  const publishCMD = (client) => {
-    if (cmdData) {
-      const topic = "emit/bleData/cmd/";
-      const message = JSON.stringify(cmdData);
-      // Publish the CMD data to MQTT
-      client.publish(topic, message, { qos: 1 }, (err) => {
-        if (err) {
-          console.error("Failed to publish CMD message:", err.message);
-        } else {
-          console.log(
-            `CMD data "${message}" successfully published to topic "${topic}"`
-          );
-        }
-      });
-    } else {
-      console.error("No CMD data available to send");
-    }
-  };
 
   return (
     <div className="p-4">
@@ -127,10 +74,6 @@ const CMDPage = () => {
       ) : (
         <p>No data available</p>
       )}
-
-      <button onClick={handleSendCMDData} className="btn-send-dta">
-        Send CMD Data
-      </button>
     </div>
   );
 };
