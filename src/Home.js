@@ -162,8 +162,7 @@ const Home = () => {
     const options = {
       username: "Scanner1",
       password: "!mqttsc.2024#",
-      rejectUnauthorized: false, // Ignore TLS errors in development
-      // You might need to add cert, key, and ca if TLS is required
+      rejectUnauthorized: false, 
     };
     
     const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8883", options);
@@ -194,6 +193,7 @@ const Home = () => {
   }, [dispatch]);
 
   const publishAllServices = (dataList) => {
+    console.log("Data received for publishing:", dataList); // Log dataList to check
     if (dataList && dataList.length > 0) {
       dataList.forEach((item) => {
         const serviceNameEnum = item.serviceNameEnum;
