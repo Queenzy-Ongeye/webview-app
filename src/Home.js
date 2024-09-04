@@ -160,11 +160,10 @@ const Home = () => {
       // MQTT Data intergration
   useEffect(() => {
     const options = {
-      port: 443, 
-      username: "Scanner1",
-      password: "!mqttsc.2024#",
+      username: "BleScan",
+      password: "blescan@2024",
     };
-    const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+    const client = mqtt.connect("wss://emqx.omnivoltaic.com:8084/mqtt", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");
