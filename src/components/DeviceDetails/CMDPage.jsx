@@ -33,6 +33,7 @@ const CMDPage = () => {
         port: 1883,
         username: "Scanner1",
         password: "!mqttsc.2024#",
+        clientId: "mqtt-explorer-451dc7fb"
       };
       client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
 
