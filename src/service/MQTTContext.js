@@ -9,13 +9,12 @@ export const MQTTProvider = ({ children }) => {
 
   useEffect(() => {
     const options = {
-      port: 1883,
       username: "Scanner1",
       password: "!mqttsc.2024#",
       clientId: "mqtt-explorer-451dc7fb",
     };
 
-    const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+    const client = mqtt.connect("wss://mqtt.omnivoltaic.com:1883/mqtt", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT Broker");

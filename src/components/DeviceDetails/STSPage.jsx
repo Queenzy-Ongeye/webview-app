@@ -1,40 +1,86 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useStore } from "../../service/store";
-import {
-  AiOutlineCheckCircle,
-  AiOutlineLoading3Quarters,
-} from "react-icons/ai";
+import { AiOutlineCheckCircle, AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const StsPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  const {state} = useStore();
+  const { state } = useStore();
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishSuccess, setPublishSuccess] = useState(false);
 
-  const retryPublish = (client, topic, message, retries = 5) => {
-    if (client && client.connected) {
-      client.publish(topic, message, { qos: 1 }, (err) => {
+    // Find the correct object in dataList
+    let stsData = null;
+    if (data) {
+      const cmdServiceObject = data.find(
+        (item) => item.serviceNameEnum === "STS_SERVICE_NAME"
+      );
+      if (cmdServiceObject) {
+        // Now, find the specific data within the characterMap
+        stsData = cmdServiceObject.characterMap;
+        console.log("STS Data found:", stsData);
+      }
+    }
+
+  useEffect(() => {
+    console.log("Current state data:", state.data);
+    console.log("MQTT client:", state.mqttClient);
+
+    const publishHeartbeat = () => {
+      if (stsData) {
+        const stsDataString = JSON.stringify(stsData);
+        setIsPublishing(true);
+        state.mqttClient.publish("emit/contentcmd/cd", stsDataString, (err) => {
+          setIsPublishing(false);
+          if (err) {
+            console.error("Publish STS error: ", err);
+            setPublishSuccess(false);
+          } else {
+            console.log("STS data published to MQTT");
+            setPublishSuccess(true);
+          }
+        });
+      } else {
+        console.warn("No STS data available to publish");
+      }
+    };
+
+    // Initial publish
+    publishHeartbeat();
+
+    // Set interval for publishing heartbeat every 60 seconds
+    const intervalID = setInterval(publishHeartbeat, 60000);
+    return () => clearInterval(intervalID);
+  }, [state.data, state.mqttClient]);
+
+  const handlePublishClick = () => {
+    console.log("Button clicked!");
+    console.log("Attempting to publish:", state.data);
+
+    if (!state.mqttClient) {
+      console.error("MQTT client is not initialized");
+      return;
+    }
+
+    if (stsData) {
+      const stsDataString = JSON.stringify(stsData);
+      setIsPublishing(true);
+      setPublishSuccess(false);
+      state.mqttClient.publish("devices/sts", stsDataString, (err) => {
+        setIsPublishing(false);
         if (err) {
-          console.error("Failed to publish message:", err);
+          console.error("Publish STS error: ", err);
+          setPublishSuccess(false);
         } else {
-          console.log(`Message "${message}" successfully published to topic "${topic}"`);
+          console.log("STS data manually published to MQTT");
+          setPublishSuccess(true);
         }
       });
-    } else if (retries > 0) {
-      console.log(`Retrying to publish, attempts left: ${retries}`);
-      setTimeout(() => retryPublish(client, topic, message, retries - 1), 1000);
     } else {
-      console.error("MQTT client is not connected after multiple attempts.");
+      console.warn("No STS data available to publish");
     }
   };
-  
-  const handlePublishClick = () => {
-    const client = state.mqttClient;
-    const stsDataString = JSON.stringify(state.initBleData.STS);
-    retryPublish(client, "bleData/sts", stsDataString);
-  };
-  
-
 
   return (
     <div className="p-4">
@@ -105,12 +151,26 @@ const StsPage = () => {
       ) : (
         <p>No data available</p>
       )}
-      <button
-        onClick={handlePublishClick}
-        className={`mt-4 px-4 py-2 text-cyan-800 border border-cyan-800 rounded transition duration-200 flex items-center`}
-      >
-        Publish Data
-      </button>
+
+      {state.data && state.data.STS ? (
+        <button
+          onClick={handlePublishClick}
+          className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition duration-200 flex items-center"
+        >
+          {isPublishing ? (
+            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
+          ) : publishSuccess ? (
+            <AiOutlineCheckCircle className="h-5 w-5 mr-2" />
+          ) : null}
+          {isPublishing
+            ? "Publishing..."
+            : publishSuccess
+            ? "Published!"
+            : "Publish Data to MQTT"}
+        </button>
+      ) : (
+        <p className="text-red-500">No STS data available to publish</p>
+      )}
     </div>
   );
 };
