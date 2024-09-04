@@ -186,6 +186,19 @@ const Home = () => {
     };
   }, [dispatch]);
 
+  const publishMqttData = (topic, message) => {
+    const client = state.mqttClient; // Assume client is stored in state
+    if (client) {
+        client.publish(topic, message, (err) => {
+            if (err) {
+                console.error('Publish error: ', err);
+            } else {
+                console.log(`Message "${message}" published to topic "${topic}"`);
+            }
+        });
+    }
+};
+
   const publishAllServices = (dataList) => {
     if (dataList && dataList.length > 0) {
       dataList.forEach((item, index) => {
