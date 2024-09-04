@@ -165,7 +165,7 @@ const Home = () => {
       rejectUnauthorized: true,
     };
 
-    const client = mqtt.connect("wss://mqtt.omnivoltaic.com:1883", options);
+    const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8883", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");
@@ -212,6 +212,7 @@ const Home = () => {
   
           // Prepare the message
           const message = JSON.stringify({ filteredData });
+          console.log("message published: ", message);
           publishMqttData(topic, message);
         } else {
           console.warn("No items found without serviceNameEnum.");
@@ -228,6 +229,9 @@ const Home = () => {
   const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
     if (client) {
+      console.log("MQTT client connection state:", client.connected);
+    }
+    if (client && client.connected) {
       client.publish(topic, message, (err) => {
         if (err) {
           console.error("Publish error: ", err);
@@ -239,6 +243,7 @@ const Home = () => {
       console.error("MQTT client is not connected.");
     }
   };
+  
 
   // Assuming state.initBleData contains your dataList
   useEffect(() => {
