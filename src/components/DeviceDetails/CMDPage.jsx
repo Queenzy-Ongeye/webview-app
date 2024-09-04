@@ -32,7 +32,7 @@ const CMDPage = () => {
     );
     const options = {
       // Use the correct WebSocket port for MQTT (check your broker documentation for WebSocket port, often 9001)
-      port: 8884,
+      port: 1883,
       username: "Scanner1",
       password: "!mqttsc.2024#",
       clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
