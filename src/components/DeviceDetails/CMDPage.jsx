@@ -24,7 +24,9 @@ const CMDPage = () => {
     }
   }
 
+
   useEffect(() => {
+    console.log("MQTT Client from Context:", mqttClient);
     if (!mqttClient) {
       console.error("MQTT client is not initialized");
       return;

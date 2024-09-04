@@ -4,7 +4,6 @@ import { StoreProvider, useStore } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import mqtt from "mqtt";
-import { MQTTProvider } from "./service/MQTTContext";
 
 const Home = lazy(() => import("./Home"));
 const AttPage = lazy(() => import("./components/DeviceDetails/ATTPage"));
@@ -14,35 +13,69 @@ const DTAPage = lazy(() => import("./components/DeviceDetails/DTAPage"));
 const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanData"));
 
+const MQTTInitializer = () => {
+  const { dispatch } = useStore();
+  useEffect(() => {
+    const options = {
+      username: "Scanner1",
+      password: "!mqttsc.2024#",
+      clientId: "mqtt-explorer-451dc7fb",
+    };
+
+    const client = mqtt.connect(
+      "wss://mqtt.omnivoltaic.com:1883/mqtt",
+      options
+    );
+
+    client.on("connect", () => {
+      console.log("Connected to MQTT Broker");
+      console.log("Dispatching MQTT client to global state");
+      dispatch({ type: "SET_MQTT_CLIENT", payload: client });
+    });
+
+    client.on("error", (err) => {
+      console.error("MQTT Connection error: ", err.message);
+    });
+
+    client.on("disconnect", () => {
+      console.log("Disconnected from MQTT broker");
+    });
+
+    return () => {
+      if (client) client.end();
+    };
+  }, [dispatch]);
+
+  return null;
+};
 const App = () => {
   return (
     <StoreProvider>
-      <MQTTProvider>
-        <Router>
-          <div className="min-h-screen flex">
-            <NavigationBar />
-            <div className="flex-grow">
-              <Suspense
-                fallback={
-                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
-                  </div>
-                }
-              >
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/att" element={<AttPage />} />
-                  <Route path="/cmd" element={<CMDPage />} />
-                  <Route path="/sts" element={<StsPage />} />
-                  <Route path="/dta" element={<DTAPage />} />
-                  <Route path="/dia" element={<DIAPage />} />
-                  <Route path="/scan-data" element={<ScanData />} />
-                </Routes>
-              </Suspense>
-            </div>
+      <MQTTInitializer/>
+      <Router>
+        <div className="min-h-screen flex">
+          <NavigationBar />
+          <div className="flex-grow">
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                  <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/att" element={<AttPage />} />
+                <Route path="/cmd" element={<CMDPage />} />
+                <Route path="/sts" element={<StsPage />} />
+                <Route path="/dta" element={<DTAPage />} />
+                <Route path="/dia" element={<DIAPage />} />
+                <Route path="/scan-data" element={<ScanData />} />
+              </Routes>
+            </Suspense>
           </div>
-        </Router>
-      </MQTTProvider>
+        </div>
+      </Router>
     </StoreProvider>
   );
 };
