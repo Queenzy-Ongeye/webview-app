@@ -19,7 +19,6 @@ const MQTTInitializer = () => {
     const options = {
       username: "Scanner1",
       password: "!mqttsc.2024#",
-      clientId: "mqtt-explorer-451dc7fb",
     };
 
     const client = mqtt.connect(
