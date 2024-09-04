@@ -37,7 +37,6 @@ export const MQTTProvider = ({ children }) => {
 
   return <MQTTContext.Provider value={client}>{children}</MQTTContext.Provider>;
 };
-
 // Custom hook for using MQTT client
 export const useMQTT = () => {
   return useContext(MQTTContext);
