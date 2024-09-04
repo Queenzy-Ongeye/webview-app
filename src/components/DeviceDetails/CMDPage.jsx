@@ -29,17 +29,22 @@ const CMDPage = () => {
     console.log("MQTT Client Connected:", client ? client.connected : "No client");
 
     const options = {
-      port: 1883,
+      // Use the correct WebSocket port for MQTT (check your broker documentation for WebSocket port, often 9001)
+      port: 9001, 
+      protocol: 'wss', // Ensure you're using WebSocket Secure
       username: "Scanner1",
       password: "!mqttsc.2024#",
-      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
+      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
+      reconnectPeriod: 5000, // Automatically attempt reconnect after 5 seconds
+      connectTimeout: 30 * 1000 // Timeout after 30 seconds
     };
+  
     client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
-
+  
     client.on("connect", () => {
-      console.log("Reconnected to MQTT broker");
+      console.log("Connected to MQTT broker");
       dispatch({ type: "SET_MQTT_CLIENT", payload: client });
-      publishCMD(client); // Publish after reconnecting
+      publishCMD(client); // Publish the data after connection
     });
 
     client.on("error", (err) => {
