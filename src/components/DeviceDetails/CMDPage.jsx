@@ -28,44 +28,35 @@ const CMDPage = () => {
     let client = state.mqttClient;
     console.log("MQTT Client Connected:", client ? client.connected : "No client");
 
-    if (!client || !client.connected) {
-      const options = {
-        port: 9001, // Use the correct WebSocket port for your MQTT broker
-        protocol: 'wss', // Ensure you are using WebSocket secure
-        username: "Scanner1",
-        password: "!mqttsc.2024#",
-        clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`,
-        reconnectPeriod: 5000, // Reconnect every 5 seconds
-        connectTimeout: 30 * 1000 // Connection timeout of 30 seconds
-      };
+    const options = {
+      port: 1883,
+      username: "Scanner1",
+      password: "!mqttsc.2024#",
+      clientId: `mqttjs_${Math.random().toString(16).substr(2, 8)}`
+    };
+    client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
 
-      client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+    client.on("connect", () => {
+      console.log("Reconnected to MQTT broker");
+      dispatch({ type: "SET_MQTT_CLIENT", payload: client });
+      publishCMD(client); // Publish after reconnecting
+    });
 
-      // Handle successful connection
-      client.on("connect", () => {
-        console.log("Connected to MQTT broker");
-        dispatch({ type: "SET_MQTT_CLIENT", payload: client });
-        publishCMD(client); // Publish after reconnecting
-      });
+    client.on("error", (err) => {
+      console.error("MQTT connection error:", err.message || err);
+    });
 
-      // Handle errors
-      client.on("error", (err) => {
-        console.error("MQTT connection error:", err.message || err);
-      });
+    client.on("disconnect", () => {
+      console.log("Disconnected from MQTT broker");
+    });
 
-      // Handle connection close
-      client.on("close", () => {
-        console.log("Connection to MQTT broker closed");
-      });
+    publishCMD(client);
 
-      // Handle disconnect
-      client.on("disconnect", () => {
-        console.log("Disconnected from MQTT broker");
-      });
-
-    } else {
-      publishCMD(client);
-    }
+    // if (!client || !client.connected) {
+      
+    // } else {
+      
+    // }
   };
 
   const publishCMD = (client) => {
