@@ -31,12 +31,11 @@ const CMDPage = () => {
 
     if(!client || !client.connected) {
       const options = {
-        port: 1883,
-        username: "Scanner1",
+        username: "Scanner2",
         password: "!mqttsc.2024#",
-        clientId: mqttjs_`${Math.random().toString(16).substr(2, 8)}`
+        clientId: 'emqx_MDY1Mz'
       }
-      client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
+      client = mqtt.connect("wss://emqx.omnivoltaic.com:8084/mqtt", options);
       client.on("connect", () =>{
         console.log("Reconnected to MQTT broker");
         dispatch({type: "SET_MQTT_CLIENT", payload: client});
