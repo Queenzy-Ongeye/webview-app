@@ -282,7 +282,7 @@ const Home = () => {
         (responseData) => {
           console.log("Response from startQrCodeScan", responseData);
           dispatch({ type: "SET_QR_DATA", payload: responseData });
-          navigate("/scan-data", {state: {scannedData: respo}})
+          navigate("/scan-data", {state: {scannedData: responseData}})
         }
       );
       dispatch({ type: "SET_QR_SCANNING", payload: true });
