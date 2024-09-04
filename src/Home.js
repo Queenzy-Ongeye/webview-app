@@ -206,42 +206,21 @@ const Home = () => {
       const dataListArray = Object.values(dataList); // Converts object values to an array
 
       if (dataListArray.length > 0) {
-        const filteredData = initBleDataResponse?.dataList.filter(
+        const filteredData = dataList.filter(
           (item) => item.serviceNameEnum === serviceNameEnum
         );
+        const topic = `emit/bleData/${filteredData.toLowerCase()}`;
+        console.log("Publishing to topic:", topic);
 
-        if (filteredData.length > 0) {
-          filteredData.forEach((item) => {
-            const serviceNameEnum = item.serviceNameEnum;
-            const serviceProperty = item.serviceProperty;
-            const uuid = item.uuid;
-
-            const message = JSON.stringify({
-              serviceProperty: serviceProperty,
-              uuid: uuid,
-            });
-
-            // Ensure serviceNameEnum exists before using it
-            if (serviceNameEnum) {
-              const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
-              console.log("Publishing to topic:", topic);
-
-              publishMqttData(topic, message);
-            } else {
-              console.warn("serviceNameEnum is missing for item:", item);
-            }
-          });
-        } else {
-          console.warn(
-            "No matching filtered data found for serviceNameEnum:",
-            serviceNameEnum
-          );
-        }
+        const msgData = dataList.filter(
+          (item) =>
+            item.serviceProperty === serviceProperty && item.uuid === uuid
+        );
+        const message = JSON.stringify({ filteredData, msgData });
+        publishMqttData(topic, message);
       } else {
-        console.warn("No data available to publish.");
+        console.warn("DataList is either null or not a valid object.");
       }
-    } else {
-      console.warn("DataList is either null or not a valid object.");
     }
   };
 
