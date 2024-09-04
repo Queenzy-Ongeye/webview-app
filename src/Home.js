@@ -160,7 +160,7 @@ const Home = () => {
       // MQTT Data intergration
   useEffect(() => {
     const options = {
-      port: 443, // Use the secure WebSocket port, typically 8883
+      port: 443, 
       username: "Scanner1",
       password: "!mqttsc.2024#",
     };
