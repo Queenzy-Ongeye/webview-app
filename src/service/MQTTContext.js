@@ -15,7 +15,7 @@ export const MQTTProvider = ({ children }) => {
       clientId: "mqtt-explorer-451dc7fb",
     };
 
-    const client = mqtt.connect("mqtt://mqtt.omnivoltaic.com", options);
+    const client = mqtt.connect("wss://mqtt.omnivoltaic.com", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT Broker");
@@ -37,7 +37,6 @@ export const MQTTProvider = ({ children }) => {
 
   return <MQTTContext.Provider value={client}>{children}</MQTTContext.Provider>;
 };
-
 // Custom hook for using MQTT client
 export const useMQTT = () => {
   return useContext(MQTTContext);
