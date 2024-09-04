@@ -193,21 +193,6 @@ const Home = () => {
     };
   }, [dispatch]);
 
-  const publishMqttData = (topic, message) => {
-    const client = state.mqttClient;
-    if (client) {
-        client.publish(topic, message, (err) => {
-            if (err) {
-                console.error('Publish error: ', err);
-            } else {
-                console.log(`Message "${message}" published to topic "${topic}"`);
-            }
-        });
-    } else {
-        console.error("MQTT client is not connected.");
-    }
-  };
-
   const publishAllServices = (dataList) => {
     if (dataList && dataList.length > 0) {
       dataList.forEach((item) => {
@@ -227,6 +212,21 @@ const Home = () => {
       });
     } else {
       console.warn("No data to publish.");
+    }
+  };
+
+  const publishMqttData = (topic, message) => {
+    const client = state.mqttClient;
+    if (client) {
+        client.publish(topic, message, (err) => {
+            if (err) {
+                console.error('Publish error: ', err);
+            } else {
+                console.log(`Message "${message}" published to topic "${topic}"`);
+            }
+        });
+    } else {
+        console.error("MQTT client is not connected.");
     }
   };
 
