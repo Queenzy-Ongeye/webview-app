@@ -196,34 +196,38 @@ const Home = () => {
   }, [dispatch]);
 
   const publishAllServices = (dataList) => {
-    console.log("DataList object structure:", JSON.stringify(dataList, null, 2)); // Log structure
+    console.log(
+      "DataList object structure:",
+      JSON.stringify(dataList, null, 2)
+    ); // Log structure
 
-    // Extract array from the correct property of dataList (adjust according to the structure)
-    const dataListArray = dataList.items || [];  // Adjust based on structure
-    console.log("Datalist is here: ", dataListArray);
-  
-    // Now check if we have a valid array
-    if (Array.isArray(dataListArray)) {
-      dataListArray.forEach((item) => {
-        const serviceNameEnum = item.serviceNameEnum;
-        const serviceProperty = item.serviceProperty;
-        const uuid = item.uuid;
-  
-        const message = JSON.stringify({
-          serviceProperty: serviceProperty,
-          uuid: uuid,
+    if (typeof dataList === "object" && dataList !== null) {
+      // Convert the object to an array if needed
+      const dataListArray = Object.values(dataList); // Converts object values to an array
+
+      if (dataListArray.length > 0) {
+        dataListArray.forEach((item) => {
+          const serviceNameEnum = item.serviceNameEnum;
+          const serviceProperty = item.serviceProperty;
+          const uuid = item.uuid;
+
+          const message = JSON.stringify({
+            serviceProperty: serviceProperty,
+            uuid: uuid,
+          });
+
+          const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
+          console.log("Publishing to topic:", topic);
+
+          publishMqttData(topic, message);
         });
-  
-        const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
-        console.log("Publishing to topic:", topic);
-  
-        publishMqttData(topic, message);
-      });
+      } else {
+        console.warn("No data available to publish.");
+      }
     } else {
-      console.warn("No data to publish or dataListArray is not an array.");
+      console.warn("DataList is either null or not a valid object.");
     }
   };
-  
 
   const publishMqttData = (topic, message) => {
     const client = state.mqttClient;
