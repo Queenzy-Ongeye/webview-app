@@ -162,11 +162,11 @@ const Home = () => {
     const options = {
       username: "Scanner1",
       password: "!mqttsc.2024#",
+      rejectUnauthorized: false, // Ignore TLS errors in development
+      // You might need to add cert, key, and ca if TLS is required
     };
-    const client = mqtt.connect(
-      "wss://mqtt.omnivoltaic.com:1883",
-      options
-    );
+    
+    const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8883", options);
 
     client.on("connect", () => {
       console.log("Connected to MQTT broker");
@@ -175,10 +175,17 @@ const Home = () => {
 
     client.on("error", (err) => {
       console.error("MQTT connection error:", err.message || err);
+      if (err.message.includes("WebSocket") || err.message.includes("ECONNREFUSED")) {
+        console.error("Check broker URL, port, and WebSocket configuration.");
+      }
+    });
+
+    client.on("offline", () => {
+      console.warn("MQTT client went offline.");
     });
 
     client.on("disconnect", () => {
-      console.log("Disconneted to mqtt");
+      console.log("Disconnected from MQTT broker");
     });
 
     return () => {
@@ -187,7 +194,7 @@ const Home = () => {
   }, [dispatch]);
 
   const publishMqttData = (topic, message) => {
-    const client = state.mqttClient; // Assume client is stored in state
+    const client = state.mqttClient;
     if (client) {
         client.publish(topic, message, (err) => {
             if (err) {
@@ -196,14 +203,14 @@ const Home = () => {
                 console.log(`Message "${message}" published to topic "${topic}"`);
             }
         });
+    } else {
+        console.error("MQTT client is not connected.");
     }
-
-    console.log("client mqtt is her: ", client);
-};
+  };
 
   const publishAllServices = (dataList) => {
     if (dataList && dataList.length > 0) {
-      dataList.forEach((item, index) => {
+      dataList.forEach((item) => {
         const serviceNameEnum = item.serviceNameEnum;
         const serviceProperty = item.serviceProperty;
         const uuid = item.uuid;
@@ -213,13 +220,13 @@ const Home = () => {
           uuid: uuid,
         });
 
-        // Choose topic name based on the service name
         const topic = `emit/bleData/${serviceNameEnum.toLowerCase()}`;
-        console.log("Topic publish is here: ", topic);
+        console.log("Publishing to topic:", topic);
 
-        // Publish the message
         publishMqttData(topic, message);
       });
+    } else {
+      console.warn("No data to publish.");
     }
   };
 
