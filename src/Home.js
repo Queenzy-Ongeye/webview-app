@@ -168,16 +168,14 @@ const Home = () => {
           });
         });
         const mqttConfig = {
-          host: "mqtt.omnivoltaic.com", // Example public broker
-          port: 1883,
+          host: "wss://mqtt.omnivoltaic.com", // Use WebSocket protocol
+          port: 1883, // WebSocket port
           clientId: `mqtt_js_${Math.random().toString(16).substr(2, 8)}`,
           path: "/mqtt",
         };
 
         const client = new Paho.MQTT.Client(
-          mqttConfig.host,
-          mqttConfig.port,
-          mqttConfig.path,
+          `${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`, // Combine host, port, and path for WebSocket
           mqttConfig.clientId
         );
 
@@ -191,10 +189,9 @@ const Home = () => {
           console.log("Message arrived: " + message.payloadString);
         };
 
-        // Called when the connection is made
         const onConnect = () => {
           console.log("Connected to MQTT broker!");
-          dispatch({ type: "SET_MQTT_CLIENT", payload: client });
+          dispatch({ type: "SET_MQTT_CLIENT", payload: client }); // Dispatch the client to the global state
           setLoading(false); // Set loading to false after successful connection
         };
 
@@ -215,10 +212,12 @@ const Home = () => {
       }
     };
 
-    initMqttConnections();
-    const intervalId = setInterval(initMqttConnections, 60000);
-    return () => clearInterval(intervalId);
-  }, [state.bridgeInitialized, dispatch]);
+    if (!state.mqttClient && state.bridgeInitialized) {
+      initMqttConnections(); // Only call the initialization if there's no mqttClient already set
+    }
+    const intervalId = setInterval(initMqttConnections, 60000); // Reconnect every 60 seconds
+    return () => clearInterval(intervalId); // Clean up the interval
+  }, [state.bridgeInitialized, dispatch, state.mqttClient]);
 
   const publishAllServices = (dataList) => {
     if (typeof dataList === "object" && dataList !== null) {
@@ -250,7 +249,7 @@ const Home = () => {
       const msg = new Paho.MQTT.Message(message);
       msg.destinationName = topic;
       msg.qos = qos;
-      mqttClient.send(msg);
+      state.mqttClient.send(msg);
       console.log(`Message "${message}" published to topic "${topic}"`);
     } else {
       console.error("MQTT client is not connected.");
