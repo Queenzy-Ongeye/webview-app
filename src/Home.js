@@ -161,6 +161,12 @@ const Home = () => {
     const initMqttConnections = async () => {
       setLoading(true); // Set loading to true when starting the connection
       try {
+        await new Promise((resolve, reject) => {
+          connectWebViewJavascriptBridge((bridge) => {
+            setupBridge(bridge); // Setting up the bridge with your handler functions
+            resolve();
+          });
+        });
         const client = new Paho.MQTT.Client(
           "mqtt.omnivoltaic.com",
           Number(1883),
@@ -190,6 +196,10 @@ const Home = () => {
           mqttVersion: 3,
           username: "Scanner1",
           password: "!mqttsc.2024#",
+          onFailure: (err) => {
+            console.error("MQTT Connection failed:", err);
+            setLoading(false); // Stop loading on failure
+          },
         });
       } catch (error) {
         console.error("Error during MQTT initialization:", error.message);
