@@ -4,7 +4,7 @@ import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
-import * as mqtt from 'mqtt/dist/mqtt.min'
+import Paho from "paho-mqtt";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -168,37 +168,34 @@ const Home = () => {
         });
 
         // Initialize MQTT connection
-        const options = {
+        const client = new Paho.MQTT.Client(
+          "mqtt.omnivoltaic.com",
+          Number(8084),
+          "/wss",
+          "mqtt-explorer-451dc7fb"
+        );
+
+        // Stting callback handlers
+        client.onConnectionLost = (responseObject) => {
+          console.log("Connection Lost: " + responseObject.errorMessage);
+        };
+
+        client.onMessageArrived = function (message) {
+          console.log("Message arrived: " + message.payloadString);
+        };
+
+        // Called when the connection is made
+        function onConnect() {
+          console.log("Connected!");
+        }
+
+        // Connect the client, providing an onConnect callback
+        client.connect({
+          onSuccess: onConnect,
+          mqttVersion: 3,
           username: "Scanner1",
           password: "!mqttsc.2024#",
-          rejectUnauthorized: false,
-          clientId: "mqtt-explorer-451dc7fb" + Math.random().toString(16).substring(2, 8)
-        };
-
-        const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8083/mqtt", options);
-
-        client.on("connect", () => {
-          console.log("Connected to MQTT broker");
-          dispatch({ type: "SET_MQTT_CLIENT", payload: client });
-          setLoading(false); // Stop loading once both MQTT and WebView bridge are initialized
         });
-
-        client.on("error", (err) => {
-          console.error("MQTT connection error:", err.message || err);
-        });
-
-        client.on("offline", () => {
-          console.warn("MQTT client went offline. Attempting to reconnect...");
-          client.reconnect(); // Reconnect if offline
-        });
-
-        client.on("disconnect", () => {
-          console.log("Disconnected from MQTT broker");
-        });
-
-        return () => {
-          if (client) client.end();
-        };
       } catch (error) {
         console.error("Error during initialization:", error);
       }
@@ -206,6 +203,18 @@ const Home = () => {
 
     initConnections();
   }, [state.bridgeInitialized, dispatch]);
+
+  const publishMqttData = (topic, message, qos = 0) => {
+    if (state.mqttClient && state.mqttClient.isConnected()) {
+      const msg = new Paho.MQTT.Message(message);
+      msg.destinationName = topic;
+      msg.qos = qos;
+      state.mqttClient.send(msg);
+      console.log(`Message "${message}" published to topic "${topic}"`);
+    } else {
+      console.error("MQTT client is not connected.");
+    }
+  };
 
   const publishAllServices = (dataList) => {
     if (typeof dataList === "object" && dataList !== null) {
@@ -228,21 +237,6 @@ const Home = () => {
       }
     } else {
       console.warn("DataList is either null or not a valid object.");
-    }
-  };
-
-  const publishMqttData = (topic, message, qos) => {
-    const client = state.mqttClient;
-    if (client && client.connected) {
-      client.publish(topic, message, {qos}, (err) => {
-        if (err) {
-          console.error("Publish error: ", err);
-        } else {
-          console.log(`Message "${message}" published to topic "${topic}"`);
-        }
-      });
-    } else {
-      console.error("MQTT client is not connected.");
     }
   };
 
