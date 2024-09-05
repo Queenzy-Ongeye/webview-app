@@ -4,7 +4,7 @@ import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
-import mqtt from "mqtt";
+import * as mqtt from 'mqtt/dist/mqtt.min'
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -172,9 +172,10 @@ const Home = () => {
           username: "Scanner1",
           password: "!mqttsc.2024#",
           rejectUnauthorized: false,
+          clientId: "mqtt-explorer-451dc7fb" + Math.random().toString(16).substring(2, 8)
         };
 
-        const client = mqtt.connect("wss://mqtt.omnivoltaic.com:1883", options);
+        const client = mqtt.connect("wss://mqtt.omnivoltaic.com:8083/mqtt", options);
 
         client.on("connect", () => {
           console.log("Connected to MQTT broker");
@@ -218,7 +219,7 @@ const Home = () => {
         if (filteredData.length > 0) {
           const topic = `emit/bleData/general`;
           const message = JSON.stringify({ filteredData });
-          publishMqttData(topic, message);
+          publishMqttData(topic, message, 0);
         } else {
           console.warn("No items found without serviceNameEnum.");
         }
@@ -230,10 +231,10 @@ const Home = () => {
     }
   };
 
-  const publishMqttData = (topic, message) => {
+  const publishMqttData = (topic, message, qos) => {
     const client = state.mqttClient;
     if (client && client.connected) {
-      client.publish(topic, message, (err) => {
+      client.publish(topic, message, {qos}, (err) => {
         if (err) {
           console.error("Publish error: ", err);
         } else {
