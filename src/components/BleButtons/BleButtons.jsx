@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -84,9 +84,7 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className={`flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 ${
-                  success ? "animate-bounce" : ""
-                }`} // Bounce effect on success
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105"
               >
                 <div className="w-full">
                   <p className="font-semibold">
@@ -102,9 +100,9 @@ const BleButtons = ({
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       connectingMacAddress === device.macAddress
-                        ? "bg-gray-600 text-white cursor-not-allowed"
+                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse" // Pulse animation when connecting
                         : success
-                        ? "bg-green-500 text-white animate-pulse"
+                        ? "bg-green-500 text-white"
                         : "bg-cyan-600 text-white hover:bg-cyan-700"
                     }`}
                     disabled={
@@ -123,7 +121,7 @@ const BleButtons = ({
                     }
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       initializingMacAddress === device.macAddress
-                        ? "bg-gray-500 text-white cursor-not-allowed"
+                        ? "bg-gray-500 text-white cursor-not-allowed animate-pulse" // Pulse animation for BLE Data initialization
                         : "bg-blue-600 text-white hover:bg-blue-700"
                     }`}
                     disabled={
@@ -138,15 +136,12 @@ const BleButtons = ({
                 {/* Success Icon for a Connected Device */}
                 {success && connectingMacAddress !== device.macAddress && (
                   <div className="flex justify-center items-center mt-2">
-                    <FaCheckCircle
-                      className="text-green-500 animate-ping"
-                      size={24}
-                    />
+                    <FaCheckCircle className="text-green-500" size={24} />
                   </div>
                 )}
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
-                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-4 w-full">
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                       <button
                         onClick={() =>
                           navigateToPage("/att", "ATT_SERVICE_NAME")
