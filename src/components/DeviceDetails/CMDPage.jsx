@@ -5,6 +5,22 @@ const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
 
+  useEffect(() => {
+    if (data && Object.keys(data).length > 0) {
+      const payload = JSON.stringify(data); // Convert the data to a JSON string
+      console.log("Data is here: ", payload);
+
+      // Publish the data to the 'device/sts' topic
+      mqttClient.publish("emit/content/bleData/cmd", payload, { qos: 1 }, (err) => {
+        if (err) {
+          console.error("Failed to publish STS data to MQTT:", err);
+        } else {
+          console.log("CMD data successfully published to MQTT:", payload);
+        }
+      });
+    }
+  }, [data]);
+
   return (
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">CMD Page</h2>
