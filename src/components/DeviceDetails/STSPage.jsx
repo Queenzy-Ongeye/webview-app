@@ -1,10 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  AiOutlineCheckCircle,
-  AiOutlineLoading3Quarters,
-} from "react-icons/ai";
-import client from "../../mqttClient";
+import mqttClient from "../../mqttClient";
 
 
 const StsPage = () => {
@@ -16,7 +12,7 @@ const StsPage = () => {
       const payload = JSON.stringify(data); // Convert the data to a JSON string
 
       // Publish the data to the 'device/sts' topic
-      client.publish("device/sts", payload, { qos: 1 }, (err) => {
+      mqttClient.publish("device/sts", payload, { qos: 1 }, (err) => {
         if (err) {
           console.error("Failed to publish STS data to MQTT:", err);
         } else {
