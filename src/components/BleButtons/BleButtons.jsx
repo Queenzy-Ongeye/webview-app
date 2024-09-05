@@ -75,7 +75,7 @@ const BleButtons = ({
 
   return (
     <div>
-      <div className="mt-8 w-full max-w-md mx-auto">
+      <div className="mt-8 w-full max-w-md mx-2 my-auto">
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>

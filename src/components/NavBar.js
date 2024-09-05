@@ -24,7 +24,7 @@ const NavigationBar = () => {
           currentTheme === "dark"
             ? "text-white bg-gray-900"
             : "text-white bg-cyan-700"
-        } px-2 py-2 mt-4 ml-4 focus:outline-none fixed top-0 left-0 z-50 lg:px-4 lg:py-4 lg:mt-6 lg:ml-6`}
+        } px-2 my-2 ml-2 focus:outline-none fixed top-0 left-0 z-50 lg:px-4 lg:py-4 lg:mt-6 lg:ml-6`}
         onClick={toggleMenu}
       >
         ☰
@@ -42,7 +42,7 @@ const NavigationBar = () => {
       <nav
         className={`${
           currentTheme === "dark" ? "bg-gray-900" : "bg-cyan-700"
-        } text-white w-64 min-h-screen py-8 fixed top-0 left-0 transform ${
+        } text-white w-62 min-h-screen py-8 fixed top-0 left-0 transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 ease-in-out z-50 flex flex-col justify-between`}
       >
@@ -70,7 +70,9 @@ const NavigationBar = () => {
         </div>
 
         {/* Theme Toggle at the Bottom */}
-        <div className="px-4 py-2 rounded my-2">
+        <hr className="bg-white" />
+        <div className="px-4 rounded my-2">
+          <p className="text-gray-400 font-thin font-mono my-2 ml-0.1 flex-1">Theme</p>
           <ThemeToggle />
         </div>
       </nav>
