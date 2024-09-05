@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FaCheckCircle } from "react-icons/fa"; // Success Icon
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -15,6 +16,7 @@ const BleButtons = ({
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false); // New state for success animations
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -23,7 +25,6 @@ const BleButtons = ({
   });
 
   const uniqueDevice = Array.from(uniqueDevicesMap.values());
-  useEffect(() => {}, [uniqueDevice]);
 
   const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
@@ -35,6 +36,8 @@ const BleButtons = ({
     try {
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
+      setSuccess(true); // Set success when connected
+      setTimeout(() => setSuccess(false), 3000); // Hide success after 3 seconds
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
@@ -72,8 +75,8 @@ const BleButtons = ({
 
   return (
     <div>
-      <div className="mt-8 w-full max-w-md mx-auto">
-        <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4">
+      <div className="mt-8 w-full max-w-md mx-2 my-auto">
+        <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
@@ -81,7 +84,9 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105"
+                className={`flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 ${
+                  success ? "animate-bounce" : ""
+                }`} // Bounce effect on success
               >
                 <div className="w-full">
                   <p className="font-semibold">
@@ -98,12 +103,18 @@ const BleButtons = ({
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       connectingMacAddress === device.macAddress
                         ? "bg-gray-600 text-white cursor-not-allowed"
+                        : success
+                        ? "bg-green-500 text-white animate-pulse"
                         : "bg-cyan-600 text-white hover:bg-cyan-700"
                     }`}
-                    disabled={isLoading}
+                    disabled={
+                      isLoading || connectingMacAddress === device.macAddress
+                    }
                   >
                     {connectingMacAddress === device.macAddress
                       ? "Connecting..."
+                      : success
+                      ? "Connected"
                       : "Connect"}
                   </button>
                   <button
@@ -115,13 +126,24 @@ const BleButtons = ({
                         ? "bg-gray-500 text-white cursor-not-allowed"
                         : "bg-blue-600 text-white hover:bg-blue-700"
                     }`}
-                    disabled={isLoading}
+                    disabled={
+                      isLoading || initializingMacAddress === device.macAddress
+                    }
                   >
                     {initializingMacAddress === device.macAddress
                       ? "Initializing..."
                       : "Init BLE Data"}
                   </button>
                 </div>
+                {/* Success Icon for a Connected Device */}
+                {success && connectingMacAddress !== device.macAddress && (
+                  <div className="flex justify-center items-center mt-2">
+                    <FaCheckCircle
+                      className="text-green-500 animate-ping"
+                      size={24}
+                    />
+                  </div>
+                )}
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
                     <div className="mt-4 grid grid-cols-2 sm:grid-cols-5 gap-4 w-full">
@@ -170,7 +192,7 @@ const BleButtons = ({
               </div>
             ))
           ) : (
-            <p>No devices detected</p>
+            <p className="text-black">No devices detected</p>
           )}
         </div>
       </div>
