@@ -157,39 +157,34 @@ const Home = () => {
     // connectWebViewJavascriptBridge(setupBridge);
 
     // MQTT Data intergration
-    const initConnections = async () => {
+    const initMqttConnection = async () => {
+      setLoading(true); // Set loading to true when starting the connection
       try {
-        // Initialize WebView bridge
-        await new Promise((resolve, reject) => {
-          connectWebViewJavascriptBridge((bridge) => {
-            setupBridge(bridge);
-            resolve();
-          });
-        });
-
-        // Initialize MQTT connection
         const client = new Paho.MQTT.Client(
           "mqtt.omnivoltaic.com",
-          Number(8084),
+          Number(8883),
           "/wss",
           "mqtt-explorer-451dc7fb"
         );
 
-        // Stting callback handlers
+        // Set callback handlers
         client.onConnectionLost = (responseObject) => {
           console.log("Connection Lost: " + responseObject.errorMessage);
+          setLoading(false); // Set loading to false if connection is lost
         };
 
-        client.onMessageArrived = function (message) {
+        client.onMessageArrived = (message) => {
           console.log("Message arrived: " + message.payloadString);
         };
 
         // Called when the connection is made
-        function onConnect() {
-          console.log("Connected!");
-        }
+        const onConnect = () => {
+          console.log("Connected to MQTT broker!");
+          setMqttClient(client); // Set the client in state when connected
+          setLoading(false); // Set loading to false after successful connection
+        };
 
-        // Connect the client, providing an onConnect callback
+        // Connect the client
         client.connect({
           onSuccess: onConnect,
           mqttVersion: 3,
@@ -197,9 +192,12 @@ const Home = () => {
           password: "!mqttsc.2024#",
         });
       } catch (error) {
-        console.error("Error during initialization:", error);
+        console.error("Error during MQTT initialization:", error);
+        setLoading(false); // Set loading to false if there's an error
       }
     };
+
+    initMqttConnection();
 
     initConnections();
   }, [state.bridgeInitialized, dispatch]);
