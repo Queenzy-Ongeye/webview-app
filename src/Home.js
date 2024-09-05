@@ -144,65 +144,85 @@ const Home = () => {
     const initMqttConnections = async () => {
       setLoading(true);
       try {
-        await new Promise((resolve, reject) => {
+        // Ensure WebViewJavascriptBridge is connected first
+        await new Promise((resolve) => {
           connectWebViewJavascriptBridge((bridge) => {
             setupBridge(bridge);
             resolve();
           });
         });
+
+        // MQTT WebSocket configuration
         const mqttConfig = {
-          host: "wss://mqtt.omnivoltaic.com",
-          port: 80,
+          host: "mqtt.omnivoltaic.com", // Remove "wss://" here, as it will be handled by useSSL
+          port: 8084, // Secure WebSocket port
+          path: "/mqtt", // Path for MQTT over WebSockets
         };
 
+        // Create Paho MQTT client using WebSocket Secure (WSS)
         const client = new Paho.MQTT.Client(
-          `${mqttConfig.host}:${mqttConfig.port}`);
+          `${mqttConfig.host}`,
+          Number(mqttConfig.port),
+          mqttConfig.path
+        );
 
+        // Handle connection loss
         client.onConnectionLost = (responseObject) => {
           console.log("Connection Lost: " + responseObject.errorMessage);
           setLoading(false);
+
           if (responseObject.errorCode !== 0) {
+            console.log("Attempting to reconnect...");
             client.connect({
               onSuccess: () => {
-                mqttClientRef.current = client;
+                console.log("Reconnected to MQTT broker.");
+                mqttClientRef.current = client; // Store client in ref
                 dispatch({ type: "SET_MQTT_CLIENT", payload: client });
               },
               onFailure: (err) => {
-                console.error("Reconnection to MQTT broker failed:", err);
+                console.error("Reconnection failed:", err);
               },
             });
           }
         };
 
+        // Handle incoming MQTT messages
         client.onMessageArrived = (message) => {
           console.log("Message arrived: " + message.payloadString);
         };
 
+        // Connect to MQTT broker with SSL (WSS) and authentication
         client.connect({
           onSuccess: () => {
-            mqttClientRef.current = client;
+            console.log("Successfully connected to MQTT broker via WSS.");
+            mqttClientRef.current = client; // Store client in ref
             dispatch({ type: "SET_MQTT_CLIENT", payload: client });
-            setLoading(false);
+            setLoading(false); // Connection successful
           },
-          mqttVersion: 3,
-          username: "Scanner1",
-          password: "!mqttsc.2024#",
+          useSSL: true, // Enable SSL for secure WebSocket connection
+          mqttVersion: 3, // MQTT version
+          timeout: 3, // Timeout for connection attempt
+          username: "Scanner1", // MQTT broker username
+          password: "!mqttsc.2024#", // MQTT broker password
           onFailure: (err) => {
             console.error("MQTT Connection failed:", err);
-            setLoading(false);
+            setLoading(false); // Connection failed
           },
         });
       } catch (error) {
         console.error("Error during MQTT initialization:", error.message);
-        setLoading(false);
+        setLoading(false); // Handle error
       }
     };
 
+    // Ensure the MQTT connection is established only when necessary
     if (!state.mqttClient && state.bridgeInitialized) {
       initMqttConnections();
     }
-    const intervalId = setInterval(initMqttConnections, 60000);
-    return () => clearInterval(intervalId);
+
+    // Reconnect every 60 seconds if necessary
+    const intervalId = setInterval(initMqttConnections, 6000); // 60 seconds reconnect interval
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [state.bridgeInitialized, dispatch, state.mqttClient]);
 
   useEffect(() => {
