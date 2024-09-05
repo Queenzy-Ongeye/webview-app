@@ -152,15 +152,12 @@ const Home = () => {
         });
         const mqttConfig = {
           host: "wss://mqtt.omnivoltaic.com",
-          port: 8883,
-          clientId: `mqtt_js_${Math.random().toString(16).substr(2, 8)}`,
+          port: 1883,
           path: "/mqtt",
         };
 
         const client = new Paho.MQTT.Client(
-          `${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`,
-          mqttConfig.clientId
-        );
+          `${mqttConfig.host}:${mqttConfig.port}${mqttConfig.path}`);
 
         client.onConnectionLost = (responseObject) => {
           console.log("Connection Lost: " + responseObject.errorMessage);
