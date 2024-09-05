@@ -167,10 +167,19 @@ const Home = () => {
             resolve();
           });
         });
+        const mqttConfig = {
+          host: "mqtt.omnivoltaic.com", // Example public broker
+          port: 8083,
+          clientId: `mqtt_js_${Math.random().toString(16).substr(2, 8)}`,
+          username: "Scanner1",
+          password: "!mqttsc.2024#",
+          path: "/mqtt",
+        };
+
         const client = new Paho.MQTT.Client(
-          "mqtt.omnivoltaic.com",
-          Number(1883),
-          "/wss"
+          mqttConfig.host,
+          mqttConfig.port,
+          mqttConfig.clientId
         );
 
         // Set callback handlers
@@ -186,7 +195,7 @@ const Home = () => {
         // Called when the connection is made
         const onConnect = () => {
           console.log("Connected to MQTT broker!");
-          setMqttClient(client); // Set the client in state when connected
+          dispatch({ type: "SET_MQTT_CLIENT", payload: client });
           setLoading(false); // Set loading to false after successful connection
         };
 
@@ -237,8 +246,8 @@ const Home = () => {
   };
 
   const publishMqttData = (topic, message, qos = 0) => {
-    if (mqttClient && mqttClient.isConnected()) {
-      console.log("Mqtt client is here: ", mqttClient);
+    console.log("Mqtt client is here: ", state.mqttClient);
+    if (state.mqttClient && state.mqttClient.isConnected()) {
       const msg = new Paho.MQTT.Message(message);
       msg.destinationName = topic;
       msg.qos = qos;
