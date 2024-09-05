@@ -143,12 +143,14 @@ const Home = () => {
 
     const initMqttConnections = async () => {
       setLoading(true);
+      console.log("Starting MQTT initialization...");
       try {
         // Ensure WebViewJavascriptBridge is connected first
         await new Promise((resolve) => {
           connectWebViewJavascriptBridge((bridge) => {
             setupBridge(bridge);
             resolve();
+            console.log("WebViewJavascriptBridge setup complete.");
           });
         });
 
@@ -191,6 +193,7 @@ const Home = () => {
           console.log("Message arrived: " + message.payloadString);
         };
 
+        console.log("WebViewJavascriptBridge connected, proceeding with MQTT setup...");
         // Connect to MQTT broker with SSL (WSS) and authentication
         client.connect({
           onSuccess: () => {
