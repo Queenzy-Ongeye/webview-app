@@ -169,16 +169,15 @@ const Home = () => {
         });
         const mqttConfig = {
           host: "mqtt.omnivoltaic.com", // Example public broker
-          port: 8083,
+          port: 1883,
           clientId: `mqtt_js_${Math.random().toString(16).substr(2, 8)}`,
-          username: "Scanner1",
-          password: "!mqttsc.2024#",
           path: "/mqtt",
         };
 
         const client = new Paho.MQTT.Client(
           mqttConfig.host,
           mqttConfig.port,
+          mqttConfig.path,
           mqttConfig.clientId
         );
 
