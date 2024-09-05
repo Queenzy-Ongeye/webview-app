@@ -164,7 +164,7 @@ const Home = () => {
         const client = new Paho.MQTT.Client(
           "mqtt.omnivoltaic.com",
           Number(1883),
-          "/wss",
+          "/wss"
         );
 
         // Set callback handlers
@@ -192,7 +192,7 @@ const Home = () => {
           password: "!mqttsc.2024#",
         });
       } catch (error) {
-        console.error("Error during MQTT initialization:", error);
+        console.error("Error during MQTT initialization:", error.message);
         setLoading(false); // Set loading to false if there's an error
       }
     };
@@ -228,6 +228,7 @@ const Home = () => {
 
   const publishMqttData = (topic, message, qos = 0) => {
     if (mqttClient && mqttClient.isConnected()) {
+      console.log("Mqtt client is here: ", mqttClient);
       const msg = new Paho.MQTT.Message(message);
       msg.destinationName = topic;
       msg.qos = qos;
@@ -441,27 +442,21 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {loading ? (
-        <p>Mqtt Connecting ...</p>
-      ) : (
-        <>
-          <div className="flex-grow">
-            <BleButtons
-              connectToBluetoothDevice={connectToBluetoothDevice}
-              detectedDevices={state.detectedDevices}
-              initBleData={initBleData}
-              initBleDataResponse={state.initBleData}
-              isLoading={state.isLoading}
-            />
-          </div>
-          <BottomActionBar
-            onStartScan={startBleScan}
-            onStopScan={stopBleScan}
-            onScanData={startQrCode}
-            isScanning={state.isScanning}
-          />
-        </>
-      )}
+      <div className="flex-grow">
+        <BleButtons
+          connectToBluetoothDevice={connectToBluetoothDevice}
+          detectedDevices={state.detectedDevices}
+          initBleData={initBleData}
+          initBleDataResponse={state.initBleData}
+          isLoading={state.isLoading}
+        />
+      </div>
+      <BottomActionBar
+        onStartScan={startBleScan}
+        onStopScan={stopBleScan}
+        onScanData={startQrCode}
+        isScanning={state.isScanning}
+      />
     </div>
   );
 };
