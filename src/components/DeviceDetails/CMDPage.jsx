@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import mqttClient from "../../mqttClient";
 
 const CMDPage = () => {
   const location = useLocation();
