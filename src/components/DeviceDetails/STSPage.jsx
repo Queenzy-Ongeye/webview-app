@@ -95,26 +95,6 @@ const StsPage = () => {
       ) : (
         <p>No data available</p>
       )}
-
-      {state.data && state.data.STS ? (
-        <button
-          onClick={handlePublishClick}
-          className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition duration-200 flex items-center"
-        >
-          {isPublishing ? (
-            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
-          ) : publishSuccess ? (
-            <AiOutlineCheckCircle className="h-5 w-5 mr-2" />
-          ) : null}
-          {isPublishing
-            ? "Publishing..."
-            : publishSuccess
-            ? "Published!"
-            : "Publish Data to MQTT"}
-        </button>
-      ) : (
-        <p className="text-red-500">No STS data available to publish</p>
-      )}
     </div>
   );
 };
