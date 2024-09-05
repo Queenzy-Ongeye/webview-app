@@ -10,6 +10,7 @@ const Home = () => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true); // New loading state
+  const [mqttClient, setMqttClient] = useState(null);
 
   useEffect(() => {
     getAllData().then((data) => {
@@ -157,39 +158,33 @@ const Home = () => {
     // connectWebViewJavascriptBridge(setupBridge);
 
     // MQTT Data intergration
-    const initConnections = async () => {
+    const initMqttConnections = async () => {
+      setLoading(true); // Set loading to true when starting the connection
       try {
-        // Initialize WebView bridge
-        await new Promise((resolve, reject) => {
-          connectWebViewJavascriptBridge((bridge) => {
-            setupBridge(bridge);
-            resolve();
-          });
-        });
-
-        // Initialize MQTT connection
         const client = new Paho.MQTT.Client(
           "mqtt.omnivoltaic.com",
-          Number(8084),
+          Number(1883),
           "/wss",
-          "mqtt-explorer-451dc7fb"
         );
 
-        // Stting callback handlers
+        // Set callback handlers
         client.onConnectionLost = (responseObject) => {
           console.log("Connection Lost: " + responseObject.errorMessage);
+          setLoading(false); // Set loading to false if connection is lost
         };
 
-        client.onMessageArrived = function (message) {
+        client.onMessageArrived = (message) => {
           console.log("Message arrived: " + message.payloadString);
         };
 
         // Called when the connection is made
-        function onConnect() {
-          console.log("Connected!");
-        }
+        const onConnect = () => {
+          console.log("Connected to MQTT broker!");
+          setMqttClient(client); // Set the client in state when connected
+          setLoading(false); // Set loading to false after successful connection
+        };
 
-        // Connect the client, providing an onConnect callback
+        // Connect the client
         client.connect({
           onSuccess: onConnect,
           mqttVersion: 3,
@@ -197,24 +192,15 @@ const Home = () => {
           password: "!mqttsc.2024#",
         });
       } catch (error) {
-        console.error("Error during initialization:", error);
+        console.error("Error during MQTT initialization:", error);
+        setLoading(false); // Set loading to false if there's an error
       }
     };
 
-    initConnections();
+    initMqttConnections();
+    const intervalId = setInterval(initMqttConnections, 60000);
+    return () => clearInterval(intervalId);
   }, [state.bridgeInitialized, dispatch]);
-
-  const publishMqttData = (topic, message, qos = 0) => {
-    if (state.mqttClient && state.mqttClient.isConnected()) {
-      const msg = new Paho.MQTT.Message(message);
-      msg.destinationName = topic;
-      msg.qos = qos;
-      state.mqttClient.send(msg);
-      console.log(`Message "${message}" published to topic "${topic}"`);
-    } else {
-      console.error("MQTT client is not connected.");
-    }
-  };
 
   const publishAllServices = (dataList) => {
     if (typeof dataList === "object" && dataList !== null) {
@@ -237,6 +223,18 @@ const Home = () => {
       }
     } else {
       console.warn("DataList is either null or not a valid object.");
+    }
+  };
+
+  const publishMqttData = (topic, message, qos = 0) => {
+    if (mqttClient && mqttClient.isConnected()) {
+      const msg = new Paho.MQTT.Message(message);
+      msg.destinationName = topic;
+      msg.qos = qos;
+      mqttClient.send(msg);
+      console.log(`Message "${message}" published to topic "${topic}"`);
+    } else {
+      console.error("MQTT client is not connected.");
     }
   };
 
@@ -443,21 +441,27 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex-grow">
-        <BleButtons
-          connectToBluetoothDevice={connectToBluetoothDevice}
-          detectedDevices={state.detectedDevices}
-          initBleData={initBleData}
-          initBleDataResponse={state.initBleData}
-          isLoading={state.isLoading}
-        />
-      </div>
-      <BottomActionBar
-        onStartScan={startBleScan}
-        onStopScan={stopBleScan}
-        onScanData={startQrCode}
-        isScanning={state.isScanning}
-      />
+      {loading ? (
+        <p>Mqtt Connecting ...</p>
+      ) : (
+        <>
+          <div className="flex-grow">
+            <BleButtons
+              connectToBluetoothDevice={connectToBluetoothDevice}
+              detectedDevices={state.detectedDevices}
+              initBleData={initBleData}
+              initBleDataResponse={state.initBleData}
+              isLoading={state.isLoading}
+            />
+          </div>
+          <BottomActionBar
+            onStartScan={startBleScan}
+            onStopScan={stopBleScan}
+            onScanData={startQrCode}
+            isScanning={state.isScanning}
+          />
+        </>
+      )}
     </div>
   );
 };
