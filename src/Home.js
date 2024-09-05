@@ -169,7 +169,7 @@ const Home = () => {
         });
         const mqttConfig = {
           host: "wss://mqtt.omnivoltaic.com", // Use WebSocket protocol
-          port: 1883, // WebSocket port
+          port: 8883, // WebSocket port
           clientId: `mqtt_js_${Math.random().toString(16).substr(2, 8)}`,
           path: "/mqtt",
         };
