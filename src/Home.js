@@ -157,7 +157,7 @@ const Home = () => {
         // MQTT WebSocket configuration
         const mqttConfig = {
           host: "mqtt.omnivoltaic.com", // Remove "wss://" here, as it will be handled by useSSL
-          port: 8084, // Secure WebSocket port
+          port: 1883, // Secure WebSocket port
           path: "/mqtt", // Path for MQTT over WebSockets
         };
 
@@ -202,7 +202,7 @@ const Home = () => {
             dispatch({ type: "SET_MQTT_CLIENT", payload: client });
             setLoading(false); // Connection successful
           },
-          useSSL: true, // Enable SSL for secure WebSocket connection
+          useSSL: false, // Enable SSL for secure WebSocket connection
           mqttVersion: 3, // MQTT version
           timeout: 3, // Timeout for connection attempt
           username: "Scanner1", // MQTT broker username
