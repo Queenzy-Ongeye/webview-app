@@ -152,7 +152,7 @@ const Home = () => {
         });
         const mqttConfig = {
           host: "wss://mqtt.omnivoltaic.com",
-          port: 1884,
+          port: 80,
         };
 
         const client = new Paho.MQTT.Client(
