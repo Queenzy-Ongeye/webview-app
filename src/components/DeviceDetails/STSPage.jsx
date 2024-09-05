@@ -8,11 +8,12 @@ const StsPage = () => {
   const { data } = location.state || {};
 
   useEffect(() => {
-    if (data && data.length > 0) {
+    if (data && Object.keys(data).length > 0) {
       const payload = JSON.stringify(data); // Convert the data to a JSON string
+      console.log("Data is here: ", payload);
 
       // Publish the data to the 'device/sts' topic
-      mqttClient.publish("device/sts", payload, { qos: 1 }, (err) => {
+      mqttClient.publish("emit/content/bleData/sts", payload, { qos: 1 }, (err) => {
         if (err) {
           console.error("Failed to publish STS data to MQTT:", err);
         } else {
@@ -20,7 +21,7 @@ const StsPage = () => {
         }
       });
     }
-  }, [data]); // This effect will run when 'data' changes
+  }, [data]); 
 
   return (
     <div className="p-4">
