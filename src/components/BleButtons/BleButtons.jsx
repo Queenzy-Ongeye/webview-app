@@ -37,7 +37,7 @@ const BleButtons = ({
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
       setSuccess(true); // Set success when connected
-      setTimeout(() => setSuccess(false), 3000); // Hide success after 3 seconds
+      setTimeout(() => setSuccess(false), 10000); // Hide success after 3 seconds
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
@@ -75,7 +75,7 @@ const BleButtons = ({
 
   return (
     <div>
-      <div className="mt-8 w-full max-w-md mx-2 my-auto">
+      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-auto">
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
@@ -84,7 +84,7 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105"
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-auto"
               >
                 <div className="w-full">
                   <p className="font-semibold">
@@ -141,7 +141,7 @@ const BleButtons = ({
                 )}
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full overflow-x-auto">
                       <button
                         onClick={() =>
                           navigateToPage("/att", "ATT_SERVICE_NAME")
