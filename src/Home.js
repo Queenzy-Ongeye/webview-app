@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import BleButtons from "./components/BleButtons/BleButtons";
 import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
@@ -10,6 +10,7 @@ const Home = () => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true); // New loading state
+  const mqttClientRef = useRef(null); // Ref to store MQTT client persistently
 
   useEffect(() => {
     getAllData().then((data) => {
@@ -17,6 +18,7 @@ const Home = () => {
         dispatch({ type: "SET_BLE_DATA", payload: data });
       }
     });
+
     const connectWebViewJavascriptBridge = (callback) => {
       if (window.WebViewJavascriptBridge) {
         callback(window.WebViewJavascriptBridge);
@@ -41,7 +43,7 @@ const Home = () => {
         }, 3000);
       }
     };
-    // Setting up Javascript Bridge
+
     const setupBridge = (bridge) => {
       if (!state.bridgeInitialized) {
         bridge.init((message, responseCallback) => {
@@ -52,7 +54,6 @@ const Home = () => {
           try {
             console.log("Raw data received from 'print':", data);
             const parsedData = JSON.parse(data);
-            console.log("Parsed data from 'print':", parsedData);
             if (parsedData && parsedData.data) {
               dispatch({ type: "SET_BLE_DATA", payload: parsedData.data });
               responseCallback(parsedData.data);
@@ -71,18 +72,9 @@ const Home = () => {
           "findBleDeviceCallBack",
           (data, responseCallback) => {
             try {
-              console.log(
-                "Raw data received from 'findBleDeviceCallBack':",
-                data
-              );
               const parsedData = JSON.parse(data);
-              console.log(
-                "Parsed data from 'findBleDeviceCallBack':",
-                parsedData
-              );
               if (parsedData) {
                 dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
-                console.log("Updated detectedDevices state:", parsedData);
                 responseCallback(parsedData);
               } else {
                 throw new Error("Parsed data is not in the expected format.");
@@ -99,8 +91,7 @@ const Home = () => {
         bridge.registerHandler(
           "bleConnectSuccessCallBack",
           (data, responseCallback) => {
-            console.log("Bluetooth connection successful:", data);
-            const macAddress = data.macAddress; // Assuming data contains the macAddress
+            const macAddress = data.macAddress;
             if (macAddress) {
               initBleData(macAddress);
             } else {
@@ -124,7 +115,6 @@ const Home = () => {
         bridge.registerHandler(
           "bleInitDataCallBack",
           (data, responseCallback) => {
-            console.log("Bluetooth initialization data received:", data);
             try {
               const parsedData = JSON.parse(data);
               dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
@@ -142,28 +132,25 @@ const Home = () => {
         console.log("WebViewJavascriptBridge initialized.");
       }
 
-      // Setting up QR Code scanner Handler
       bridge.registerHandler(
         "scanQrCodeResultCallBack",
         (data, responseCallback) => {
-          console.log("QR Code scan result:", data);
           dispatch({ type: "SET_QR_DATA", payload: data });
           responseCallback(data);
         }
       );
-      dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
-      console.log("WebViewJavascriptBridge initialized.");
     };
-    // connectWebViewJavascriptBridge(setupBridge);
 
-    // MQTT Data intergration
-    const initConnections = async () => {
+    const initMqttConnections = async () => {
+      setLoading(true);
+      console.log("Starting MQTT initialization...");
       try {
-        // Initialize WebView bridge
-        await new Promise((resolve, reject) => {
+        // Ensure WebViewJavascriptBridge is connected first
+        await new Promise((resolve) => {
           connectWebViewJavascriptBridge((bridge) => {
             setupBridge(bridge);
             resolve();
+            console.log("WebViewJavascriptBridge setup complete.");
           });
         });
 
@@ -205,7 +192,8 @@ const Home = () => {
           if (client) client.end();
         };
       } catch (error) {
-        console.error("Error during initialization:", error);
+        console.error("Error during MQTT initialization:", error.message);
+        setLoading(false); // Handle error
       }
     };
 
@@ -241,7 +229,6 @@ const Home = () => {
         "startBleScan",
         "",
         (responseData) => {
-          console.log("Response from startBleScan:", responseData);
           try {
             const jsonData = JSON.parse(responseData);
             dispatch({ type: "SET_BLE_DATA", payload: jsonData });
@@ -261,13 +248,9 @@ const Home = () => {
 
   const stopBleScan = () => {
     if (window.WebViewJavascriptBridge && state.isScanning) {
-      window.WebViewJavascriptBridge.callHandler(
-        "stopBleScan",
-        "",
-        (responseData) => {
-          console.log("Scanning stopped");
-        }
-      );
+      window.WebViewJavascriptBridge.callHandler("stopBleScan", "", () => {
+        console.log("Scanning stopped");
+      });
       dispatch({ type: "SET_IS_SCANNING", payload: false });
     } else {
       console.error(
@@ -276,33 +259,7 @@ const Home = () => {
     }
   };
 
-  const toastMsg = () => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "toastMsg",
-        "toastMsg",
-        (responseData) => {
-          try {
-            const jsonData = JSON.parse(responseData);
-            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'toastMsg' response:",
-              error
-            );
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
   const connectToBluetoothDevice = (macAddress) => {
-    console.log(
-      "Attempting to connect to Bluetooth device with MAC Address:",
-      macAddress
-    );
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
@@ -310,7 +267,6 @@ const Home = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-            console.log("Bluetooth connection response:", parsedData);
             if (parsedData.respCode === "200") {
               initBleData(macAddress);
             }
@@ -329,7 +285,6 @@ const Home = () => {
   };
 
   const initBleData = (macAddress) => {
-    console.log("Initializing BLE data for MAC Address:", macAddress);
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "initBleData",
@@ -337,7 +292,6 @@ const Home = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-            console.log("Bluetooth initialization response:", parsedData);
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
           } catch (error) {
             console.error(
@@ -352,14 +306,12 @@ const Home = () => {
     }
   };
 
-  // QR Code onclick function
   const startQrCode = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
         999,
         (responseData) => {
-          console.log("Response from startQrCodeScan", responseData);
           dispatch({ type: "SET_QR_DATA", payload: responseData });
           navigate("/scan-data", { state: { scannedData: responseData } });
         }
@@ -369,66 +321,6 @@ const Home = () => {
       console.error("Web view initialization failed");
     }
   };
-
-  const handleScanData = (data) => {
-    console.log("Scanned data received: ", data);
-
-    if (isBarcode(data)) {
-      fetchProductDetails(data);
-    } else if (isQrCode(data)) {
-      dispatch({ type: "SET_QR_DATA", payload: data });
-    }
-  };
-
-  const isBarcode = (data) => {
-    const numericPattern = /^[0-9]+$/;
-    const barcodeLengths = [12, 13, 8]; // Adjust lengths as necessary for your application
-
-    return numericPattern.test(data) && barcodeLengths.includes(data.length);
-  };
-
-  const isQrCode = (data) => {
-    const urlPattern = /^(http|https):\/\/[^ "]+$/;
-    const structuredDataPattern =
-      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/;
-    const nonNumericPattern = /[^0-9]/;
-
-    if (urlPattern.test(data)) {
-      return true;
-    }
-
-    if (structuredDataPattern.test(data)) {
-      return true;
-    }
-
-    if (data.length > 20 && nonNumericPattern.test(data)) {
-      return true;
-    }
-
-    return false;
-  };
-
-  const fetchProductDetails = (barcode) => {
-    // Make an API call or query your IndexedDB/local storage
-    // to get product details using the barcode
-    getDataByBarcode(barcode)
-      .then((product) => {
-        if (product) {
-          dispatch({ type: "SET_PRODUCT_DATA", payload: product });
-        } else {
-          console.error("Product not found for barcode:", barcode);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching product details: ", error);
-      });
-  };
-
-  const handleSettings = () => {
-    alert("Settings selected");
-  };
-
-  console.log("State in Home component:", state);
 
   return (
     <div className="flex flex-col min-h-screen">
