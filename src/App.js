@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import ThemeProvider from "./utility/ThemeContext";
+import ThemeProvider from "./utility/ThemeContext"; // Import ThemeProvider
 
 const Home = lazy(() => import("./Home"));
 const AttPage = lazy(() => import("./components/DeviceDetails/ATTPage"));
@@ -16,30 +16,32 @@ const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanData"));
 const App = () => {
   return (
     <StoreProvider>
-      <Router>
-        <div className="min-h-screen flex">
-          <NavigationBar />
-          <div className="flex-grow">
-            <Suspense
-              fallback={
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                  <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
-                </div>
-              }
-            >
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/att" element={<AttPage />} />
-                <Route path="/cmd" element={<CMDPage />} />
-                <Route path="/sts" element={<StsPage />} />
-                <Route path="/dta" element={<DTAPage />} />
-                <Route path="/dia" element={<DIAPage />} />
-                <Route path="/scan-data" element={<ScanData />} />
-              </Routes>
-            </Suspense>
+      <ThemeProvider>
+        <Router>
+          <div className="min-h-screen flex">
+            <NavigationBar />
+            <div className="flex-grow">
+              <Suspense
+                fallback={
+                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                    <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+                  </div>
+                }
+              >
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/att" element={<AttPage />} />
+                  <Route path="/cmd" element={<CMDPage />} />
+                  <Route path="/sts" element={<StsPage />} />
+                  <Route path="/dta" element={<DTAPage />} />
+                  <Route path="/dia" element={<DIAPage />} />
+                  <Route path="/scan-data" element={<ScanData />} />
+                </Routes>
+              </Suspense>
+            </div>
           </div>
-        </div>{" "}
-      </Router>
+        </Router>
+      </ThemeProvider>
     </StoreProvider>
   );
 };
