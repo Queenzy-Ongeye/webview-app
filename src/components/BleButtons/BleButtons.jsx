@@ -35,10 +35,13 @@ const BleButtons = ({
     setLoading(true);
 
     try {
-      await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device", macAddress);
-      setConnectionSuccess(true); // Set success when connected
-      setTimeout(() => setConnectionSuccess(false), 10000); // Hide success after 10 seconds
+      const result = await connectToBluetoothDevice(macAddress);
+      if (result && result.success) {
+        // Check if the connection was successful
+        setConnectionSuccess(true); // Set success when data is actually received
+      } else {
+        throw new Error("Failed to connect");
+      }
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
@@ -57,9 +60,13 @@ const BleButtons = ({
 
     try {
       const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-      setInitSuccess(true); // Set success when initialized
-      setTimeout(() => setInitSuccess(false), 10000); // Hide success after 10 seconds
+      if (response && response.success) {
+        // Check if initialization was successful
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+        setInitSuccess(true); // Set success when initialization data is received
+      } else {
+        throw new Error("Failed to initialize BLE data");
+      }
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
