@@ -11,7 +11,7 @@ const StsPage = lazy(() => import("./components/DeviceDetails/STSPage"));
 const CMDPage = lazy(() => import("./components/DeviceDetails/CMDPage"));
 const DTAPage = lazy(() => import("./components/DeviceDetails/DTAPage"));
 const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
-const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanData"));
+const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanDataPage"));
 
 const App = () => {
   return (
