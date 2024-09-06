@@ -34,9 +34,9 @@ const ScanDataPage = () => {
                 </td>
               </tr>
               <tr>
-                <td className="py-2 px-4 border-t">Price</td>
+                <td className="py-2 px-4 border-t">Value</td>
                 <td className="py-2 px-4 border-t">
-                  {scannedData.value || "Not available"}
+                  Not available
                 </td>
               </tr>
             </tbody>
