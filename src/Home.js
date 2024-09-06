@@ -228,16 +228,68 @@ const Home = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
-        999,
+        999, // Arbitrary request ID
         (responseData) => {
-          dispatch({ type: "SET_QR_DATA", payload: responseData });
+          console.log("Response from startQrCodeScan", responseData);
+          handleScanData(responseData);
           navigate("/scan-data", { state: { scannedData: responseData } });
         }
       );
       dispatch({ type: "SET_QR_SCANNING", payload: true });
     } else {
-      console.error("Web view initialization failed");
+      console.error("WebViewJavascriptBridge is not initialized.");
     }
+  };
+
+  const handleScanData = (data) => {
+    console.log("Scanned data received: ", data);
+
+    if (isBarcode(data)) {
+      fetchProductDetails(data);
+    } else if (isQrCode(data)) {
+      dispatch({ type: "SET_QR_DATA", payload: data });
+    }
+  };
+
+  const isBarcode = (data) => {
+    const numericPattern = /^[0-9]+$/;
+    const barcodeLengths = [12, 13, 8]; // Adjust lengths as necessary for your application
+    return numericPattern.test(data) && barcodeLengths.includes(data.length);
+  };
+
+  const isQrCode = (data) => {
+    const urlPattern = /^(http|https):\/\/[^ "]+$/;
+    const structuredDataPattern =
+      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/;
+    const nonNumericPattern = /[^0-9]/;
+
+    if (urlPattern.test(data)) {
+      return true;
+    }
+
+    if (structuredDataPattern.test(data)) {
+      return true;
+    }
+
+    if (data.length > 20 && nonNumericPattern.test(data)) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const fetchProductDetails = (barcode) => {
+    getDataByBarcode(barcode)
+      .then((product) => {
+        if (product) {
+          dispatch({ type: "SET_PRODUCT_DATA", payload: product });
+        } else {
+          console.error("Product not found for barcode:", barcode);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching product details: ", error);
+      });
   };
 
   return (
