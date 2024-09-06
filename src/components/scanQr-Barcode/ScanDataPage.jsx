@@ -3,8 +3,12 @@ import { useStore } from "../../service/store";
 import { useLocation } from "react-router-dom";
 
 const ScanDataPage = () => {
-  const location = useLocation();
-  const { scannedData } = location.state || {};
+  const location = useLocation(); // This is used to access the passed state from navigation
+  const { state } = useStore(); // This accesses your global state
+  const { qrData } = state; // Get QR data from your store
+
+  // Check if data is passed via navigation or in global state
+  const scannedData = location.state?.scannedData || qrData;
 
   // Assuming scannedData is an object with product details
   return (
