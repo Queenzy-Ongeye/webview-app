@@ -233,13 +233,22 @@ const Home = () => {
           try {
             console.log("Response from startQrCodeScan", responseData);
 
-            // Ensure the responseData is not null or undefined
-            if (!responseData) {
-              throw new Error("No QR or barcode scan data received");
+            // Parse the nested response data
+            const parsedData = JSON.parse(responseData.data);
+
+            if (
+              !parsedData ||
+              !parsedData.respData ||
+              !parsedData.respData.value
+            ) {
+              throw new Error("No valid QR or barcode scan data received");
             }
 
+            const scannedValue = parsedData.respData.value; // Extract the scanned value (barcode/QR code)
+            console.log("Scanned Value:", scannedValue);
+
             // Process the scanned data to check whether it's a QR code or barcode
-            handleScanData(responseData);
+            handleScanData(scannedValue);
           } catch (error) {
             console.error("Error during QR/Barcode scan:", error);
           }
