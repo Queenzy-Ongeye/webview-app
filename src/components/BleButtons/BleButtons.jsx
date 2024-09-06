@@ -39,6 +39,7 @@ const BleButtons = ({
       if (result && result.success) {
         // Check if the connection was successful
         setConnectionSuccess(true); // Set success when data is actually received
+        setTimeout(() => setConnectionSuccess(false), 70000); // Hide success after 10 seconds
       } else {
         throw new Error("Failed to connect");
       }
@@ -64,6 +65,7 @@ const BleButtons = ({
         // Check if initialization was successful
         dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
         setInitSuccess(true); // Set success when initialization data is received
+        setTimeout(() => setInitSuccess(false), 70000); // Hide success after 10 seconds
       } else {
         throw new Error("Failed to initialize BLE data");
       }
