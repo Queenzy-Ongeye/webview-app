@@ -35,14 +35,10 @@ const BleButtons = ({
     setLoading(true);
 
     try {
-      const result = await connectToBluetoothDevice(macAddress);
-      if (result && result.success) {
-        // Check if the connection was successful
-        setConnectionSuccess(true); // Set success when data is actually received
-        setTimeout(() => setConnectionSuccess(false), 70000); // Hide success after 10 seconds
-      } else {
-        throw new Error("Failed to connect");
-      }
+      await connectToBluetoothDevice(macAddress);
+      console.log("Connected to Bluetooth device", macAddress);
+      setConnectionSuccess(true); // Set success when connected
+      setTimeout(() => setConnectionSuccess(false), 10000); // Hide success after 10 seconds
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
@@ -61,14 +57,9 @@ const BleButtons = ({
 
     try {
       const response = await initBleData(macAddress);
-      if (response && response.success) {
-        // Check if initialization was successful
-        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-        setInitSuccess(true); // Set success when initialization data is received
-        setTimeout(() => setInitSuccess(false), 70000); // Hide success after 10 seconds
-      } else {
-        throw new Error("Failed to initialize BLE data");
-      }
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+      setInitSuccess(true); // Set success when initialized
+      setTimeout(() => setInitSuccess(false), 10000); // Hide success after 10 seconds
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
@@ -138,13 +129,13 @@ const BleButtons = ({
                         : initSuccess &&
                           initializingMacAddress !== device.macAddress
                         ? "bg-green-500 text-white"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
+                        : "bg-cyan-700 text-white"
                     }`}
                     disabled={
                       isLoading || initializingMacAddress === device.macAddress
                     }
                   >
-                    {initializingMacAddress === device.macAddress
+                    {isLoading
                       ? "Initializing..."
                       : initSuccess
                       ? "Initialized"
