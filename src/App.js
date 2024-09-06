@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 import { StoreProvider } from "./service/store";
 import NavigationBar from "./components/NavBar";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
