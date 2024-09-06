@@ -225,70 +225,71 @@ const Home = () => {
 
   const startQrCode = () => {
     if (window.WebViewJavascriptBridge) {
+      // Trigger native QR/Barcode scan via the bridge
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
         999, // Arbitrary request ID
         (responseData) => {
           try {
             console.log("Response from startQrCodeScan", responseData);
-  
-            // Check if the responseData is not null or undefined
+
+            // Ensure the responseData is not null or undefined
             if (!responseData) {
-              throw new Error("No QR scan data received");
+              throw new Error("No QR or barcode scan data received");
             }
-  
-            // Ensure the response is in an expected format
+
+            // Process the scanned data to check whether it's a QR code or barcode
             handleScanData(responseData);
-  
-            // Navigate only if the response data is valid
+
+            // Navigate only if valid scan data is available
             navigate("/scan-data", { state: { scannedData: responseData } });
           } catch (error) {
-            console.error("Error during QR scan:", error);
+            console.error("Error during QR/Barcode scan:", error);
           }
         }
       );
+      // Update the state to show scanning is active
       dispatch({ type: "SET_QR_SCANNING", payload: true });
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
-  
 
   const handleScanData = (data) => {
     console.log("Scanned data received: ", data);
 
+    // Check if it's a barcode
     if (isBarcode(data)) {
-      fetchProductDetails(data);
-    } else if (isQrCode(data)) {
-      dispatch({ type: "SET_QR_DATA", payload: data });
+      fetchProductDetails(data); // Process barcode to fetch product details
+    }
+    // Otherwise, it should be a QR code
+    else if (isQrCode(data)) {
+      dispatch({ type: "SET_QR_DATA", payload: data }); // Save QR code data in state
+    } else {
+      console.error("Invalid scan data. Neither a barcode nor a QR code.");
     }
   };
 
+  // Function to check if data is a barcode (numeric string with specific lengths)
   const isBarcode = (data) => {
-    const numericPattern = /^[0-9]+$/;
-    const barcodeLengths = [12, 13, 8]; // Adjust lengths as necessary for your application
+    const numericPattern = /^[0-9]+$/; // Only numeric values
+    const barcodeLengths = [8, 12, 13]; // Common barcode lengths (UPC, EAN)
     return numericPattern.test(data) && barcodeLengths.includes(data.length);
   };
 
+  // Function to check if data is a QR code (URLs or structured text)
   const isQrCode = (data) => {
-    const urlPattern = /^(http|https):\/\/[^ "]+$/;
+    const urlPattern = /^(http|https):\/\/[^ "]+$/; // Checks if it's a URL
     const structuredDataPattern =
-      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/;
-    const nonNumericPattern = /[^0-9]/;
+      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Checks if it's structured text
+    const nonNumericPattern = /[^0-9]/; // Ensures it's not purely numeric
 
-    if (urlPattern.test(data)) {
-      return true;
-    }
-
-    if (structuredDataPattern.test(data)) {
-      return true;
-    }
-
-    if (data.length > 20 && nonNumericPattern.test(data)) {
-      return true;
-    }
-
-    return false;
+    // Check common QR code patterns
+    return (
+      urlPattern.test(data) ||
+      structuredDataPattern.test(data) ||
+      (data.length > 20 && nonNumericPattern.test(data)) // Ensure QR code has enough complexity
+    );
   };
 
   const fetchProductDetails = (barcode) => {
