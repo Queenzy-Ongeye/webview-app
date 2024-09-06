@@ -11,18 +11,33 @@ const ScanData = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <h1>Scanned Product Details</h1>
       {scannedData ? (
-        <div>
-          <p>
-            <strong>Product Name:</strong>{" "}
-            {scannedData.productName || "Unknown"}
-          </p>
-          <p>
-            <strong>Description:</strong>{" "}
-            {scannedData.description || "No description available"}
-          </p>
-          <p>
-            <strong>Price:</strong> {scannedData.price || "Not available"}
-          </p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white shadow-md rounded-lg">
+            <thead>
+              <tr className="bg-gray-200 text-gray-700">
+                <th className="text-left py-2 px-4 font-semibold">Property</th>
+                <th className="text-left py-2 px-4 font-semibold">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-2 px-4 border-t">Device Name</td>
+                <td className="py-2 px-4 border-t">Oves E-3P 00016</td>
+              </tr>
+              <tr>
+                <td className="py-2 px-4 border-t">Description</td>
+                <td className="py-2 px-4 border-t">
+                  {"No description available"}
+                </td>
+              </tr>
+              <tr>
+                <td className="py-2 px-4 border-t">Price</td>
+                <td className="py-2 px-4 border-t">
+                  {scannedData.value || "Not available"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       ) : (
         <p>No product data available.</p>

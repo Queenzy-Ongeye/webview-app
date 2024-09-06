@@ -240,9 +240,6 @@ const Home = () => {
 
             // Process the scanned data to check whether it's a QR code or barcode
             handleScanData(responseData);
-
-            // Navigate only if valid scan data is available
-            navigate("/scan-data", { state: { scannedData: responseData } });
           } catch (error) {
             console.error("Error during QR/Barcode scan:", error);
           }
@@ -296,7 +293,9 @@ const Home = () => {
     getDataByBarcode(barcode)
       .then((product) => {
         if (product) {
-          dispatch({ type: "SET_PRODUCT_DATA", payload: product });
+          dispatch({ type: "SET_QR_DATA", payload: product });
+          // Navigate only if valid scan data is available
+          navigate("/scan-data", { state: { scannedData: product } });
         } else {
           console.error("Product not found for barcode:", barcode);
         }

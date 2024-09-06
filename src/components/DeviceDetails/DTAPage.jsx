@@ -36,7 +36,7 @@ const DTAPage = () => {
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
                 <h3 className="text-lg font-semibold text-gray-800">
-                  UUID: {uuid}
+                {item.characterMap[uuid].desc}
                 </h3>
 
                 <table className="w-full text-left mt-4 border border-gray-200">
@@ -117,23 +117,6 @@ const DTAPage = () => {
                     </tr>
                   </tbody>
                 </table>
-
-                <div className="ml-4 mt-4">
-                  <h4 className="font-semibold text-gray-700">Desc Map</h4>
-                  {Object.keys(item.characterMap[uuid].descMap).map(
-                    (descKey) => (
-                      <div key={descKey} className="ml-2 mt-2">
-                        <p>
-                          <strong>UUID:</strong> {descKey}
-                        </p>
-                        <p>
-                          <strong>Description:</strong>{" "}
-                          {item.characterMap[uuid].descMap[descKey].desc}
-                        </p>
-                      </div>
-                    )
-                  )}
-                </div>
               </div>
             ))}
           </div>
