@@ -2,7 +2,7 @@ import React from "react";
 import { useStore } from "../../service/store";
 import { useLocation } from "react-router-dom";
 
-const ScanData = () => {
+const ScanDataPage = () => {
   const location = useLocation();
   const { scannedData } = location.state || {};
 
@@ -46,4 +46,4 @@ const ScanData = () => {
   );
 };
 
-export default ScanData;
+export default ScanDataPage;
