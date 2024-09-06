@@ -132,7 +132,8 @@ const Home = () => {
       bridge.registerHandler(
         "scanQrCodeResultCallBack",
         (data, responseCallback) => {
-          dispatch({ type: "SET_QR_DATA", payload: data });
+          const parsedData = JSON.parse(data)
+          dispatch({ type: "SET_QR_DATA", payload: parsedData });
           responseCallback(data);
         }
       );
@@ -250,7 +251,7 @@ const Home = () => {
             // Process the scanned data to check whether it's a QR code or barcode
             handleScanData(scannedValue);
           } catch (error) {
-            console.error("Error during QR/Barcode scan:", error);
+            console.error("Error during QR/Barcode scan:", error.message);
           }
         }
       );
