@@ -14,7 +14,6 @@ const ScanDataPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
       <h1>Scanned Product Details</h1>
-      {scannedData ? (
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white shadow-md rounded-lg">
             <thead>
@@ -43,9 +42,6 @@ const ScanDataPage = () => {
             </tbody>
           </table>
         </div>
-      ) : (
-        <p>No product data available.</p>
-      )}
     </div>
   );
 };
