@@ -4,7 +4,6 @@ import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
-import Paho from "paho-mqtt";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -230,9 +229,22 @@ const Home = () => {
         "startQrCodeScan",
         999, // Arbitrary request ID
         (responseData) => {
-          console.log("Response from startQrCodeScan", responseData);
-          handleScanData(responseData);
-          navigate("/scan-data", { state: { scannedData: responseData } });
+          try {
+            console.log("Response from startQrCodeScan", responseData);
+  
+            // Check if the responseData is not null or undefined
+            if (!responseData) {
+              throw new Error("No QR scan data received");
+            }
+  
+            // Ensure the response is in an expected format
+            handleScanData(responseData);
+  
+            // Navigate only if the response data is valid
+            navigate("/scan-data", { state: { scannedData: responseData } });
+          } catch (error) {
+            console.error("Error during QR scan:", error);
+          }
         }
       );
       dispatch({ type: "SET_QR_SCANNING", payload: true });
@@ -240,6 +252,7 @@ const Home = () => {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
+  
 
   const handleScanData = (data) => {
     console.log("Scanned data received: ", data);
