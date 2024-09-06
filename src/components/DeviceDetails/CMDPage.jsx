@@ -36,7 +36,7 @@ const CMDPage = () => {
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
                 <h3 className="text-lg font-semibold text-gray-800">
-                {item.characterMap[uuid].name}
+                {item.characterMap[uuid].desc}
                 </h3>
 
                 <table className="w-full text-left mt-4 border border-gray-200">
