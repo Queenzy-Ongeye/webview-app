@@ -16,6 +16,8 @@ const MQTT_OPTIONS = {
   resubscribe: true, // Automatically resubscribe to topics on reconnect
 };
 
+let client;
+
 try {
   const client = mqtt.connect(MQTT_BROKER_URL, MQTT_OPTIONS);
 
