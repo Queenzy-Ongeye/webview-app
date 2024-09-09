@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import mqttClient from "../../mqttClient";
+import client from "../../mqttClient";
 
 const CMDPage = () => {
   const location = useLocation();
@@ -12,18 +12,20 @@ const CMDPage = () => {
       console.log("Data is here: ", payload);
 
       // Publish the data to the 'device/sts' topic
-      mqttClient.publish(
-        "emit/content/bleData/cmd",
-        payload,
-        { qos: 1 },
-        (err) => {
-          if (err) {
-            console.error("Failed to publish CMD data to MQTT:", err);
-          } else {
-            console.log("CMD data successfully published to MQTT:", payload);
+      if (client && client.connected) {
+        client.publish(
+          "emit/content/bleData/cmd",
+          payload,
+          { qos: 1 },
+          (err) => {
+            if (err) {
+              console.error("Failed to publish CMD data to MQTT:", err);
+            } else {
+              console.log("CMD data successfully published to MQTT:", payload);
+            }
           }
-        }
-      );
+        );
+      }
     }
   }, [data]);
 
@@ -36,7 +38,7 @@ const CMDPage = () => {
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
                 <h3 className="text-lg font-semibold text-gray-800">
-                {item.characterMap[uuid].desc}
+                  {item.characterMap[uuid].desc}
                 </h3>
 
                 <table className="w-full text-left mt-4 border border-gray-200">
@@ -63,7 +65,9 @@ const CMDPage = () => {
                       <td className="p-2 font-semibold text-gray-600">
                         Properties
                       </td>
-                      <td className="p-2">{item.characterMap[uuid].properties}</td>
+                      <td className="p-2">
+                        {item.characterMap[uuid].properties}
+                      </td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-2 font-semibold text-gray-600">
@@ -102,7 +106,9 @@ const CMDPage = () => {
                         Enable Write No Response
                       </td>
                       <td className="p-2">
-                        {item.characterMap[uuid].enableWriteNoResp ? "Yes" : "No"}
+                        {item.characterMap[uuid].enableWriteNoResp
+                          ? "Yes"
+                          : "No"}
                       </td>
                     </tr>
                     <tr className="border-b">

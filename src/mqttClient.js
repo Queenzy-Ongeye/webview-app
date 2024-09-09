@@ -19,7 +19,7 @@ const MQTT_OPTIONS = {
 let client;
 
 try {
-  const client = mqtt.connect(MQTT_BROKER_URL, MQTT_OPTIONS);
+  client = mqtt.connect(MQTT_BROKER_URL, MQTT_OPTIONS);
 
   client.on("connect", () => {
     console.log("MQTT client connected to broker");
