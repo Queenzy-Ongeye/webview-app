@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { createMqttConnection } from "../../../server/mqttClient"; // Adjust path based on your project structure
+import { createMqttConnection } from "../../server/mqttClient"; // Adjust path based on your project structure
 
 const CMDPage = ({ mqttData, initialData }) => {
   

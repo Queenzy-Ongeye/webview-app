@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import mqttClient from "../../../server/mqttClient";
+import mqttClient from "../../server/mqttClient";
 
 const DIAPage = () => {
   const location = useLocation();

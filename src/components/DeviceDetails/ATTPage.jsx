@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import client from "../../../server/mqttClient";
+import client from "../../server/mqttClient";
 
 const ATTPage = () => {
   const location = useLocation();
