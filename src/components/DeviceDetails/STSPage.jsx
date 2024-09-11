@@ -2,37 +2,44 @@ import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { createMqttConnection } from "../../server/mqttClient";
 
-const STSPage = () => {
+const STSPage = ({ mqttData, initialData }) => {
   const location = useLocation();
   const { data } = location.state || {};
 
-  const topic = "emit/content/bleData/cmd";
-
   useEffect(() => {
-    if (data) {
-      const publishData = async () => {
-        try{
-          const response = await fetch('/api/publish', {
-            method: 'POST',
-            headers: {
-              'Content-Type' : 'application/json',
-            },
-            body: JSON.stringify({data, topic}),
-          });
+    if (data && Object.keys(data).length > 0) {
+      const payload = JSON.stringify(data); // Convert the data to a JSON string
+      console.log("Data is here: ", payload);
 
-          const result = await response.json();
-          if(response.ok) {
-            console.log('Data successfully published to topic:', topic, result);
-          } else {
-            console.error("Failed to publish data: ", result.error);
+      // Publish the data to the 'device/sts' topic
+      const mqttClient = createMqttConnection();
+      console.log("mqtt client is here: ", mqttClient);
+      // Wait for the client to be connected before publishing
+      mqttClient.on("connect", () => {
+        console.log("MQTT client connected. Ready to publish.");
+
+        mqttClient.publish(
+          "emit/content/bleData/sts", {qos:1},
+          payload,
+          { qos: 1 },
+          (err) => {
+            if (err) {
+              console.error("Failed to publish STS data to MQTT:", err);
+            } else {
+              console.log("STS data successfully published to MQTT:", payload);
+            }
           }
-        }catch(error){
-          console.error("Error while publishing data");
-        }
-      }
-      publishData();
+        );
+      });
+
+      mqttClient.on("error", (error) => {
+        console.error("Failed to connect: ", error.message);
+      });
+      mqttClient.on("offline", () => {
+        console.log("MQTT client is offline.");
+      });
     }
-  }, [data, topic]);
+  }, [data]);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
