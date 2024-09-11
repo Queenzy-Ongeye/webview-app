@@ -32,7 +32,7 @@ const STSPage = ({ mqttData, initialData }) => {
         );
       });
 
-      mqtt.on("error", (error) => {
+      mqttClient.on("error", (error) => {
         console.error("Failed to connect: ", error.message);
       });
       mqttClient.on("offline", () => {
