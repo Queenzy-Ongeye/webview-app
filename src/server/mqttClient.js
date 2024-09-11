@@ -3,12 +3,11 @@ import mqtt from "mqtt";
 // Debugging to get detailed connection logs
 process.env.DEBUG = "mqttjs*";
 
-const MQTT_BROKER_URL = "mqtts://mqtt.omnivoltaic.com:8883"; // Replace with correct port if needed
+const MQTT_BROKER_URL = "mqtts://mqtt.omnivoltaic.com:1883"; // Replace with correct port if needed
 
 const MQTT_OPTIONS = {
   username: "Scanner1",
   password: "!mqttsc.2024#",
-  clientId: `mqttjs_${Math.random().toString(16).slice(3)}`,
   clean: true, // Clean session
   reconnectPeriod: 1000, // Reconnect every second
   connectTimeout: 30 * 1000, // 30 seconds timeout for connection
