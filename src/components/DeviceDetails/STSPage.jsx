@@ -12,7 +12,7 @@ const STSPage = () => {
     if (data && Object.keys(data).length > 0) {
       const publishData = async () => {
         try{
-          const response = await fetch('../../server/api/publish', {
+          const response = await fetch('/api/publish', {
             method: 'POST',
             headers: {
               'Content-Type' : 'application/json',
@@ -134,47 +134,5 @@ const STSPage = () => {
     </div>
   );
 };
-
-export async function getServerSideProps(context) {
-  const client = createMqttConnection(); // Create server-side MQTT connection
-
-  let mqttData = [];
-  let initialData = context.query; // Fetch initial data from the URL or query
-
-  if (client) {
-    // Ensure the client is connected before subscribing
-    client.on("connect", () => {
-      console.log("Server-side MQTT client connected.");
-
-      // Subscribe to the desired topic
-      client.subscribe("emit/content/bleData/sts", (err) => {
-        if (err) {
-          console.error("Failed to subscribe to MQTT topic:", err);
-        } else {
-          console.log("Subscribed to MQTT topic on server.");
-        }
-      });
-
-      // Handle incoming messages and simulate waiting for them
-      client.on("message", (topic, message) => {
-        mqttData.push(JSON.parse(message.toString()));
-        console.log("Received MQTT message on server:", message.toString());
-      });
-    });
-
-    // Wait to collect messages (simulate delay)
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-  } else {
-    console.error("MQTT client not initialized on server.");
-  }
-
-  // Return MQTT data and initial input data as props to the component
-  return {
-    props: {
-      mqttData,
-      initialData,
-    },
-  };
-}
 
 export default STSPage;
