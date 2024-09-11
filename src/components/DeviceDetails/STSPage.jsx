@@ -14,18 +14,30 @@ const STSPage = ({ mqttData, initialData }) => {
       // Publish the data to the 'device/sts' topic
       const mqttClient = createMqttConnection();
       console.log("mqtt client is here: ", mqttClient);
-      mqttClient.publish(
-        "emit/content/bleData/sts",
-        payload,
-        { qos: 1 },
-        (err) => {
-          if (err) {
-            console.error("Failed to publish STS data to MQTT:", err);
-          } else {
-            console.log("STS data successfully published to MQTT:", payload);
+      // Wait for the client to be connected before publishing
+      mqttClient.on("connect", () => {
+        console.log("MQTT client connected. Ready to publish.");
+
+        mqttClient.publish(
+          "emit/content/bleData/sts",
+          payload,
+          { qos: 1 },
+          (err) => {
+            if (err) {
+              console.error("Failed to publish STS data to MQTT:", err);
+            } else {
+              console.log("STS data successfully published to MQTT:", payload);
+            }
           }
-        }
-      );
+        );
+      });
+
+      mqttClient.on("error", (error) => {
+        console.error("Failed to connect: ", error.message);
+      });
+      mqttClient.on("offline", () => {
+        console.log("MQTT client is offline.");
+      });
     }
   }, [data]);
 
