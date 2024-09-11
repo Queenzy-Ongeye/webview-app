@@ -1,5 +1,5 @@
 // pages/api/publish.js
-import { createMqttConnection } from "../../server/mqttClient";
+import { createMqttConnection } from "../server/mqttClient";
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
