@@ -19,7 +19,7 @@ const STSPage = ({ mqttData, initialData }) => {
         console.log("MQTT client connected. Ready to publish.");
 
         mqttClient.publish(
-          "emit/content/bleData/sts",
+          "emit/content/bleData/sts", {qos:1},
           payload,
           { qos: 1 },
           (err) => {
