@@ -12,7 +12,7 @@ const STSPage = () => {
     if (data && Object.keys(data).length > 0) {
       const publishData = async () => {
         try{
-          const response = await fetch('/api/publish', {
+          const response = await fetch('../api/publish', {
             method: 'POST',
             headers: {
               'Content-Type' : 'application/json',
