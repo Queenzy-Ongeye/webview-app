@@ -9,7 +9,7 @@ const STSPage = () => {
   const topic = "emit/content/bleData/cmd";
 
   useEffect(() => {
-    if (data && Object.keys(data).length > 0) {
+    if (data) {
       const publishData = async () => {
         try{
           const response = await fetch('/api/publish', {
