@@ -1,30 +1,38 @@
 import mqtt from "mqtt";
 
-// Debugging to get detailed connection logs
-process.env.DEBUG = "mqttjs*";
-
-const MQTT_BROKER_URL = "mqtt://mqtt.omnivoltaic.com:1883"; // Replace with correct port if needed
+// TCP connection URL for MQTT (replace with your broker's address and port)
+const MQTT_BROKER_URL = "mqtt://your-broker-address:1883"; // Replace with actual broker address and port
 
 const MQTT_OPTIONS = {
   username: "Scanner1",
-  password: "!mqttsc.2024#",
+  password: "!mqttsc.2024#", // Replace with your credentials
   clientId: `mqttjs_${Math.random().toString(16).slice(3)}`,
   clean: true, // Clean session
-  reconnectPeriod: 1000, // Reconnect every second
+  reconnectPeriod: 1000, // Retry connection every second if disconnected
   connectTimeout: 30 * 1000, // 30 seconds timeout for connection
-  keepalive: 60, // Keepalive time, ping server every 60 seconds
+  keepalive: 60, // Ping server every 60 seconds to keep the connection alive
   resubscribe: true, // Automatically resubscribe to topics on reconnect
 };
 
+// Function to create the MQTT client connection using TCP
 export const createMqttConnection = () => {
-  if(typeof window === "undefined"){
-    // server-side connection (SSR)
-    const client = mqtt.connect("mqtt://mqtt.omnivoltaic.com:1883", MQTT_OPTIONS);
-    console.log("Server side Mqtt client created...");
-    return client;
-  }else{
-    const client = mqtt.connect(MQTT_BROKER_URL, MQTT_OPTIONS);
-    console.log("client-side MQTT client created");
-    return client;
-  }
-}
+  const client = mqtt.connect(MQTT_BROKER_URL, MQTT_OPTIONS);
+
+  client.on("connect", () => {
+    console.log("MQTT TCP connection established.");
+  });
+
+  client.on("error", (err) => {
+    console.error("MQTT connection error:", err);
+  });
+
+  client.on("offline", () => {
+    console.log("MQTT client is offline.");
+  });
+
+  client.on("reconnect", () => {
+    console.log("MQTT client is attempting to reconnect...");
+  });
+
+  return client;
+};
