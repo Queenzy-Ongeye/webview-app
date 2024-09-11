@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import mqttClient, { createMqttConnection } from "../../server/mqttClient";
+import { createMqttConnection } from "../../server/mqttClient";
 
 const STSPage = ({ mqttData, initialData }) => {
   const location = useLocation();
   const { data } = location.state || {};
 
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      const payload = JSON.stringify(initialData); // Convert the data to a JSON string
+    if (data && Object.keys(data).length > 0) {
+      const payload = JSON.stringify(data); // Convert the data to a JSON string
       console.log("Data is here: ", payload);
 
       // Publish the data to the 'device/sts' topic
@@ -26,13 +26,13 @@ const STSPage = ({ mqttData, initialData }) => {
         }
       );
     }
-  }, [initialData]);
+  }, [data]);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold mb-6">Status Data</h2>
-      {mqttData && mqttData.length > 0 ? (
-        mqttData.map((item, index) => (
+      {data && data.length > 0 ? (
+        data.map((item, index) => (
           <div key={index} className="mb-6 p-6 bg-gray-50 shadow rounded-lg">
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
@@ -129,7 +129,6 @@ const STSPage = ({ mqttData, initialData }) => {
   );
 };
 
-// Server-side data fetching for MQTT
 export async function getServerSideProps(context) {
   const client = createMqttConnection(); // Create server-side MQTT connection
 
@@ -137,23 +136,30 @@ export async function getServerSideProps(context) {
   let initialData = context.query; // Fetch initial data from the URL or query
 
   if (client) {
-    // Subscribe to the desired topic
-    client.subscribe("emit/content/bleData/cmd", (err) => {
-      if (err) {
-        console.error("Failed to subscribe to MQTT topic:", err);
-      } else {
-        console.log("Subscribed to MQTT topic.");
-      }
+    // Ensure the client is connected before subscribing
+    client.on("connect", () => {
+      console.log("Server-side MQTT client connected.");
+
+      // Subscribe to the desired topic
+      client.subscribe("emit/content/bleData/sts", (err) => {
+        if (err) {
+          console.error("Failed to subscribe to MQTT topic:", err);
+        } else {
+          console.log("Subscribed to MQTT topic on server.");
+        }
+      });
+
+      // Handle incoming messages and simulate waiting for them
+      client.on("message", (topic, message) => {
+        mqttData.push(JSON.parse(message.toString()));
+        console.log("Received MQTT message on server:", message.toString());
+      });
     });
 
-    // Handle incoming messages (SSR simulation)
-    client.on("message", (topic, message) => {
-      mqttData.push(JSON.parse(message.toString()));
-      console.log("Received MQTT message:", message.toString());
-    });
-
-    // Simulate a delay to receive messages (adjust as needed)
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // Wait to collect messages (simulate delay)
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  } else {
+    console.error("MQTT client not initialized on server.");
   }
 
   // Return MQTT data and initial input data as props to the component
@@ -164,4 +170,5 @@ export async function getServerSideProps(context) {
     },
   };
 }
+
 export default STSPage;
