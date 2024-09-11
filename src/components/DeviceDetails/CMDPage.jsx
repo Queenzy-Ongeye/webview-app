@@ -1,8 +1,6 @@
 import React, { useEffect } from "react";
-import { createMqttConnection } from "../../server/mqttClient"; // Adjust path based on your project structure
-
+import { createMqttConnection } from "../../server/mqttClient";
 const CMDPage = ({ mqttData, initialData }) => {
-  
   // Client-side MQTT publishing effect
   useEffect(() => {
     if (initialData && Object.keys(initialData).length > 0) {
@@ -64,7 +62,9 @@ const CMDPage = ({ mqttData, initialData }) => {
                       <td className="p-2 font-semibold text-gray-600">
                         Properties
                       </td>
-                      <td className="p-2">{item.characterMap[uuid].properties}</td>
+                      <td className="p-2">
+                        {item.characterMap[uuid].properties}
+                      </td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-2 font-semibold text-gray-600">
@@ -103,7 +103,9 @@ const CMDPage = ({ mqttData, initialData }) => {
                         Enable Write No Response
                       </td>
                       <td className="p-2">
-                        {item.characterMap[uuid].enableWriteNoResp ? "Yes" : "No"}
+                        {item.characterMap[uuid].enableWriteNoResp
+                          ? "Yes"
+                          : "No"}
                       </td>
                     </tr>
                     <tr className="border-b">
