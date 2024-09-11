@@ -3,7 +3,7 @@ import mqtt from "mqtt";
 // Debugging to get detailed connection logs
 process.env.DEBUG = "mqttjs*";
 
-const MQTT_BROKER_URL = "wss://mqtt.omnivoltaic.com:1883"; // Replace with correct port if needed
+const MQTT_BROKER_URL = "mqtts://mqtt.omnivoltaic.com:1883"; // Replace with correct port if needed
 
 const MQTT_OPTIONS = {
   username: "Scanner1",
