@@ -13,6 +13,7 @@ const STSPage = ({ mqttData, initialData }) => {
 
       // Publish the data to the 'device/sts' topic
       const mqttClient = createMqttConnection();
+      console.log("mqtt client is here: ", mqttClient);
       mqttClient.publish(
         "emit/content/bleData/sts",
         payload,
