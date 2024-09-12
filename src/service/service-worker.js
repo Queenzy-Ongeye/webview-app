@@ -5,15 +5,7 @@ const urlsToCache = [
     "/",
     "/public/index.html",
     "/src/App.css",
-    "/src/App.js",
-    "/src/Home.js",
     "/src/store.js",
-    "/src/components/BleButtons/BleButtons.jsx",
-    "/src/components/DeviceDetails/ATTPage.jsx",
-    "/src/components/DeviceDetails/STSPage.jsx",
-    "/src/components/DeviceDetails/CMDPage.jsx",
-    "/src/components/DeviceDetails/DTAPage.jsx",
-    "/src/components/DeviceDetails/DIAPage.jsx"
 ];
 
 self.addEventListener("install", (event) =>{
