@@ -38,7 +38,7 @@ const STSPage = () => {
     };
 
     connectWebViewJavascriptBridge(setupBridge);
-  }, []);
+  }, [data]);
 
   const mqttSubTopic = () => {
     if (state.mqttClient) {
