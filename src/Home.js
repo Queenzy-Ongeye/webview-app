@@ -349,7 +349,7 @@ const Home = () => {
           isLoading={state.isLoading}
         />
         {/* Button to trigger MQTT Connection */}
-        <button onClick={connectMqtt}>Connect to MQTT</button>
+        <button className="bg-black rounded-md mt-2 text-white" onClick={connectMqtt}>Connect to MQTT</button>
       </div>
       <BottomActionBar
         onStartScan={startBleScan}
