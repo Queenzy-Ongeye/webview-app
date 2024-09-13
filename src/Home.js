@@ -133,6 +133,7 @@ const Home = () => {
           try {
             const jsonData = JSON.parse(responseData);
             dispatch({ type: "SET_BLE_DATA", payload: jsonData });
+            console.log("BLE Data:", jsonData);
           } catch (error) {
             console.error(
               "Error parsing JSON data from 'startBleScan' response:",
@@ -172,6 +173,7 @@ const Home = () => {
               initBleData(macAddress);
             }
             dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+            console.log("BLE Device Data:", parsedData);
           } catch (error) {
             console.error(
               "Error parsing JSON data from 'connBleByMacAddress' response:",
@@ -194,6 +196,7 @@ const Home = () => {
           try {
             const parsedData = JSON.parse(responseData);
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            console.log("BLE Init Data:", parsedData);
           } catch (error) {
             console.error(
               "Error parsing JSON data from 'initBleData' response:",
@@ -209,17 +212,12 @@ const Home = () => {
 
   const startQrCode = () => {
     if (window.WebViewJavascriptBridge) {
-      // Trigger native QR/Barcode scan via the bridge
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
         999, // Arbitrary request ID
         (responseData) => {
           try {
-            console.log("Response from startQrCodeScan", responseData);
-
-            // Parse the nested response data
             const parsedData = JSON.parse(responseData.data);
-
             if (
               !parsedData ||
               !parsedData.respData ||
@@ -227,18 +225,14 @@ const Home = () => {
             ) {
               throw new Error("No valid QR or barcode scan data received");
             }
-
             const scannedValue = parsedData.respData.value; // Extract the scanned value (barcode/QR code)
             console.log("Scanned Value:", scannedValue);
-
-            // Process the scanned data to check whether it's a QR code or barcode
             handleScanData(scannedValue);
           } catch (error) {
             console.error("Error during QR/Barcode scan:", error.message);
           }
         }
       );
-      // Update the state to show scanning is active
       dispatch({ type: "SET_QR_SCANNING", payload: true });
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
@@ -247,38 +241,30 @@ const Home = () => {
 
   const handleScanData = (data) => {
     console.log("Scanned data received: ", data);
-
-    // Check if it's a barcode
     if (isBarcode(data)) {
       fetchProductDetails(data); // Process barcode to fetch product details
-    }
-    // Otherwise, it should be a QR code
-    else if (isQrCode(data)) {
-      dispatch({ type: "SET_QR_DATA", payload: data }); // Save QR code data in state
+    } else if (isQrCode(data)) {
+      dispatch({ type: "SET_QR_DATA", payload: data });
     } else {
       console.error("Invalid scan data. Neither a barcode nor a QR code.");
     }
   };
 
-  // Function to check if data is a barcode (numeric string with specific lengths)
   const isBarcode = (data) => {
-    const numericPattern = /^[0-9]+$/; // Only numeric values
-    const barcodeLengths = [8, 12, 13]; // Common barcode lengths (UPC, EAN)
+    const numericPattern = /^[0-9]+$/;
+    const barcodeLengths = [8, 12, 13];
     return numericPattern.test(data) && barcodeLengths.includes(data.length);
   };
 
-  // Function to check if data is a QR code (URLs or structured text)
   const isQrCode = (data) => {
-    const urlPattern = /^(http|https):\/\/[^ "]+$/; // Checks if it's a URL
+    const urlPattern = /^(http|https):\/\/[^ "]+$/;
     const structuredDataPattern =
-      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Checks if it's structured text
-    const nonNumericPattern = /[^0-9]/; // Ensures it's not purely numeric
-
-    // Check common QR code patterns
+      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/;
+    const nonNumericPattern = /[^0-9]/;
     return (
       urlPattern.test(data) ||
       structuredDataPattern.test(data) ||
-      (data.length > 20 && nonNumericPattern.test(data)) // Ensure QR code has enough complexity
+      (data.length > 20 && nonNumericPattern.test(data))
     );
   };
 
@@ -287,7 +273,6 @@ const Home = () => {
       .then((product) => {
         if (product) {
           dispatch({ type: "SET_QR_DATA", payload: product });
-          // Navigate only if valid scan data is available
           navigate("/scan-data", { state: { scannedData: product } });
         } else {
           console.error("Product not found for barcode:", barcode);
@@ -315,6 +300,28 @@ const Home = () => {
         onScanData={startQrCode}
         isScanning={state.isScanning}
       />
+
+      {/* Display BLE Init Data */}
+      <div className="ble-data mt-4">
+        <h3>BLE Init Data:</h3>
+        {state.initBleData ? (
+          <pre>{JSON.stringify(state.initBleData, null, 2)}</pre>
+        ) : (
+          <p>No BLE Init Data</p>
+        )}
+      </div>
+
+      {/* Display MQTT Message */}
+      <div className="mqtt-message mt-4">
+        <h3>MQTT Message:</h3>
+        {state.mqttMessage ? (
+          <pre>{JSON.stringify(state.mqttMessage, null, 2)}</pre>
+        ) : (
+          <p>No MQTT Messages</p>
+        )}
+      </div>
+
+      {/* MQTT Controls */}
       <div className="mqtt-controls mt-4 grid grid-cols-3 sm:grid-cols-3 gap-2 w-full">
         <button
           className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
