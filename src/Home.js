@@ -110,7 +110,7 @@ const Home = () => {
       const publishData = {
         topic: topic,
         qos: 0, // Quality of Service level
-        content: JSON.stringify(state.initBleData), // Send initBleData as the content
+        content: "Ble data published", // Send initBleData as the content
       };
       window.WebViewJavascriptBridge.callHandler(
         "mqttPublishMsg",
