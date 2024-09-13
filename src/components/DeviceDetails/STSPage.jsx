@@ -2,44 +2,88 @@ import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { createMqttConnection } from "../../server/mqttClient";
 
-const STSPage = ({ mqttData, initialData }) => {
+const STSPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
 
   useEffect(() => {
-    if (data && Object.keys(data).length > 0) {
-      const payload = JSON.stringify(data); // Convert the data to a JSON string
-      console.log("Data is here: ", payload);
-
-      // Publish the data to the 'device/sts' topic
-      const mqttClient = createMqttConnection();
-      console.log("mqtt client is here: ", mqttClient);
-      // Wait for the client to be connected before publishing
-      mqttClient.on("connect", () => {
-        console.log("MQTT client connected. Ready to publish.");
-
-        mqttClient.publish(
-          "emit/content/bleData/sts", {qos:1},
-          payload,
-          { qos: 1 },
-          (err) => {
-            if (err) {
-              console.error("Failed to publish STS data to MQTT:", err);
-            } else {
-              console.log("STS data successfully published to MQTT:", payload);
-            }
-          }
+    const connectWebViewJavascriptBridge = (callback) =>{
+      if(window.WebViewJavascriptBridge) {
+        callback(window.WebViewJavascriptBridge);
+      } else {
+        document.addEventListener(
+          "WebViewJavascriptBridgeReady", () => {
+            callback(window.WebViewJavascriptBridge);
+          },
+          false
         );
-      });
+      }
+    };
 
-      mqttClient.on("error", (error) => {
-        console.error("Failed to connect: ", error.message);
-      });
-      mqttClient.on("offline", () => {
-        console.log("MQTT client is offline.");
-      });
+    const setUpBridge = (bridge) => {
+      bridge.registerHandler("mqttMsgArrivedCallBack", (data, responseCallback) => {
+        console.info("MQTT Message arrived: ", data);
+        responseCallback(data);
+        
+      })
     }
-  }, [data]);
+    connectWebViewJavascriptBridge(setUpBridge)
+  }, []);
+
+
+  const mqttPublishMsg = () => {
+    const data = {
+      topic: "emit/content/bleData/sts",
+      qos: 0,
+      content: JSON.stringify(data),
+    };
+
+    if(window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler("mqttPublishMsg", data, (responseData) => {
+        console.log("MQTT publist response: ", responseData)
+      })
+    }else{
+      console.error("WebviewJavascriptBride is not initliazied");
+      
+    }
+  }
+  
+
+
+  // useEffect(() => {
+  //   if (data && Object.keys(data).length > 0) {
+  //     const payload = JSON.stringify(data); // Convert the data to a JSON string
+  //     console.log("Data is here: ", payload);
+
+  //     // Publish the data to the 'device/sts' topic
+  //     const mqttClient = createMqttConnection();
+  //     console.log("mqtt client is here: ", mqttClient);
+  //     // Wait for the client to be connected before publishing
+  //     mqttClient.on("connect", () => {
+  //       console.log("MQTT client connected. Ready to publish.");
+
+  //       mqttClient.publish(
+  //         "emit/content/bleData/sts", {qos:1},
+  //         payload,
+  //         { qos: 1 },
+  //         (err) => {
+  //           if (err) {
+  //             console.error("Failed to publish STS data to MQTT:", err);
+  //           } else {
+  //             console.log("STS data successfully published to MQTT:", payload);
+  //           }
+  //         }
+  //       );
+  //     });
+
+  //     mqttClient.on("error", (error) => {
+  //       console.error("Failed to connect: ", error.message);
+  //     });
+  //     mqttClient.on("offline", () => {
+  //       console.log("MQTT client is offline.");
+  //     });
+  //   }
+  // }, [data]);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -138,6 +182,7 @@ const STSPage = ({ mqttData, initialData }) => {
       ) : (
         <p>No data available</p>
       )}
+      <button className="bg-black rounded-md text-white" onClick={mqttPublishMsg}>Publish Message</button>
     </div>
   );
 };
