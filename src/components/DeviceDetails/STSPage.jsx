@@ -1,18 +1,21 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { createMqttConnection } from "../../server/mqttClient";
+import { useStore } from "../../service/store";
 
 const STSPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
+  const {state} = useStore();
 
   useEffect(() => {
-    const connectWebViewJavascriptBridge = (callback) =>{
-      if(window.WebViewJavascriptBridge) {
+    const connectWebViewJavascriptBridge = (callback) => {
+      if (window.WebViewJavascriptBridge) {
         callback(window.WebViewJavascriptBridge);
       } else {
         document.addEventListener(
-          "WebViewJavascriptBridgeReady", () => {
+          "WebViewJavascriptBridgeReady",
+          () => {
             callback(window.WebViewJavascriptBridge);
           },
           false
@@ -20,35 +23,59 @@ const STSPage = () => {
       }
     };
 
-    const setUpBridge = (bridge) => {
-      bridge.registerHandler("mqttMsgArrivedCallBack", (data, responseCallback) => {
-        console.info("MQTT Message arrived: ", data);
+    const setupBridge = (bridge) => {
+      // Register the handlers for MQTT events
+      bridge.registerHandler("connectMqttCallBack", (data, responseCallback) => {
+        console.info("MQTT Connect Callback Data:", data);
         responseCallback(data);
-        
-      })
-    }
-    connectWebViewJavascriptBridge(setUpBridge)
-  }, []);
+      });
 
-
-  const mqttPublishMsg = () => {
-    const data = {
-      topic: "emit/content/bleData/sts",
-      qos: 0,
-      content: JSON.stringify(data),
+      bridge.registerHandler("mqttMsgArrivedCallBack", (data, responseCallback) => {
+        console.info("MQTT Message Arrived:", data);
+        // Optionally, handle the MQTT message
+        responseCallback(data);
+      });
     };
 
-    if(window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler("mqttPublishMsg", data, (responseData) => {
-        console.log("MQTT publist response: ", responseData)
-      })
-    }else{
-      console.error("WebviewJavascriptBride is not initliazied");
-      
-    }
-  }
-  
+    connectWebViewJavascriptBridge(setupBridge);
+  }, []);
 
+  const mqttSubTopic = () => {
+    if (state.mqttClient) {
+      state.mqttClient.subscribe("/a/b/c", { qos: 0 }, (err) => {
+        if (err) {
+          console.error("Failed to subscribe:", err);
+        } else {
+          console.log("Subscribed to topic /a/b/c");
+        }
+      });
+    }
+  };
+
+  const mqttUnSubTopic = () => {
+    if (state.mqttClient) {
+      state.mqttClient.unsubscribe("/a/b/c", (err) => {
+        if (err) {
+          console.error("Failed to unsubscribe:", err);
+        } else {
+          console.log("Unsubscribed from topic /a/b/c");
+        }
+      });
+    }
+  };
+
+  const mqttPublishMsg = () => {
+    const payload = JSON.stringify(data);
+    if (state.mqttClient) {
+      state.mqttClient.publish("emit/content/bleData/sts", payload, { qos: 0 }, (err) => {
+        if (err) {
+          console.error("Failed to publish message:", err);
+        } else {
+          console.log("Message published:", payload);
+        }
+      });
+    }
+  };
 
   // useEffect(() => {
   //   if (data && Object.keys(data).length > 0) {
@@ -182,7 +209,12 @@ const STSPage = () => {
       ) : (
         <p>No data available</p>
       )}
-      <button className="bg-black rounded-md text-white" onClick={mqttPublishMsg}>Publish Message</button>
+      <button
+        className="bg-black rounded-md text-white"
+        onClick={mqttPublishMsg}
+      >
+        Publish Message
+      </button>
     </div>
   );
 };
