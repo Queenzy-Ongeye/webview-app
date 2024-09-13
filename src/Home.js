@@ -132,7 +132,7 @@ const Home = () => {
       bridge.registerHandler(
         "scanQrCodeResultCallBack",
         (data, responseCallback) => {
-          const parsedData = JSON.parse(data)
+          const parsedData = JSON.parse(data);
           dispatch({ type: "SET_QR_DATA", payload: parsedData });
           responseCallback(data);
         }
@@ -140,6 +140,29 @@ const Home = () => {
     };
     connectWebViewJavascriptBridge(setupBridge);
   }, [state.bridgeInitialized, dispatch]);
+
+  // MQTT Initializer
+  const connectMqtt = () => {
+    const client = {
+      username: "Scanner1",
+      password: "!mqttsc.2024#",
+      clean: true, // Clean session
+      hostname: "mqtt.omnivoltaic.com",
+      port: 1883,
+    };
+
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connectMqtt",
+        client,
+        (responseData) => {
+          console.log("MQTT Connection response: ", responseData);
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
 
   const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {
@@ -325,6 +348,8 @@ const Home = () => {
           initBleDataResponse={state.initBleData}
           isLoading={state.isLoading}
         />
+        {/* Button to trigger MQTT Connection */}
+        <button onClick={connectMqtt}>Connect to MQTT</button>
       </div>
       <BottomActionBar
         onStartScan={startBleScan}
