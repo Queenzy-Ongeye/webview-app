@@ -4,6 +4,7 @@ import { useStore } from "./service/store";
 import BottomActionBar from "./components/BleButtons/BottomActionBar";
 import { getAllData, getDataByBarcode } from "./utility/indexedDB";
 import { useNavigate } from "react-router-dom";
+import mqtt from "mqtt";
 
 const Home = () => {
   const { state, dispatch } = useStore();
@@ -157,7 +158,7 @@ const Home = () => {
       // Set MQTT client in the global state
       dispatch({ type: "SET_MQTT_CLIENT", payload: mqttClient });
     }
-  }, [state.bridgeInitialized, dispatch]);
+  }, [state.bridgeInitialized, dispatch, state.mqttClient]);
 
 
   const startBleScan = () => {
