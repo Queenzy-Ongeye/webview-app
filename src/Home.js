@@ -27,6 +27,17 @@ const Home = () => {
           },
           false
         );
+
+        const timeout = setTimeout(() => {
+          if (window.WebViewJavascriptBridge) {
+            callback(window.WebViewJavascriptBridge);
+            clearTimeout(timeout);
+          } else {
+            console.error(
+              "WebViewJavascriptBridge is not initialized within the timeout period."
+            );
+          }
+        }, 3000);
       }
     };
 
@@ -35,6 +46,83 @@ const Home = () => {
         bridge.init((message, responseCallback) => {
           responseCallback("js success!");
         });
+
+        bridge.registerHandler("print", (data, responseCallback) => {
+          try {
+            console.log("Raw data received from 'print':", data);
+            const parsedData = JSON.parse(data);
+            if (parsedData && parsedData.data) {
+              dispatch({ type: "SET_BLE_DATA", payload: parsedData.data });
+              responseCallback(parsedData.data);
+            } else {
+              throw new Error("Parsed data is not in the expected format.");
+            }
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'print' handler:",
+              error
+            );
+          }
+        });
+        bridge.registerHandler(
+          "findBleDeviceCallBack",
+          (data, responseCallback) => {
+            try {
+              const parsedData = JSON.parse(data);
+              if (parsedData) {
+                dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
+                responseCallback(parsedData);
+              } else {
+                throw new Error("Parsed data is not in the expected format.");
+              }
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'findBleDeviceCallBack' handler:",
+                error
+              );
+            }
+          }
+        );
+
+        bridge.registerHandler(
+          "bleConnectSuccessCallBack",
+          (data, responseCallback) => {
+            const macAddress = data.macAddress;
+            if (macAddress) {
+              initBleData(macAddress);
+            } else {
+              console.error(
+                "MAC Address not found in successful connection data:",
+                data
+              );
+            }
+            responseCallback(data);
+          }
+        );
+
+        bridge.registerHandler(
+          "bleConnectFailCallBack",
+          (data, responseCallback) => {
+            console.log("Bluetooth connection failed:", data);
+            responseCallback(data);
+          }
+        );
+
+        bridge.registerHandler(
+          "bleInitDataCallBack",
+          (data, responseCallback) => {
+            try {
+              const parsedData = JSON.parse(data);
+              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+              responseCallback(parsedData);
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'bleInitDataCallBack' handler:",
+                error
+              );
+            }
+          }
+        );
 
         // Registering MQTT handlers
         bridge.registerHandler(
