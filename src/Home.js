@@ -389,26 +389,6 @@ const Home = () => {
         isScanning={state.isScanning}
       />
 
-      {/* Display BLE Init Data */}
-      <div className="ble-data mt-4">
-        <h3>BLE Init Data:</h3>
-        {state.initBleData ? (
-          <pre>{JSON.stringify(state.initBleData, null, 2)}</pre>
-        ) : (
-          <p>No BLE Init Data</p>
-        )}
-      </div>
-
-      {/* Display MQTT Message */}
-      <div className="mqtt-message mt-4">
-        <h3>MQTT Message:</h3>
-        {state.mqttMessage ? (
-          <pre>{JSON.stringify(state.mqttMessage, null, 2)}</pre>
-        ) : (
-          <p>No MQTT Messages</p>
-        )}
-      </div>
-
       {/* MQTT Controls */}
       <div className="mqtt-controls mt-4 grid grid-cols-3 sm:grid-cols-3 gap-2 w-full">
         <button
