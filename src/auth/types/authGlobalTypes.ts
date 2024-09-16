@@ -37,7 +37,7 @@ export interface SignInCredentialsDto {
     password: string;
 };
 
-export interface SignUpcredentialsDto {
+export interface SignUpCredentialsDto {
     firstName: string;
     lastName: string;
     idType: PersonalIDTypes;
@@ -47,4 +47,9 @@ export interface SignUpcredentialsDto {
     email: string;
     authenticationToken?: string | null;
     password: string;
+};
+
+export interface UpdateUserPasswordInput {
+    newPassword: string;
+    oldPassword: string;
 };
