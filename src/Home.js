@@ -381,7 +381,7 @@ const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="">
+      <div className="flex-grow">
         <BleButtons
           connectToBluetoothDevice={connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
@@ -390,12 +390,14 @@ const Home = () => {
           isLoading={state.isLoading}
         />
       </div>
-      <BottomActionBar
-        onStartScan={startBleScan}
-        onStopScan={stopBleScan}
-        onScanData={startQrCode}
-        isScanning={state.isScanning}
-      />
+      <div className="fixed">
+        <BottomActionBar
+          onStartScan={startBleScan}
+          onStopScan={stopBleScan}
+          onScanData={startQrCode}
+          isScanning={state.isScanning}
+        />
+      </div>
 
       {/* Display MQTT Message */}
       <div className="mqtt-message mt-4">
