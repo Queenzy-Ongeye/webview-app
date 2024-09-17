@@ -129,9 +129,10 @@ const Home = () => {
           "mqttMessageReceived",
           (data, responseCallback) => {
             try {
-              console.log("MQTT message received:", data);
-              dispatch({ type: "SET_MQTT_MESSAGE", payload: JSON.parse(data) });
-              responseCallback(data);
+              const parsedMessage = JSON.parse(data);
+              console.log("MQTT message received:", parsedMessage);
+              dispatch({ type: "SET_MQTT_MESSAGE", payload: parsedMessage }); // Dispatch the MQTT message
+              responseCallback(parsedMessage);
             } catch (error) {
               console.error("Error parsing MQTT message:", error);
             }
@@ -160,7 +161,11 @@ const Home = () => {
         "connectMqtt",
         mqttConfig,
         (responseData) => {
-          console.log("MQTT connected:", responseData);
+          if (responseData.error) {
+            console.error("MQTT connection error:", responseData.error.message);
+          } else {
+            console.log("MQTT connected:", responseData);
+          }
         }
       );
     } else {
@@ -409,7 +414,7 @@ const Home = () => {
         </button>
         <button
           className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
-          onClick={() => subscribeToMqttTopic("emit/content/bleData")}
+          onClick={() => subscribeToMqttTopic("emit/content/#")}
         >
           Subscribe to Topic
         </button>
