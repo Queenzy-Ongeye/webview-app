@@ -174,10 +174,10 @@ const Home = () => {
   };
 
   // Function to subscribe to an MQTT topic
-  const subscribeToMqttTopic = (topic) => {
+  const subscribeToMqttTopic = () => {
     if (window.WebViewJavascriptBridge) {
       const subscriptionData = {
-        topic: topic,
+        topic: "emit/content/fatory/#",
         qos: 0, // Quality of Service level
       };
       window.WebViewJavascriptBridge.callHandler(
@@ -193,18 +193,21 @@ const Home = () => {
   };
 
   // Function to publish `state.initBleData` as a message to an MQTT topic
-  const publishMqttMessage = (topic) => {
+  const publishMqttMessage = () => {
     if (window.WebViewJavascriptBridge) {
-      if (!state.initBleData) {
-        console.error("No initBleData available to publish.");
+      if (!state.bleData || state.bleData.length === 0) {
+        console.error("No BLE data available to publish.");
         return;
       }
 
       const publishData = {
-        topic: topic,
+        topic: "emit/content/bleData",
         qos: 0, // Quality of Service level
-        content: "Ble data published", // Send initBleData as the content
+        content: JSON.stringify(state.bleData), // Publish BLE data as content
       };
+
+      console.log(`Publishing BLE data to MQTT topic: ${topic}`, publishData);
+
       window.WebViewJavascriptBridge.callHandler(
         "mqttPublishMsg",
         publishData,
@@ -414,13 +417,13 @@ const Home = () => {
         </button>
         <button
           className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
-          onClick={() => subscribeToMqttTopic("emit/content/#")}
+          onClick={() => subscribeToMqttTopic()}
         >
           Subscribe to Topic
         </button>
         <button
           className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
-          onClick={() => publishMqttMessage("emit/content/bleData")}
+          onClick={() => publishMqttMessage()}
         >
           Publish BLE Init Data
         </button>
