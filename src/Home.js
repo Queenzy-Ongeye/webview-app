@@ -139,6 +139,23 @@ const Home = () => {
           }
         );
 
+        bridge.registerHandler(
+          "connectMqttCallBack",
+          function (data, responseCallback) {
+            const parsedMessage = JSON.parse(data);
+            console.info("MQTT Connection Callback:", parsedMessage);
+            responseCallback("Received MQTT Connection Callback");
+          }
+        );
+
+        bridge.registerHandler(
+          "mqttMsgArrivedCallBack",
+          function (data, responseCallback) {
+            console.info("MQTT Message Arrived Callback:", data);
+            responseCallback("Received MQTT Message");
+          }
+        );
+
         dispatch({ type: "SET_BRIDGE_INITIALIZED", payload: true });
         console.log("WebViewJavascriptBridge initialized.");
       }
@@ -193,7 +210,6 @@ const Home = () => {
   };
 
   // Function to publish `state.initBleData` as a message to an MQTT topic
-
 
   const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {
