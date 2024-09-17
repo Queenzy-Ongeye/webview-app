@@ -206,7 +206,7 @@ const Home = () => {
         content: JSON.stringify(state.bleData), // Publish BLE data as content
       };
 
-      console.log(`Publishing BLE data to MQTT topic: ${topic}`, publishData);
+      console.log(`Publishing BLE data to MQTT topic: ${'emit/content/bleData'}`, publishData);
 
       window.WebViewJavascriptBridge.callHandler(
         "mqttPublishMsg",
