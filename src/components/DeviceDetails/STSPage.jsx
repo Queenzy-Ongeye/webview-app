@@ -9,8 +9,8 @@ const STSPage = () => {
   const connectMqtt = () => {
     if (window.WebViewJavascriptBridge) {
       const mqttConfig = {
-        username: "Admin",
-        password: "7xzUV@MT",
+        username: "Scanner1",
+        password: "!mqttsc.2024#",
         clientId: "123",
         hostname: "mqtt.omnivoltaic.com",
         port: 1883,
