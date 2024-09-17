@@ -5,34 +5,36 @@ import { createMqttConnection } from "../../server/mqttClient";
 const DTAPage = ({ mqttData, initalData }) => {
   const location = useLocation();
   const { data } = location.state || {};
+  //Fucntion for publishing to MQTT
+  const publishMqttMessage = (topic) => {
+    if (window.WebViewJavascriptBridge) {
+      if (!data || data.length === 0) {
+        console.error("No BLE data available to publish.");
+        return;
+      }
 
-  useEffect(() => {
-    if (initalData && Object.keys(initalData).length > 0) {
-      const payload = JSON.stringify(initalData); // Convert the data to a JSON string
-      console.log("Data is here: ", payload);
-
-      // Publish the data to the 'device/sts' topic
-      const mqttClient = createMqttConnection();
-      mqttClient.publish(
-        "emit/content/bleData/dta",
-        payload,
-        { qos: 1 },
-        (err) => {
-          if (err) {
-            console.error("Failed to publish DTA data to MQTT:", err);
-          } else {
-            console.log("DTA data successfully published to MQTT:", payload);
-          }
+      const publishData = {
+        topic: topic,
+        qos: 0, // Quality of Service level
+        content: JSON.stringify(data), // Publish BLE data as content
+      };
+      window.WebViewJavascriptBridge.callHandler(
+        "mqttPublishMsg",
+        publishData,
+        (responseData) => {
+          console.log("Message published to MQTT topic:", responseData);
         }
       );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
     }
-  }, [initalData]);
+  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6">DTA Data</h2>
-      {mqttData && mqttData.length > 0 ? (
-        mqttData.map((item, index) => (
+      <h2 className="text-3xl font-bold mb-6">Status Data</h2>
+      {data && data.length > 0 ? (
+        data.map((item, index) => (
           <div key={index} className="mb-6 p-6 bg-gray-50 shadow rounded-lg">
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
@@ -125,44 +127,21 @@ const DTAPage = ({ mqttData, initalData }) => {
       ) : (
         <p>No data available</p>
       )}
+      <div className="mqtt-controls my-4 mx-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          onClick={connectMqtt}
+        >
+          Connect to MQTT
+        </button>
+        <button
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          onClick={() => publishMqttMessage("emit/content/bleData/dta")}
+        >
+          Publish BLE Init Data
+        </button>
+      </div>
     </div>
   );
 };
-
-// Server-side data fetching for MQTT
-export async function getServerSideProps(context) {
-  const client = createMqttConnection(); // Create server-side MQTT connection
-
-  let mqttData = [];
-  let initialData = context.query; // Fetch initial data from the URL or query
-
-  if (client) {
-    // Subscribe to the desired topic
-    client.subscribe("emit/content/bleData/cmd", (err) => {
-      if (err) {
-        console.error("Failed to subscribe to MQTT topic:", err);
-      } else {
-        console.log("Subscribed to MQTT topic.");
-      }
-    });
-
-    // Handle incoming messages (SSR simulation)
-    client.on("message", (topic, message) => {
-      mqttData.push(JSON.parse(message.toString()));
-      console.log("Received MQTT message:", message.toString());
-    });
-
-    // Simulate a delay to receive messages (adjust as needed)
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  }
-
-  // Return MQTT data and initial input data as props to the component
-  return {
-    props: {
-      mqttData,
-      initialData,
-    },
-  };
-}
-
 export default DTAPage;
