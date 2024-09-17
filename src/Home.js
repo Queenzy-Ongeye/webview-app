@@ -206,7 +206,10 @@ const Home = () => {
         content: JSON.stringify(state.bleData), // Publish BLE data as content
       };
 
-      console.log(`Publishing BLE data to MQTT topic: ${'emit/content/bleData'}`, publishData);
+      console.log(
+        `Publishing BLE data to MQTT topic: ${"emit/content/bleData"}`,
+        publishData
+      );
 
       window.WebViewJavascriptBridge.callHandler(
         "mqttPublishMsg",
@@ -390,7 +393,7 @@ const Home = () => {
           isLoading={state.isLoading}
         />
       </div>
-      <div className="fixed">
+      <div className="fixed bottom-0 left-0 w-full">
         <BottomActionBar
           onStartScan={startBleScan}
           onStopScan={stopBleScan}
@@ -400,31 +403,33 @@ const Home = () => {
       </div>
 
       {/* Display MQTT Message */}
-      <div className="mqtt-message mt-4">
+      <div className="mx-4 my-4">
         <h3>MQTT Message:</h3>
         {state.mqttMessage ? (
-          <pre>{JSON.stringify(state.mqttMessage, null, 2)}</pre>
+          <pre className="bg-gray-100 p-2 rounded">
+            {JSON.stringify(state.mqttMessage, null, 2)}
+          </pre>
         ) : (
           <p>No MQTT Messages</p>
         )}
       </div>
 
       {/* MQTT Controls */}
-      <div className="mqtt-controls mt-4 grid grid-cols-3 sm:grid-cols-3 gap-2 w-full">
+      <div className="mqtt-controls my-4 mx-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <button
-          className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
           onClick={connectMqtt}
         >
           Connect to MQTT
         </button>
         <button
-          className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
           onClick={() => subscribeToMqttTopic()}
         >
           Subscribe to Topic
         </button>
         <button
-          className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
           onClick={() => publishMqttMessage()}
         >
           Publish BLE Init Data
