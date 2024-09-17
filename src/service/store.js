@@ -9,7 +9,8 @@ const initialState = {
   isQRScanning: false, // New state for QR scanning
   qrData: null, // state to hold QR Data
   isLoading: false,
-  mqttClient: null
+  mqttClient: null,
+  mqttMessage: null, // Add state for storing MQTT message
 };
 
 const reducer = (state, action) => {
@@ -21,17 +22,22 @@ const reducer = (state, action) => {
     case "SET_BLE_DATA":
       return { ...state, bleData: action.payload };
     case "SET_IS_LOADING":
-      return {...state, isLoading: action.payload}
+      return { ...state, isLoading: action.payload };
     case "ADD_DETECTED_DEVICE":
-      return { ...state, detectedDevices: [...state.detectedDevices, action.payload] };
+      return {
+        ...state,
+        detectedDevices: [...state.detectedDevices, action.payload],
+      };
     case "SET_INIT_BLE_DATA":
       return { ...state, initBleData: action.payload };
     case "SET_QR_SCANNING":
-      return {...state, isQRScanning: action.payload};
+      return { ...state, isQRScanning: action.payload };
     case "SET_QR_DATA":
-      return {...state, qrData: action.payload};
+      return { ...state, qrData: action.payload };
     case "SET_MQTT_CLIENT":
-      return {...state, mqttClient: action.payload}
+      return { ...state, mqttClient: action.payload };
+    case "SET_MQTT_MESSAGE":
+      return { ...state, mqttMessage: action.payload }; // Add case for MQTT messages
     default:
       return state;
   }
