@@ -2,37 +2,48 @@ import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { createMqttConnection } from "../../server/mqttClient";
 
-const ATTPage = ({mqttData, initialData}) => {
-
+const ATTPage = () => {
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      const payload = JSON.stringify(initialData); // Convert the data to a JSON string
+    if (data && Object.keys(data).length > 0) {
+      const payload = JSON.stringify(data); // Convert the data to a JSON string
       console.log("Data is here: ", payload);
 
       // Publish the data to the 'device/sts' topic
-      const client = createMqttConnection()
-      if (client && client.connected) {
-        client.publish(
-          "emit/content/bleData/att",
+      const mqttClient = createMqttConnection();
+      console.log("mqtt client is here: ", mqttClient);
+      // Wait for the client to be connected before publishing
+      mqttClient.on("connect", () => {
+        console.log("MQTT client connected. Ready to publish.");
+
+        mqttClient.publish(
+          "emit/content/bleData/sts",
+          { qos: 1 },
           payload,
           { qos: 1 },
           (err) => {
             if (err) {
-              console.error("Failed to publish ATT data to MQTT:", err);
+              console.error("Failed to publish STS data to MQTT:", err);
             } else {
-              console.log("ATT data successfully published to MQTT:", payload);
+              console.log("STS data successfully published to MQTT:", payload);
             }
           }
         );
-      }
+      });
+
+      mqttClient.on("error", (error) => {
+        console.error("Failed to connect: ", error.message);
+      });
+      mqttClient.on("offline", () => {
+        console.log("MQTT client is offline.");
+      });
     }
-  }, [initialData]);
+  }, [data]);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold mb-6">ATT Data</h2>
-      {mqttData && mqttData.length > 0 ? (
-        mqttData.map((item, index) => (
+      {data && data.length > 0 ? (
+        data.map((item, index) => (
           <div key={index} className="mb-6 p-6 bg-gray-50 shadow rounded-lg">
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
@@ -128,42 +139,6 @@ const ATTPage = ({mqttData, initialData}) => {
     </div>
   );
 };
-
-// Server-side data fetching for MQTT
-export async function getServerSideProps(context) {
-  const client = createMqttConnection(); // Create server-side MQTT connection
-
-  let mqttData = [];
-  let initialData = context.query; // Fetch initial data from the URL or query
-
-  if (client) {
-    // Subscribe to the desired topic
-    client.subscribe("emit/content/bleData/att", (err) => {
-      if (err) {
-        console.error("Failed to subscribe to MQTT topic:", err);
-      } else {
-        console.log("Subscribed to MQTT topic.");
-      }
-    });
-
-    // Handle incoming messages (SSR simulation)
-    client.on("message", (topic, message) => {
-      mqttData.push(JSON.parse(message.toString()));
-      console.log("Received MQTT message:", message.toString());
-    });
-
-    // Simulate a delay to receive messages (adjust as needed)
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  }
-
-  // Return MQTT data and initial input data as props to the component
-  return {
-    props: {
-      mqttData,
-      initialData,
-    },
-  };
-}
 
 
 export default ATTPage;

@@ -6,40 +6,60 @@ const STSPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
 
-  useEffect(() => {
-    if (data && Object.keys(data).length > 0) {
-      const payload = JSON.stringify(data); // Convert the data to a JSON string
-      console.log("Data is here: ", payload);
-
-      // Publish the data to the 'device/sts' topic
-      const mqttClient = createMqttConnection();
-      console.log("mqtt client is here: ", mqttClient);
-      // Wait for the client to be connected before publishing
-      mqttClient.on("connect", () => {
-        console.log("MQTT client connected. Ready to publish.");
-
-        mqttClient.publish(
-          "emit/content/bleData/sts", {qos:1},
-          payload,
-          { qos: 1 },
-          (err) => {
-            if (err) {
-              console.error("Failed to publish STS data to MQTT:", err);
-            } else {
-              console.log("STS data successfully published to MQTT:", payload);
-            }
+  const connectMqtt = () => {
+    if (window.WebViewJavascriptBridge) {
+      const mqttConfig = {
+        username: "Admin",
+        password: "7xzUV@MT",
+        clientId: "123",
+        hostname: "mqtt.omnivoltaic.com",
+        port: 1883,
+      };
+      window.WebViewJavascriptBridge.callHandler(
+        "connectMqtt",
+        mqttConfig,
+        (responseData) => {
+          if (responseData.error) {
+            console.error("MQTT connection error:", responseData.error.message);
+          } else {
+            console.log("MQTT connected:", responseData);
           }
-        );
-      });
-
-      mqttClient.on("error", (error) => {
-        console.error("Failed to connect: ", error.message);
-      });
-      mqttClient.on("offline", () => {
-        console.log("MQTT client is offline.");
-      });
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
     }
-  }, [data]);
+  };
+
+  const publishMqttMessage = () => {
+    if (window.WebViewJavascriptBridge) {
+      if (!data || data.length === 0) {
+        console.error("No BLE data available to publish.");
+        return;
+      }
+
+      const publishData = {
+        topic: "emit/content/bleData",
+        qos: 0, // Quality of Service level
+        content: JSON.stringify(data), // Publish BLE data as content
+      };
+
+      console.log(
+        `Publishing BLE data to MQTT topic: ${"emit/content/bleData"}`,
+        publishData
+      );
+
+      window.WebViewJavascriptBridge.callHandler(
+        "mqttPublishMsg",
+        publishData,
+        (responseData) => {
+          console.log("Message published to MQTT topic:", responseData);
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -138,6 +158,26 @@ const STSPage = () => {
       ) : (
         <p>No data available</p>
       )}
+      <div className="mqtt-controls my-4 mx-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          onClick={connectMqtt}
+        >
+          Connect to MQTT
+        </button>
+        <button
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          onClick={() => subscribeToMqttTopic()}
+        >
+          Subscribe to Topic
+        </button>
+        <button
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          onClick={() => publishMqttMessage()}
+        >
+          Publish BLE Init Data
+        </button>
+      </div>
     </div>
   );
 };
