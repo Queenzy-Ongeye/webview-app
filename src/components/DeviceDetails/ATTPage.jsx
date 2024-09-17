@@ -3,6 +3,9 @@ import { useLocation } from "react-router-dom";
 import { createMqttConnection } from "../../server/mqttClient";
 
 const ATTPage = () => {
+  const location = useLocation();
+  const { data } = location.state || {};
+  
   useEffect(() => {
     if (data && Object.keys(data).length > 0) {
       const payload = JSON.stringify(data); // Convert the data to a JSON string
@@ -139,6 +142,5 @@ const ATTPage = () => {
     </div>
   );
 };
-
 
 export default ATTPage;
