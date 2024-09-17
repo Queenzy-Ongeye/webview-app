@@ -78,16 +78,16 @@ const BleButtons = ({
 
   return (
     <div>
-      <div className="mt-8 w-full max-w-md mx-auto my-auto overflow-hidden">
-        <h3 className="text-lg sm:text-xl text-black font-semibold mb-4">
+      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-auto">
+        <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
-        <div className="relative h-96 overflow-y-auto">
+        <div className="space-y-4 overflow-y-auto overflow-x-hidden">
           {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 mb-4 last:mb-0"
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-auto"
               >
                 <div className="w-full">
                   <p className="font-semibold">
@@ -98,20 +98,20 @@ const BleButtons = ({
                   </p>
                   <p className="text-sm text-gray-500">RSSI: {device.rssi}</p>
                 </div>
-                <div className="flex space-x-2 mt-4">
+                <div className="space-x-2 grid grid-cols-2 w-full mt-4">
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
-                    disabled={
-                      isLoading || connectingMacAddress === device.macAddress
-                    }
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       connectingMacAddress === device.macAddress
-                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse" // Pulse animation when connecting
                         : connectionSuccess &&
                           connectingMacAddress !== device.macAddress
                         ? "bg-green-500 text-white"
                         : "bg-cyan-600 text-white hover:bg-cyan-700"
                     }`}
+                    disabled={
+                      isLoading || connectingMacAddress === device.macAddress
+                    }
                   >
                     {connectingMacAddress === device.macAddress
                       ? "Connecting..."
@@ -123,17 +123,17 @@ const BleButtons = ({
                     onClick={(e) =>
                       handleInitBleDataClick(e, device.macAddress)
                     }
-                    disabled={
-                      isLoading || initializingMacAddress === device.macAddress
-                    }
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       initializingMacAddress === device.macAddress
-                        ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
+                        ? "bg-gray-500 text-white cursor-not-allowed animate-pulse" // Pulse animation for BLE Data initialization
                         : initSuccess &&
                           initializingMacAddress !== device.macAddress
                         ? "bg-green-500 text-white"
                         : "bg-cyan-700 text-white"
                     }`}
+                    disabled={
+                      isLoading || initializingMacAddress === device.macAddress
+                    }
                   >
                     {isLoading
                       ? "Initializing..."
@@ -142,7 +142,58 @@ const BleButtons = ({
                       : "Init BLE Data"}
                   </button>
                 </div>
-                {/* Success Icons and additional controls are conditionally displayed here. */}
+                {/* Success Icon for a Connected Device */}
+                {connectionSuccess &&
+                  connectingMacAddress !== device.macAddress && (
+                    <div className="flex justify-center items-center mt-2">
+                      <FaCheckCircle className="text-green-500" size={24} />
+                    </div>
+                  )}
+                {initBleDataResponse &&
+                  initBleDataResponse.macAddress === device.macAddress && (
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full overflow-x-auto">
+                      <button
+                        onClick={() =>
+                          navigateToPage("/att", "ATT_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                      >
+                        ATT
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/cmd", "CMD_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                      >
+                        CMD
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/sts", "STS_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                      >
+                        STS
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/dta", "DTA_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                      >
+                        DTA
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/dia", "DIA_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                      >
+                        DIA
+                      </button>
+                    </div>
+                  )}
               </div>
             ))
           ) : (
