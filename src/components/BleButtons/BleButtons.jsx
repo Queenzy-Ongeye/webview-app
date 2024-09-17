@@ -82,7 +82,7 @@ const BleButtons = ({
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
-        <div className="space-y-4 overflow-y-auto overflow-x-hidden">
+        <div className="space-y-4 overscroll-none">
           {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
