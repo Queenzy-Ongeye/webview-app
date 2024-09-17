@@ -1,46 +1,11 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { createMqttConnection } from "../../server/mqttClient";
+import { connectMqtt, publishMqttMessage } from "../../service/javascriptBridge";
 
 const ATTPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  
-  useEffect(() => {
-    if (data && Object.keys(data).length > 0) {
-      const payload = JSON.stringify(data); // Convert the data to a JSON string
-      console.log("Data is here: ", payload);
-
-      // Publish the data to the 'device/sts' topic
-      const mqttClient = createMqttConnection();
-      console.log("mqtt client is here: ", mqttClient);
-      // Wait for the client to be connected before publishing
-      mqttClient.on("connect", () => {
-        console.log("MQTT client connected. Ready to publish.");
-
-        mqttClient.publish(
-          "emit/content/bleData/sts",
-          { qos: 1 },
-          payload,
-          { qos: 1 },
-          (err) => {
-            if (err) {
-              console.error("Failed to publish STS data to MQTT:", err);
-            } else {
-              console.log("STS data successfully published to MQTT:", payload);
-            }
-          }
-        );
-      });
-
-      mqttClient.on("error", (error) => {
-        console.error("Failed to connect: ", error.message);
-      });
-      mqttClient.on("offline", () => {
-        console.log("MQTT client is offline.");
-      });
-    }
-  }, [data]);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -139,6 +104,20 @@ const ATTPage = () => {
       ) : (
         <p>No data available</p>
       )}
+      <div className="mqtt-controls my-4 mx-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          onClick={connectMqtt}
+        >
+          Connect to MQTT
+        </button>
+        <button
+          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          onClick={() => publishMqttMessage("emit/content/bleData/sts")}
+        >
+          Publish BLE Init Data
+        </button>
+      </div>
     </div>
   );
 };

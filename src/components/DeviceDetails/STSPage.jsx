@@ -1,65 +1,10 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { createMqttConnection } from "../../server/mqttClient";
+import { connectMqtt, publishMqttMessage } from "../../service/javascriptBridge";
 
 const STSPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-
-  const connectMqtt = () => {
-    if (window.WebViewJavascriptBridge) {
-      const mqttConfig = {
-        username: "Scanner1",
-        password: "!mqttsc.2024#",
-        clientId: "123",
-        hostname: "mqtt.omnivoltaic.com",
-        port: 1883,
-      };
-      window.WebViewJavascriptBridge.callHandler(
-        "connectMqtt",
-        mqttConfig,
-        (responseData) => {
-          if (responseData.error) {
-            console.error("MQTT connection error:", responseData.error.message);
-          } else {
-            console.log("MQTT connected:", responseData);
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
-  const publishMqttMessage = () => {
-    if (window.WebViewJavascriptBridge) {
-      if (!data || data.length === 0) {
-        console.error("No BLE data available to publish.");
-        return;
-      }
-
-      const publishData = {
-        topic: "emit/content/bleData",
-        qos: 0, // Quality of Service level
-        content: JSON.stringify(data), // Publish BLE data as content
-      };
-
-      console.log(
-        `Publishing BLE data to MQTT topic: ${"emit/content/bleData"}`,
-        publishData
-      );
-
-      window.WebViewJavascriptBridge.callHandler(
-        "mqttPublishMsg",
-        publishData,
-        (responseData) => {
-          console.log("Message published to MQTT topic:", responseData);
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -167,7 +112,7 @@ const STSPage = () => {
         </button>
         <button
           className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
-          onClick={() => publishMqttMessage()}
+          onClick={() => publishMqttMessage("emit/content/bleData/sts")}
         >
           Publish BLE Init Data
         </button>
