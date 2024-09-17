@@ -16,7 +16,7 @@ const STSPage = () => {
         port: 1883,
       };
       window.WebViewJavascriptBridge.callHandler(
-        "connectMqtt",
+        "connectMqttCallBack",
         mqttConfig,
         (responseData) => {
           if (responseData.error) {
