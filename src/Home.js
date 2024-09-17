@@ -389,6 +389,16 @@ const Home = () => {
         isScanning={state.isScanning}
       />
 
+      {/* Display MQTT Message */}
+      <div className="mqtt-message mt-4">
+        <h3>MQTT Message:</h3>
+        {state.mqttMessage ? (
+          <pre>{JSON.stringify(state.mqttMessage, null, 2)}</pre>
+        ) : (
+          <p>No MQTT Messages</p>
+        )}
+      </div>
+
       {/* MQTT Controls */}
       <div className="mqtt-controls mt-4 grid grid-cols-3 sm:grid-cols-3 gap-2 w-full">
         <button
