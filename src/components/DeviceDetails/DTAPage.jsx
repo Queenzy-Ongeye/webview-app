@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { createMqttConnection } from "../../server/mqttClient";
-
-const DTAPage = ({ mqttData, initalData }) => {
+import {
+  connectMqtt,
+  publishMqttMessage,
+} from "../../service/javascriptBridge";
+const DTAPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
   //Fucntion for publishing to MQTT

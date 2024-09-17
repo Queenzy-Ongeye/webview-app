@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { createMqttConnection } from "../../server/mqttClient";
+import { useLocation } from "react-router-dom";
+import {
+  connectMqtt,
+  publishMqttMessage,
+} from "../../service/javascriptBridge";
+
 const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
@@ -142,41 +147,5 @@ const CMDPage = () => {
     </div>
   );
 };
-
-// Server-side data fetching for MQTT
-export async function getServerSideProps(context) {
-  const client = createMqttConnection(); // Create server-side MQTT connection
-
-  let mqttData = [];
-  let initialData = context.query; // Fetch initial data from the URL or query
-
-  if (client) {
-    // Subscribe to the desired topic
-    client.subscribe("emit/content/bleData/cmd", (err) => {
-      if (err) {
-        console.error("Failed to subscribe to MQTT topic:", err);
-      } else {
-        console.log("Subscribed to MQTT topic.");
-      }
-    });
-
-    // Handle incoming messages (SSR simulation)
-    client.on("message", (topic, message) => {
-      mqttData.push(JSON.parse(message.toString()));
-      console.log("Received MQTT message:", message.toString());
-    });
-
-    // Simulate a delay to receive messages (adjust as needed)
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  }
-
-  // Return MQTT data and initial input data as props to the component
-  return {
-    props: {
-      mqttData,
-      initialData,
-    },
-  };
-}
 
 export default CMDPage;

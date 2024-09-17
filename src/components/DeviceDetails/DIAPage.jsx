@@ -1,6 +1,9 @@
 import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { createMqttConnection } from "../../server/mqttClient";
+import {
+  connectMqtt,
+  publishMqttMessage,
+} from "../../service/javascriptBridge";
 
 const DIAPage = () => {
   const location = useLocation();
