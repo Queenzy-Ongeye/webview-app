@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -15,8 +15,8 @@ const BleButtons = ({
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
-  const [connectionSuccess, setConnectionSuccess] = useState(false); // Separate success for connection
-  const [initSuccess, setInitSuccess] = useState(false); // Separate success for initialization
+  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
+  const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
   const [loading, setLoading] = useState(false);
 
   // Create a Map to ensure uniqueness based on MAC Address
@@ -37,14 +37,19 @@ const BleButtons = ({
     try {
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
-      setConnectionSuccess(true); // Set success when connected
-      setTimeout(() => setConnectionSuccess(false), 10000); // Hide success after 10 seconds
+
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress); // Set success after connection completes
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear after 10 seconds
+      }, 10000); // Simulate 10 seconds delay for connection
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
     } finally {
-      setConnectingMacAddress(null);
-      setLoading(false);
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        setLoading(false);
+      }, 15000); // Simulate 15-20 seconds for the connection process
     }
   };
 
@@ -58,8 +63,11 @@ const BleButtons = ({
     try {
       const response = await initBleData(macAddress);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-      setInitSuccess(true); // Set success when initialized
-      setTimeout(() => setInitSuccess(false), 10000); // Hide success after 10 seconds
+
+      setTimeout(() => {
+        setInitSuccessMac(macAddress); // Set success after initialization completes
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear after 10 seconds
+      }, 10000); // Simulate 10 seconds delay for initialization
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
@@ -104,8 +112,7 @@ const BleButtons = ({
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       connectingMacAddress === device.macAddress
                         ? "bg-gray-600 text-white cursor-not-allowed animate-pulse" // Pulse animation when connecting
-                        : connectionSuccess &&
-                          connectingMacAddress !== device.macAddress
+                        : connectionSuccessMac === device.macAddress
                         ? "bg-green-500 text-white"
                         : "bg-cyan-600 text-white hover:bg-cyan-700"
                     }`}
@@ -115,7 +122,7 @@ const BleButtons = ({
                   >
                     {connectingMacAddress === device.macAddress
                       ? "Connecting..."
-                      : connectionSuccess
+                      : connectionSuccessMac === device.macAddress
                       ? "Connected"
                       : "Connect"}
                   </button>
@@ -126,8 +133,7 @@ const BleButtons = ({
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       initializingMacAddress === device.macAddress
                         ? "bg-gray-500 text-white cursor-not-allowed animate-pulse" // Pulse animation for BLE Data initialization
-                        : initSuccess &&
-                          initializingMacAddress !== device.macAddress
+                        : initSuccessMac === device.macAddress
                         ? "bg-green-500 text-white"
                         : "bg-cyan-700 text-white"
                     }`}
@@ -135,20 +141,19 @@ const BleButtons = ({
                       isLoading || initializingMacAddress === device.macAddress
                     }
                   >
-                    {isLoading
+                    {initializingMacAddress === device.macAddress
                       ? "Initializing..."
-                      : initSuccess
+                      : initSuccessMac === device.macAddress
                       ? "Initialized"
                       : "Init BLE Data"}
                   </button>
                 </div>
                 {/* Success Icon for a Connected Device */}
-                {connectionSuccess &&
-                  connectingMacAddress !== device.macAddress && (
-                    <div className="flex justify-center items-center mt-2">
-                      <FaCheckCircle className="text-green-500" size={24} />
-                    </div>
-                  )}
+                {connectionSuccessMac === device.macAddress && (
+                  <div className="flex justify-center items-center mt-2">
+                    <FaCheckCircle className="text-green-500" size={24} />
+                  </div>
+                )}
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full overflow-x-auto">
