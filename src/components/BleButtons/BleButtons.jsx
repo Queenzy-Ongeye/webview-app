@@ -85,17 +85,20 @@ const BleButtons = ({
   };
 
   return (
-    <div>
-      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-auto">
+    <div className="overflow-hidden">
+      {/* Add overflow-hidden to the parent container */}
+      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-hidden">
+        {/* Prevent horizontal overflow */}
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
-        <div className="space-y-4 overscroll-none">
+        <div className="space-y-4">
+          {/* Ensure no horizontal scroll */}
           {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-auto"
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden" // Overflow hidden to keep scale within the box
               >
                 <div className="w-full">
                   <p className="font-semibold">
@@ -156,7 +159,7 @@ const BleButtons = ({
                 )}
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full overflow-x-auto">
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                       <button
                         onClick={() =>
                           navigateToPage("/att", "ATT_SERVICE_NAME")
