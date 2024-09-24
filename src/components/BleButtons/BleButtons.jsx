@@ -3,6 +3,9 @@ import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FaCheckCircle } from "react-icons/fa"; // Success Icon
+import { connectMqtt } from "../../service/javascriptBridge";
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -213,6 +216,13 @@ const BleButtons = ({
                       >
                         DIA
                       </button>
+                      <button
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        onClick={connectMqtt}
+                      >
+                        Connect to MQTT
+                      </button>
+                      <ToastContainer/>
                     </div>
                   )}
               </div>
