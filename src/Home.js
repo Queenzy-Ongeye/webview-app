@@ -324,8 +324,11 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen ">
-      <div className="flex-grow">
+    <div className="flex flex-col min-h-screen">
+      {/* Main content that grows to fill the remaining space */}
+      <div className="flex-grow overflow-auto">
+        {" "}
+        {/* Ensure scrollable content */}
         <BleButtons
           connectToBluetoothDevice={connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
@@ -334,7 +337,11 @@ const Home = () => {
           isLoading={state.isLoading}
         />
       </div>
-      <div className="fixed bottom-0 left-0 w-full">
+
+      {/* Fixed action bar at the bottom */}
+      <div className="fixed bottom-0 left-0 w-full z-10">
+        {" "}
+        {/* Added z-index to ensure it's above other content */}
         <BottomActionBar
           onStartScan={startBleScan}
           onStopScan={stopBleScan}

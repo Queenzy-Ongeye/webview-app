@@ -90,7 +90,7 @@ const BleButtons = ({
   };
 
   return (
-    <div className="">
+    <div className="overflow-hidden">
       {/* Prevent horizontal scrolling */}
       <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
         {/* Add vertical scroll */}
