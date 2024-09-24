@@ -1,20 +1,28 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { createMqttConnection } from "../../server/mqttClient";
-import {
-  connectMqtt,
-  publishMqttMessage,
-} from "../../service/javascriptBridge";
+import { toast, Bounce } from "react-toastify"; // Added Bounce for transition
+import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Import a loading icon
 
 const ATTPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
+  const [loading, setLoading] = useState(false); // Loading state
 
-  // Fucntion for publishing to MQTT
+  // Function for publishing to MQTT
   const publishMqttMessage = (topic) => {
     if (window.WebViewJavascriptBridge) {
       if (!data || data.length === 0) {
         console.error("No BLE data available to publish.");
+        toast.error("No BLE data available to publish.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
         return;
       }
 
@@ -23,21 +31,49 @@ const ATTPage = () => {
         qos: 0, // Quality of Service level
         content: JSON.stringify(data), // Publish BLE data as content
       };
+
+      // Start loading before publishing
+      setLoading(true);
+
       window.WebViewJavascriptBridge.callHandler(
         "mqttPublishMsg",
         publishData,
         (responseData) => {
-          console.log("Message published to MQTT topic:", responseData);
+          // Stop loading once the publishing is successful
+          setLoading(false);
+
+          toast.success("Message published successfully", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+          });
         }
       );
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
+      toast.error("Error: WebViewJavascriptBridge is not initialized.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h2 className="text-3xl font-bold mb-6">ATT Data</h2>
+
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div key={index} className="mb-6 p-6 bg-gray-50 shadow rounded-lg">
@@ -132,18 +168,25 @@ const ATTPage = () => {
       ) : (
         <p>No data available</p>
       )}
+
       <div className="mqtt-controls my-4 mx-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
         <button
-          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
-          onClick={connectMqtt}
-        >
-          Connect to MQTT
-        </button>
-        <button
-          className="py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-300"
+          className={`py-2 px-4 font-semibold rounded-lg shadow-md transition duration-300 ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600"
+          } text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75`}
           onClick={() => publishMqttMessage("emit/content/bleData/ata")}
+          disabled={loading} // Disable button when loading
         >
-          Publish BLE Init Data
+          {loading ? (
+            <div className="flex justify-center items-center">
+              <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
+              Publishing...
+            </div>
+          ) : (
+            "Publish BLE Init Data"
+          )}
         </button>
       </div>
     </div>

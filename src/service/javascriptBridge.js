@@ -1,5 +1,7 @@
 // Function for starting BLE Scan
 
+import { toast } from "react-toastify";
+
 // Function to connect to MQTT
 export const connectMqtt = () => {
   if (window.WebViewJavascriptBridge) {
@@ -16,8 +18,29 @@ export const connectMqtt = () => {
       (responseData) => {
         if (responseData.error) {
           console.error("MQTT connection error:", responseData.error.message);
+          toast.error("MQTT Connection failed", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+          });
         } else {
-          console.log("MQTT connected:", responseData);
+          toast.success(`MQTT Connected sussessfully`, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+          });
         }
       }
     );
