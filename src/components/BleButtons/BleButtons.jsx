@@ -40,7 +40,7 @@ const BleButtons = ({
 
       setTimeout(() => {
         setConnectionSuccessMac(macAddress); // Set success after connection completes
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear after 10 seconds
+        setTimeout(() => setConnectionSuccessMac(null), 20000); // Clear after 10 seconds
       }, 10000); // Simulate 10 seconds delay for connection
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
@@ -49,7 +49,7 @@ const BleButtons = ({
       setTimeout(() => {
         setConnectingMacAddress(null);
         setLoading(false);
-      }, 15000); // Simulate 15-20 seconds for the connection process
+      }, 20000); // Simulate 15-20 seconds for the connection process
     }
   };
 
@@ -67,13 +67,15 @@ const BleButtons = ({
       setTimeout(() => {
         setInitSuccessMac(macAddress); // Set success after initialization completes
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear after 10 seconds
-      }, 10000); // Simulate 10 seconds delay for initialization
+      }, 25000); // Simulate 10 seconds delay for initialization
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
     } finally {
-      setInitializingMacAddress(null);
-      setLoading(false);
+      setTimeout(() => {
+        setInitializingMacAddress(null);
+        setLoading(false);
+      }, 25000);
     }
   };
 
@@ -87,7 +89,7 @@ const BleButtons = ({
   return (
     <div className="overflow-hidden">
       {/* Add overflow-hidden to the parent container */}
-      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-hidden">
+      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
         {/* Prevent horizontal overflow */}
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
@@ -98,7 +100,7 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden" // Overflow hidden to keep scale within the box
+                className="flex flex-col justify-between w-full items-center mx-4 p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden" // Overflow hidden to keep scale within the box
               >
                 <div className="w-full">
                   <p className="font-semibold">
