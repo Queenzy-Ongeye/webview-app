@@ -1,6 +1,6 @@
 // Function for starting BLE Scan
 
-import { toast } from "react-toastify";
+import { ToastContainer, toast, Bounce } from 'react-toastify';
 
 // Function to connect to MQTT
 export const connectMqtt = () => {
