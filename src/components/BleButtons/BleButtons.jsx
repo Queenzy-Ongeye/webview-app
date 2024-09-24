@@ -32,24 +32,30 @@ const BleButtons = ({
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setLoading(true);
+    setLoading(true); // Start loading indicator for the connection process
 
     try {
+      // Attempt to connect to the Bluetooth device
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
+      // If the connection is successful, set the success state for the current MAC
       setTimeout(() => {
-        setConnectionSuccessMac(macAddress); // Set success after connection completes
-        setTimeout(() => setConnectionSuccessMac(null), 20000); // Clear after 10 seconds
-      }, 10000); // Simulate 10 seconds delay for connection
+        setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 23000);
     } catch (error) {
+      // If the connection fails, log the error and show an alert
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
+
+      // Ensure that the success state is not set in case of failure
+      setConnectionSuccessMac(null); // Clear any success indicator
     } finally {
       setTimeout(() => {
         setConnectingMacAddress(null);
         setLoading(false);
-      }, 25000); // Simulate 15-20 seconds for the connection process
+      }, 23000);
     }
   };
 
@@ -64,18 +70,22 @@ const BleButtons = ({
       const response = await initBleData(macAddress);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
 
+      // If the initialization is successful, set the success state for the current MAC
       setTimeout(() => {
-        setInitSuccessMac(macAddress); // Set success after initialization completes
-        setTimeout(() => setInitSuccessMac(null), 10000); // Clear after 10 seconds
-      }, 30000); // Simulate 10 seconds delay for initialization
+        setInitSuccessMac(macAddress);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
+
+      // Ensure that the success state is not set in case of failure
+      setInitSuccessMac(null);
     } finally {
       setTimeout(() => {
         setInitializingMacAddress(null);
         setLoading(false);
-      }, 30000);
+      }, 35000);
     }
   };
 
@@ -88,19 +98,20 @@ const BleButtons = ({
 
   return (
     <div className="overflow-hidden">
-      {/* Add overflow-hidden to the parent container */}
-      <div className="mt-8 w-96 max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
-        {/* Prevent horizontal overflow */}
+      {" "}
+      {/* Prevent horizontal scrolling */}
+      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
+        {" "}
+        {/* Add vertical scroll */}
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
-          {/* Ensure no horizontal scroll */}
           {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-96 items-center mx-auto p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden" // Overflow hidden to keep scale within the box
+                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden"
               >
                 <div className="w-full">
                   <p className="font-semibold">
