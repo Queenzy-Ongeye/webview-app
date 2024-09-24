@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa"; // Success Icon
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -15,8 +15,8 @@ const BleButtons = ({
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
-  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
-  const [initSuccessMac, setInitSuccessMac] = useState(null);
+  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
+  const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
   const [loading, setLoading] = useState(false);
 
   // Create a Map to ensure uniqueness based on MAC Address
@@ -32,27 +32,24 @@ const BleButtons = ({
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setLoading(true); // Start loading indicator for the connection process
+    setLoading(true);
 
     try {
-      // Attempt to connect to the Bluetooth device
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
-      // If the connection is successful, set the success state for the current MAC
-      setConnectionSuccessMac(macAddress);
-      setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress); // Set success after connection completes
+        setTimeout(() => setConnectionSuccessMac(null), 20000); // Clear after 10 seconds
+      }, 10000); // Simulate 10 seconds delay for connection
     } catch (error) {
-      // If the connection fails, log the error and show an alert
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
-      setConnectionSuccessMac(null); // Clear any success indicator
     } finally {
-      // Always clear the connecting state and loading spinner after the process
-      setConnectingMacAddress(null);
-      setLoading(false);
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        setLoading(false);
+      }, 25000); // Simulate 15-20 seconds for the connection process
     }
   };
 
@@ -67,18 +64,18 @@ const BleButtons = ({
       const response = await initBleData(macAddress);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
 
-      // If the initialization is successful, set the success state for the current MAC
-      setInitSuccessMac(macAddress);
-      setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      setTimeout(() => {
+        setInitSuccessMac(macAddress); // Set success after initialization completes
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear after 10 seconds
+      }, 30000); // Simulate 10 seconds delay for initialization
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
-      setInitSuccessMac(null);
     } finally {
-      setInitializingMacAddress(null);
-      setLoading(false);
+      setTimeout(() => {
+        setInitializingMacAddress(null);
+        setLoading(false);
+      }, 30000);
     }
   };
 
@@ -91,18 +88,19 @@ const BleButtons = ({
 
   return (
     <div className="overflow-hidden">
-      {/* Prevent horizontal scrolling */}
-      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
-        {/* Add vertical scroll */}
+      {/* Add overflow-hidden to the parent container */}
+      <div className="mt-8 w-96 max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
+        {/* Prevent horizontal overflow */}
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
         </h3>
         <div className="space-y-4">
+          {/* Ensure no horizontal scroll */}
           {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden"
+                className="flex flex-col justify-between w-96 items-center mx-auto p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden" // Overflow hidden to keep scale within the box
               >
                 <div className="w-full">
                   <p className="font-semibold">
