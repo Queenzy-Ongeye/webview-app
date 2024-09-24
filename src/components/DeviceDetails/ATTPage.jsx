@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { toast, Bounce } from "react-toastify"; // Added Bounce for transition
+import { toast, Bounce, ToastContainer } from "react-toastify"; // Added Bounce for transition
 import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Import a loading icon
 
 const ATTPage = () => {
@@ -170,13 +170,14 @@ const ATTPage = () => {
       )}
 
       <div className="mqtt-controls my-4 mx-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <ToastContainer />
         <button
           className={`py-2 px-4 font-semibold rounded-lg shadow-md transition duration-300 ${
             loading
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-blue-500 hover:bg-blue-600"
           } text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75`}
-          onClick={() => publishMqttMessage("emit/content/bleData/ata")}
+          onClick={() => publishMqttMessage("emit/content/bleData/att")}
           disabled={loading} // Disable button when loading
         >
           {loading ? (

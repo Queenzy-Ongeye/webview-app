@@ -101,10 +101,8 @@ const BleButtons = ({
 
   return (
     <div className="overflow-hidden">
-      {" "}
       {/* Prevent horizontal scrolling */}
       <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
-        {" "}
         {/* Add vertical scroll */}
         <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
           Detected Bluetooth Devices
@@ -114,7 +112,7 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col justify-between w-full items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden"
+                className="flex flex-col justify-between w-90 items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden"
               >
                 <div className="w-full">
                   <p className="font-semibold">

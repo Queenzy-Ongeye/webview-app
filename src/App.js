@@ -17,7 +17,7 @@ const App = () => {
   return (
     <StoreProvider>
       <Router>
-        <div className="min-h-screen flex">
+        <div className="flex">
           <NavigationBar />
           <div className="flex-grow">
             <Suspense
