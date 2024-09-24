@@ -324,7 +324,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col max-h-screen min-w-screen">
       {/* Main content that grows to fill the remaining space */}
       <div className="flex-grow overflow-auto">
         {" "}
