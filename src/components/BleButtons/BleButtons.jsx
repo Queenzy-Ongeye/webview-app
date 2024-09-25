@@ -5,7 +5,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FaCheckCircle } from "react-icons/fa"; // Success Icon
 import { connectMqtt } from "../../service/javascriptBridge";
 import { ToastContainer } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -21,6 +21,7 @@ const BleButtons = ({
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
   const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
   const [loading, setLoading] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -97,6 +98,12 @@ const BleButtons = ({
       (item) => item.serviceNameEnum === serviceNameEnum
     );
     navigate(page, { state: { data: filteredData } });
+  };
+
+  // MQTT Connection
+  const handleMqttConnection = () => {
+    connectMqtt();
+    setIsButtonDisabled(true);
   };
 
   return (
@@ -216,11 +223,25 @@ const BleButtons = ({
                       </button>
                       <button
                         className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
-                        onClick={connectMqtt}
+                        onClick={handleConnectClick}
+                        disabled={isButtonDisabled}
                       >
                         Connect to MQTT
                       </button>
-                      <ToastContainer/>
+                      <ToastContainer
+                        toastClassName={
+                          () =>
+                            "relative flex p-4 min-h-10 rounded-md shadow-lg " +
+                            "bg-red-600 text-white " +
+                            "sm:w-96 w-full sm:text-base text-sm" // Adjust width and font size for mobile
+                        }
+                        bodyClassName={() =>
+                          "flex items-center justify-between"
+                        }
+                        position="top-center"
+                        limit={3} // Limit number of toasts on mobile
+                        autoClose={5000}
+                      />
                     </div>
                   )}
               </div>
