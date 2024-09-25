@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  connectMqtt,
-  publishMqttMessage,
-} from "../../service/javascriptBridge";
+import { toast, Bounce, ToastContainer } from "react-toastify"; // Added Bounce for transition
+import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Import a loading icon
+
 const DTAPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
@@ -74,14 +73,16 @@ const DTAPage = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6">Status Data</h2>
-      {/* Back Button */}
-      <button
-        onClick={() => navigate(-1)} // Go back to the previous page
-        className="mb-4 py-2 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg shadow-md transition duration-300"
-      >
-        Back
-      </button>
+      <div className="flex">
+        <h2 className="text-3xl font-bold mb-6">DTA Data</h2>
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)} // Go back to the previous page
+          className="mb-4 py-2 px-4 bg-cyan-800 text-white font-semibold rounded-lg shadow-md transition duration-300"
+        >
+          Back
+        </button>
+      </div>
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div key={index} className="mb-6 p-6 bg-white shadow-lg rounded-lg">

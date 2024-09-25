@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast, Bounce, ToastContainer } from "react-toastify"; // Added Bounce for transition
 import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Import a loading icon
 
 const ATTPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false); // Loading state
 
   // Function for publishing to MQTT
@@ -75,6 +76,13 @@ const ATTPage = () => {
       <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">
         ATT Data
       </h2>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate(-1)} // Go back to the previous page
+        className="mb-4 py-2 px-4 bg-cyan-800 text-white font-semibold rounded-lg shadow-md transition duration-300"
+      >
+        Back
+      </button>
 
       {data && data.length > 0 ? (
         data.map((item, index) => (
