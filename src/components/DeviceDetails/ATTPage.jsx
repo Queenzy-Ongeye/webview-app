@@ -72,92 +72,88 @@ const ATTPage = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6">ATT Data</h2>
+      <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">
+        ATT Data
+      </h2>
 
       {data && data.length > 0 ? (
         data.map((item, index) => (
-          <div key={index} className="mb-6 p-6 bg-gray-50 shadow rounded-lg">
+          <div key={index} className="mb-6 p-6 bg-white shadow-lg rounded-lg">
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
                   {item.characterMap[uuid].desc}
                 </h3>
 
-                <table className="w-full text-left mt-4 border border-gray-200">
+                <table className="w-full text-left mt-4 border border-gray-300 rounded-lg overflow-hidden">
                   <tbody>
-                    <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
-                        Description
-                      </td>
-                      <td className="p-2">{item.characterMap[uuid].desc}</td>
+                    <tr className="border-b bg-gray-50">
+                      <td className="p-3 font-semibold text-gray-600">Name</td>
+                      <td className="p-3">{item.characterMap[uuid].name}</td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">Name</td>
-                      <td className="p-2">{item.characterMap[uuid].name}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                      <td className="p-3 font-semibold text-gray-600">
                         Service UUID
                       </td>
-                      <td className="p-2">
+                      <td className="p-3">
                         {item.characterMap[uuid].serviceUuid}
                       </td>
                     </tr>
-                    <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                    <tr className="border-b bg-gray-50">
+                      <td className="p-3 font-semibold text-gray-600">
                         Properties
                       </td>
-                      <td className="p-2">
+                      <td className="p-3">
                         {item.characterMap[uuid].properties}
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                      <td className="p-3 font-semibold text-gray-600">
                         Enable Indicate
                       </td>
-                      <td className="p-2">
+                      <td className="p-3">
                         {item.characterMap[uuid].enableIndicate ? "Yes" : "No"}
                       </td>
                     </tr>
-                    <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                    <tr className="border-b bg-gray-50">
+                      <td className="p-3 font-semibold text-gray-600">
                         Enable Notify
                       </td>
-                      <td className="p-2">
+                      <td className="p-3">
                         {item.characterMap[uuid].enableNotify ? "Yes" : "No"}
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                      <td className="p-3 font-semibold text-gray-600">
                         Enable Read
                       </td>
-                      <td className="p-2">
+                      <td className="p-3">
                         {item.characterMap[uuid].enableRead ? "Yes" : "No"}
                       </td>
                     </tr>
-                    <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                    <tr className="border-b bg-gray-50">
+                      <td className="p-3 font-semibold text-gray-600">
                         Enable Write
                       </td>
-                      <td className="p-2">
+                      <td className="p-3">
                         {item.characterMap[uuid].enableWrite ? "Yes" : "No"}
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                      <td className="p-3 font-semibold text-gray-600">
                         Enable Write No Response
                       </td>
-                      <td className="p-2">
+                      <td className="p-3">
                         {item.characterMap[uuid].enableWriteNoResp
                           ? "Yes"
                           : "No"}
                       </td>
                     </tr>
-                    <tr className="border-b">
-                      <td className="p-2 font-semibold text-gray-600">
+                    <tr className="border-b bg-gray-50">
+                      <td className="p-3 font-semibold text-gray-600">
                         Real Value
                       </td>
-                      <td className="p-2">{item.characterMap[uuid].realVal}</td>
+                      <td className="p-3">{item.characterMap[uuid].realVal}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -166,28 +162,26 @@ const ATTPage = () => {
           </div>
         ))
       ) : (
-        <p>No data available</p>
+        <p className="text-center text-gray-500">No data available</p>
       )}
 
-      <div className="mqtt-controls my-4 mx-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="mqtt-controls my-8 flex justify-center">
         <ToastContainer />
         <button
-          className={`py-2 px-4 font-semibold rounded-lg shadow-md transition duration-300 ${
+          className={`py-3 px-6 font-semibold rounded-lg shadow-md transition duration-300 flex justify-center items-center ${
             loading
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600"
-          } text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75`}
+              : "bg-blue-600 hover:bg-blue-700"
+          } text-white focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50`}
           onClick={() => publishMqttMessage("emit/content/bleData/att")}
           disabled={loading} // Disable button when loading
         >
           {loading ? (
-            <div className="flex justify-center items-center">
-              <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
-              Publishing...
-            </div>
+            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
           ) : (
             "Publish BLE Init Data"
           )}
+          {loading && "Publishing..."}
         </button>
       </div>
     </div>
