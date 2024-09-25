@@ -223,7 +223,7 @@ const BleButtons = ({
                       </button>
                       <button
                         className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
-                        onClick={handleConnectClick}
+                        onClick={handleMqttConnection}
                         disabled={isButtonDisabled}
                       >
                         Connect to MQTT
