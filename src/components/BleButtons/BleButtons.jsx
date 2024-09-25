@@ -228,20 +228,7 @@ const BleButtons = ({
                       >
                         Connect to MQTT
                       </button>
-                      <ToastContainer
-                        toastClassName={
-                          () =>
-                            "relative flex p-4 min-h-10 rounded-md shadow-lg " +
-                            "bg-red-600 text-white " +
-                            "sm:w-96 w-full sm:text-base text-sm" // Adjust width and font size for mobile
-                        }
-                        bodyClassName={() =>
-                          "flex items-center justify-between"
-                        }
-                        position="top-center"
-                        limit={3} // Limit number of toasts on mobile
-                        autoClose={5000}
-                      />
+                      <ToastContainer />
                     </div>
                   )}
               </div>
