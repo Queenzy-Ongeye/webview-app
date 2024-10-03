@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaHome, FaQrcode } from "react-icons/fa"; // Import the icons
+import { FaHome, FaQrcode, FaUser, FaSearch } from "react-icons/fa"; // Import icons
 import ThemeToggle from "./ThemeToggle";
 import { useThemeProvider } from "../utility/ThemeContext";
 
@@ -18,17 +18,34 @@ const NavigationBar = () => {
 
   return (
     <div>
-      {/* Hamburger Menu Button */}
-      <button
-        className={`${
+      {/* Top Navbar */}
+      <div
+        className={`fixed top-0 left-0 w-full h-12 flex items-center justify-between px-4 ${
           currentTheme === "dark"
-            ? "text-white bg-gray-900"
-            : "text-white bg-cyan-700"
-        } px-2 my-2 ml-2 focus:outline-none fixed top-0 left-0 z-50 lg:px-4 lg:py-4 lg:mt-6 lg:ml-6`}
-        onClick={toggleMenu}
+            ? "bg-gray-900 text-white"
+            : "bg-blue-950 text-white"
+        } z-50`}
       >
-        ☰
-      </button>
+        {/* App Title or Logo */}
+        <div className="font-bold text-lg">BLE Scanner App</div>
+
+        {/* Icons on the Top Right */}
+        <div className="flex items-center space-x-4">
+          <FaSearch className="cursor-pointer hover:text-gray-300" />
+          <FaUser className="cursor-pointer hover:text-gray-300" />
+          {/* Hamburger Menu Button for Mobile */}
+          <button
+            className={`${
+              currentTheme === "dark"
+                ? "text-white bg-gray-900"
+                : "text-white bg-blue-950"
+            } px-2 focus:outline-none lg:hidden`}
+            onClick={toggleMenu}
+          >
+            ☰
+          </button>
+        </div>
+      </div>
 
       {/* Overlay to close the menu when clicking outside */}
       {isOpen && (
@@ -38,21 +55,16 @@ const NavigationBar = () => {
         ></div>
       )}
 
-      {/* Navigation Menu */}
+      {/* Side Navigation Menu */}
       <nav
         className={`${
-          currentTheme === "dark" ? "bg-gray-900" : "bg-cyan-700"
-        } text-white w-62 min-h-screen py-8 fixed top-0 left-0 transform ${
+          currentTheme === "dark" ? "bg-gray-900" : "bg-blue-950"
+        } text-white w-62 min-h-screen py-8 fixed top-12 left-0 transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 ease-in-out z-50 flex flex-col justify-between`}
+        } transition-transform duration-300 ease-in-out z-50 flex flex-col justify-between lg:top-0 lg:w-64`}
       >
+        {/* Navigation Links */}
         <div className="flex-grow">
-          <div className="px-4 py-2 rounded my-2">
-            <h1>BLE Scanner App</h1>
-          </div>
-          <hr className="bg-white" />
-
-          {/* Navigation Links with Icons */}
           <Link
             to="/"
             className="px-4 py-2 hover:bg-cyan-600 rounded my-2 flex items-center"
@@ -72,7 +84,9 @@ const NavigationBar = () => {
         {/* Theme Toggle at the Bottom */}
         <hr className="bg-white" />
         <div className="px-4 rounded my-2">
-          <p className="text-gray-400 font-thin font-mono my-2 ml-0.1 flex-1">Theme</p>
+          <p className="text-gray-400 font-thin font-mono my-2 ml-0.1 flex-1">
+            Theme
+          </p>
           <ThemeToggle />
         </div>
       </nav>
