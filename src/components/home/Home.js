@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
-import BleButtons from "./components/BleButtons/BleButtons";
-import { useStore } from "./service/store";
-import BottomActionBar from "./components/BleButtons/BottomActionBar";
-import { getAllData, getDataByBarcode } from "./utility/indexedDB";
+import BleButtons from "../BleButtons/BleButtons";
+import { useStore } from "../../service/store";
+import BottomActionBar from "../BleButtons/BottomActionBar";
+import { getAllData, getDataByBarcode } from "../../utility/indexedDB";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
