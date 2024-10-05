@@ -29,7 +29,7 @@ const Header = () => {
         <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-48 h-48 mx-auto">
           <IoMdBarcode size={64} className="text-blue-500 mt-8" />
           <h2 className="text-2xl font-semibold mb-4">
-            <Link to="/barcode-scan">Barcode Scan</Link>
+            <Link to="/barcode">Barcode Scan</Link>
           </h2>
         </div>
       </div>
