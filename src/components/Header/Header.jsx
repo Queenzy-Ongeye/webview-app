@@ -12,21 +12,21 @@ const Header = () => {
       {/* Add margin-top and padding for spacing */}
       <div className="mt-20 grid grid-cols-2 sm:grid-cols-3 gap-4 justify-center">
         {/* First card with specified width */}
-        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-44 h-48 mx-auto">
+        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-40 h-48 mx-auto">
           <FaBluetooth size={64} className="text-blue-500 mt-8" />
           <h2 className="text-2xl font-semibold mb-4">
             <Link to="/home">BleScan</Link>
           </h2>
         </div>
         {/* Second card with specified width */}
-        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-44 h-48 mx-auto">
+        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-40 h-48 mx-auto">
           <BsQrCodeScan size={64} className="text-blue-500 mt-8" />
           <h2 className="text-xl font-semibold mb-4">
             <Link to="/scan-data">QRCode Scan</Link>
           </h2>
         </div>
         {/* Third card with specified width */}
-        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-44 h-48 mx-auto">
+        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-40 h-48 mx-auto">
           <IoMdBarcode size={64} className="text-blue-500 mt-8" />
           <h2 className="text-xl font-semibold mb-4">
             <Link to="/barcode">Barcode Scan</Link>
