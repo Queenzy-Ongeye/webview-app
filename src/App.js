@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { HashRouter as Router, Route, Routes } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -13,9 +13,17 @@ const CMDPage = lazy(() => import("./components/DeviceDetails/CMDPage"));
 const DTAPage = lazy(() => import("./components/DeviceDetails/DTAPage"));
 const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanDataPage"));
-const Header = lazy(() => import("./components/Header")); // Lazy load Header
+const Header = lazy(() => import("./components/Header/Header")); // Lazy load Header
+const Login = lazy(() => import("./components/auth/loginPage"));
+
 
 const App = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const authStatus = Boolean(localStorage.getItem(isAuthenticated));
+    setIsAuthenticated(authStatus);
+  }, [])
   return (
     <StoreProvider>
       <Router>
@@ -27,9 +35,10 @@ const App = () => {
           }
         >
           <Routes>
+            <Route path="/" element = {<Login setIsAuthenticated={setIsAuthenticated}/>}/>
             {/* Use Layout for all routes to ensure NavigationBar is included */}
             <Route
-              path="/"
+              path="/Header"
               element={
                 <Layout>
                   <Header />

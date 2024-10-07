@@ -66,7 +66,7 @@ const NavigationBar = () => {
         {/* Navigation Links */}
         <div className="flex-grow">
           <Link
-            to="/"
+            to="/Header"
             className="px-4 py-2 hover:bg-cyan-600 rounded my-2 flex items-center"
             onClick={closeMenu}
           >
