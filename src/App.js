@@ -18,12 +18,12 @@ const Login = lazy(() => import("./components/auth/loginPage"));
 
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const authStatus = Boolean(localStorage.getItem(isAuthenticated));
-    setIsAuthenticated(authStatus);
-  }, [])
+  // useEffect(() => {
+  //   const authStatus = Boolean(localStorage.getItem(isAuthenticated));
+  //   setIsAuthenticated(authStatus);
+  // }, [])
   return (
     <StoreProvider>
       <Router>
