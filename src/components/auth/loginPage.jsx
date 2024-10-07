@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LoginPage = ({setIsAuthenticated}) => {
+const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const  [error, setError] = useState("");
@@ -16,7 +16,6 @@ const LoginPage = ({setIsAuthenticated}) => {
         };
 
         if(email ==="oves.altec@omnivoltaic.com" && password === "Altec1234"){
-            localStorage.setItem("isAuthenticated", true);
             setIsAuthenticated(true);
             setError("");
             navigate("/Header");
