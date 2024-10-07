@@ -16,7 +16,6 @@ const LoginPage = () => {
         };
 
         if(email ==="oves.altec@omnivoltaic.com" && password === "Altec1234"){
-            setIsAuthenticated(true);
             setError("");
             navigate("/Header");
         }else{
