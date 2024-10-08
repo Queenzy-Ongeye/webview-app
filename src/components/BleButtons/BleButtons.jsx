@@ -108,7 +108,7 @@ const BleButtons = ({
 
   return (
     <div className="flex flex-col items-center w-full overflow-hidden">
-      <div className="mt-4 w-full max-w-2xl mx-auto p-4 bg-gray-50 rounded-lg shadow-lg">
+      <div className="mt-6 w-full max-w-full mx-auto p-4 bg-gray-50 rounded-lg shadow-lg">
         <h3 className="text-lg text-black font-semibold mb-4 text-center">
           Detected Bluetooth Devices
         </h3>
