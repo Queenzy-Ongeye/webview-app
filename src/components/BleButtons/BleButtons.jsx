@@ -107,35 +107,35 @@ const BleButtons = ({
   };
 
   return (
-    <div className="overflow-hidden">
-      {/* Prevent horizontal scrolling */}
-      <div className="mt-8 w-full max-w-md mx-2 my-auto overflow-y-auto max-h-[500px]">
-        {/* Add vertical scroll */}
-        <h3 className="text-lg sm:text-xl text-black font-semibold mb-2 sm:mb-4">
+    <div className="flex flex-col items-center w-full overflow-hidden">
+      <div className="mt-4 w-full max-w-2xl mx-auto p-4 bg-gray-50 rounded-lg shadow-lg">
+        <h3 className="text-lg text-black font-semibold mb-4 text-center">
           Detected Bluetooth Devices
         </h3>
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto max-h-[400px]">
           {uniqueDevice.length > 0 ? (
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex m-6 flex-col justify-between w-96 items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden"
+                className="flex flex-col items-center justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
               >
-                <div className="w-full">
-                  <p className="font-semibold">
+                <div className="w-full mb-2">
+                  <p className="font-semibold text-center">
                     {device.name || "Unnamed Device"}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 text-center">
                     MAC Address: {device.macAddress}
                   </p>
-                  <p className="text-sm text-gray-500">RSSI: {device.rssi}</p>
+                  <p className="text-sm text-gray-500 text-center">
+                    RSSI: {device.rssi}
+                  </p>
                 </div>
-                <div className="space-x-2 grid grid-cols-2 w-full mt-4">
+                <div className="flex justify-between w-full mt-4 space-x-2">
                   <button
                     onClick={(e) => handleConnectClick(e, device.macAddress)}
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       connectingMacAddress === device.macAddress
-                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse" // Pulse animation when connecting
+                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                         : connectionSuccessMac === device.macAddress
                         ? "bg-green-500 text-white"
                         : "bg-cyan-600 text-white hover:bg-cyan-700"
@@ -156,7 +156,7 @@ const BleButtons = ({
                     }
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       initializingMacAddress === device.macAddress
-                        ? "bg-gray-500 text-white cursor-not-allowed animate-pulse" // Pulse animation for BLE Data initialization
+                        ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
                         : initSuccessMac === device.macAddress
                         ? "bg-green-500 text-white"
                         : "bg-cyan-700 text-white"
@@ -172,9 +172,8 @@ const BleButtons = ({
                       : "Init BLE Data"}
                   </button>
                 </div>
-                {/* Success Icon for a Connected Device */}
                 {connectionSuccessMac === device.macAddress && (
-                  <div className="flex justify-center items-center mt-2">
+                  <div className="mt-2">
                     <FaCheckCircle className="text-green-500" size={24} />
                   </div>
                 )}
@@ -185,7 +184,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/att", "ATT_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
                       >
                         ATT
                       </button>
@@ -193,7 +192,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/cmd", "CMD_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
                       >
                         CMD
                       </button>
@@ -201,7 +200,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/sts", "STS_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
                       >
                         STS
                       </button>
@@ -209,7 +208,7 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/dta", "DTA_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
                       >
                         DTA
                       </button>
@@ -217,12 +216,12 @@ const BleButtons = ({
                         onClick={() =>
                           navigateToPage("/dia", "DIA_SERVICE_NAME")
                         }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
                       >
                         DIA
                       </button>
                       <button
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition duration-200"
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
                         onClick={handleMqttConnection}
                         disabled={isButtonDisabled}
                       >
@@ -234,7 +233,7 @@ const BleButtons = ({
               </div>
             ))
           ) : (
-            <p className="text-black">No devices detected</p>
+            <p className="text-black text-center">No devices detected</p>
           )}
         </div>
       </div>

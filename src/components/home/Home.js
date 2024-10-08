@@ -324,19 +324,20 @@ const Home = () => {
   };
 
   return (
-    <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
-      <div className="overflow-auto">
+    <div className="flex flex-col h-screen w-screen  overflow-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-auto">
         <BleButtons
-          connectToBluetoothDevice={connectToBluetoothDevice}
+          connectToBluetoothDevice={state.connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
-          initBleData={initBleData}
+          initBleData={state.initBleData}
           initBleDataResponse={state.initBleData}
           isLoading={state.isLoading}
         />
       </div>
 
-      {/* Fixed action bar at the bottom */}
-      <div className="fixed bottom-0 left-0 w-full z-10">
+      {/* Fixed Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 w-full">
         <BottomActionBar
           onStartScan={startBleScan}
           onStopScan={stopBleScan}
