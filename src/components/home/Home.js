@@ -324,7 +324,7 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen  overflow-hidden">
+    <div className="flex flex-col h-screen w-screen max-w-screen min-w-screen overflow-hidden">
       {/* Main Content Area */}
       <div className="flex-1 overflow-auto">
         <BleButtons
