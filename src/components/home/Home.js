@@ -324,20 +324,21 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen max-w-screen min-w-screen overflow-hidden">
+    <div className="grid grid-rows-[1fr] h-screen w-screen overflow-hidden relative">
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
+      <div className="overflow-auto pb-[70px]">
+        {/* Adjust the padding-bottom to match BottomActionBar height */}
         <BleButtons
-          connectToBluetoothDevice={state.connectToBluetoothDevice}
+          connectToBluetoothDevice={connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
-          initBleData={state.initBleData}
+          initBleData={initBleData}
           initBleDataResponse={state.initBleData}
           isLoading={state.isLoading}
         />
       </div>
 
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 w-full">
+      <div className="fixed bottom-0 left-0 w-full z-10">
         <BottomActionBar
           onStartScan={startBleScan}
           onStopScan={stopBleScan}
