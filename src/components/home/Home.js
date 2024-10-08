@@ -324,10 +324,8 @@ const Home = () => {
   };
 
   return (
-    <div className="grid grid-rows-[1fr] h-screen w-screen overflow-hidden relative">
-      {/* Main Content Area */}
-      <div className="overflow-auto pb-[70px]">
-        {/* Adjust the padding-bottom to match BottomActionBar height */}
+    <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
+      <div className="overflow-auto">
         <BleButtons
           connectToBluetoothDevice={connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
@@ -337,8 +335,8 @@ const Home = () => {
         />
       </div>
 
-      {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 w-full z-10">
+      {/* Fixed action bar at the bottom */}
+      <div className="fixed bottom-0 left-0 w-full z-10 row-start-auto">
         <BottomActionBar
           onStartScan={startBleScan}
           onStopScan={stopBleScan}
