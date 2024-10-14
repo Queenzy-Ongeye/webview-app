@@ -1,5 +1,5 @@
 // ScanDataPage.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { getDataByBarcode } from "../../utility/indexedDB";
@@ -9,7 +9,14 @@ const ScanDataPage = () => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
 
-  // Function to initiate the QR code scan, similar to startQrCode in Home.js
+  useEffect(() => {
+    // Make sure BLE devices are scanned and stored in state
+    if (!state.detectedDevices || state.detectedDevices.length === 0) {
+      console.warn("No BLE devices detected. Please initiate BLE scan.");
+    }
+  }, [state.detectedDevices]);
+
+  // Function to initiate the QR code scan
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
@@ -48,12 +55,12 @@ const ScanDataPage = () => {
       const matchingDevice = findMatchingDevice(data);
 
       if (matchingDevice) {
-        console.log("Matching Ble device found: ", matchingDevice);
+        console.log("Matching BLE device found: ", matchingDevice);
         dispatch({
           type: "SET_MATCHED_DEVICE",
           payload: { bleDevice: matchingDevice, scannedData: data },
         });
-        alert(`Device matcehd : ${matchingDevice.name}`);
+        alert(`Device matched: ${matchingDevice.name}`);
       } else {
         console.error("No matching BLE device found for scanned data.");
         alert("No matching BLE device found.");
@@ -98,9 +105,18 @@ const ScanDataPage = () => {
 
   const findMatchingDevice = (scannedData) => {
     const { detectedDevices } = state;
+
+    // Ensure there are BLE devices to compare against
+    if (!detectedDevices || detectedDevices.length === 0) {
+      console.warn("No BLE devices detected.");
+      return null;
+    }
+
     return detectedDevices.find((device) => {
-      device.name.includes(scannedData) ||
-        device.macAddress.includes(scannedData);
+      return (
+        device.name.includes(scannedData) ||
+        device.macAddress.includes(scannedData)
+      );
     });
   };
 
@@ -112,7 +128,10 @@ const ScanDataPage = () => {
         {state.qrData && <p>{state.qrData}</p>}
       </div>
       <div className="fixed bottom-0 left-0 w-full z-10 row-start-auto bg-cyan-500">
-        <Button onClick={startQrCodeScan} className="bg-white text-cyan-700 mx-20 w-52">
+        <Button
+          onClick={startQrCodeScan}
+          className="bg-white text-cyan-700 mx-20 w-52"
+        >
           ScanQrCode
         </Button>
       </div>
