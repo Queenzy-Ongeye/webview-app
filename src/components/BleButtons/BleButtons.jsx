@@ -95,7 +95,7 @@ const BleButtons = ({
   if (isBluetoothOff) {
     return (
       <div className="flex flex-col items-center w-full">
-        <p className="text-red-600 font-semibold text-lg mt-4">
+        <p className="text-red-600 font-semibold text-lg w-full max-w-full mx-auto p-4 bg-gray-50 rounded-lg m-48">
           Bluetooth is turned off. Please enable Bluetooth to scan for devices.
         </p>
       </div>
