@@ -1,9 +1,12 @@
 // ScanDataPage.jsx
 import React from "react";
 import { useStore } from "../../service/store";
+import { useNavigate } from "react-router-dom";
+import { getDataByBarcode } from "../../utility/indexedDB";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
+  const navigate = useNavigate();
 
   // Function to initiate the QR code scan, similar to startQrCode in Home.js
   const startQrCodeScan = () => {
