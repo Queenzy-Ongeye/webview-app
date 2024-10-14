@@ -11,6 +11,7 @@ const initialState = {
   isLoading: false,
   mqttClient: null,
   mqttMessage: null, // Add state for storing MQTT message
+  matchingDevice:null,
 };
 
 const reducer = (state, action) => {
@@ -38,7 +39,9 @@ const reducer = (state, action) => {
       return { ...state, mqttClient: action.payload };
     case "SET_MQTT_MESSAGE":
       return { ...state, mqttMessage: action.payload }; // Add case for MQTT messages
-    default:
+    case "SET_MATCHING_DEVICE":
+      return { ...state, matchingDevice: action.payload }
+      default:
       return state;
   }
 };
