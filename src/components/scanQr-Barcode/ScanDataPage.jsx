@@ -3,6 +3,7 @@ import React from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { getDataByBarcode } from "../../utility/indexedDB";
+import Button from "../BleButtons/Button";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -105,19 +106,15 @@ const ScanDataPage = () => {
 
   return (
     <div className="scan-data-page">
-      {/* Scan QR Code Button */}
-      <button
-        onClick={startQrCodeScan}
-        className="scan-qr-button bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Scan QR Code
-      </button>
-
-      {/* Render other components or state data here as necessary */}
-      <div>
+      <div className="mt-14">
         <h2>Scanned Data</h2>
         {/* Display scanned QR/Barcode data here from the state */}
         {state.qrData && <p>{state.qrData}</p>}
+      </div>
+      <div className="fixed bottom-0 left-0 w-full z-10 row-start-auto bg-cyan-500">
+        <Button onClick={startQrCodeScan} className="bg-white text-cyan-700 mx-20 w-52">
+          ScanQrCode
+        </Button>
       </div>
     </div>
   );
