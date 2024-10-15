@@ -23,22 +23,27 @@ const ScanDataPage = () => {
         999, // Arbitrary request ID
         (responseData) => {
           try {
-            // Ensure that responseData is parsed correctly
-            const parsedResponse = JSON.parse(
-              responseData.data || responseData
-            );
+            // Parse the outer response
+            const parsedResponse = JSON.parse(responseData);
 
-            // Check if data contains the expected fields
-            if (
-              parsedResponse &&
-              parsedResponse.respData &&
-              parsedResponse.respData.value
-            ) {
-              const scannedValue = parsedResponse.respData.value;
-              console.log("Scanned Value:", scannedValue);
-              handleScanData(scannedValue);
+            // Check if the data field is also a JSON string and parse it
+            if (parsedResponse.data) {
+              const innerParsedData = JSON.parse(parsedResponse.data);
+
+              // Now, check if the expected fields are present
+              if (
+                innerParsedData &&
+                innerParsedData.respData &&
+                innerParsedData.respData.value
+              ) {
+                const scannedValue = innerParsedData.respData.value;
+                console.log("Scanned Value:", scannedValue);
+                handleScanData(scannedValue);
+              } else {
+                throw new Error("No valid QR or barcode scan data received");
+              }
             } else {
-              throw new Error("No valid QR or barcode scan data received");
+              throw new Error("Invalid data format");
             }
           } catch (error) {
             console.error("Error during QR/Barcode scan:", error.message);
