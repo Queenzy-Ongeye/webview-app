@@ -23,17 +23,23 @@ const ScanDataPage = () => {
         999, // Arbitrary request ID
         (responseData) => {
           try {
-            const parsedData = JSON.parse(responseData.data);
+            // Ensure that responseData is parsed correctly
+            const parsedResponse = JSON.parse(
+              responseData.data || responseData
+            );
+
+            // Check if data contains the expected fields
             if (
-              !parsedData ||
-              !parsedData.respData ||
-              !parsedData.respData.value
+              parsedResponse &&
+              parsedResponse.respData &&
+              parsedResponse.respData.value
             ) {
+              const scannedValue = parsedResponse.respData.value;
+              console.log("Scanned Value:", scannedValue);
+              handleScanData(scannedValue);
+            } else {
               throw new Error("No valid QR or barcode scan data received");
             }
-            const scannedValue = parsedData.respData.value; // Extract scanned value (barcode/QR code)
-            console.log("Scanned Value:", scannedValue);
-            handleScanData(scannedValue);
           } catch (error) {
             console.error("Error during QR/Barcode scan:", error.message);
           }
