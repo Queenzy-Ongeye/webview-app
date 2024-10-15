@@ -49,7 +49,21 @@ const ScanDataPage = () => {
   const handleScanData = (data) => {
     console.log("Scanned data received: ", data);
     if (isBarcode(data)) {
-      fetchProductDetails(data); // Process barcode to fetch product details
+      dispatch({ type: "SET_BARCODE_DATA", payload: data });
+      const matchedDevice = findMatchingDevice(data);
+
+      if (matchedDevice) {
+        console.log("Matching BLE device found: ", matchedDevice);
+        dispatch({
+          type: "SET_MATCHING_DEVICE",
+          payload: { bleDevice: matchedDevice, scannedData: data },
+        });
+        alert(`Device matched: ${matchedDevice.name}`);
+      } else {
+        console.error("No matching BLE device found for scanned data.");
+        alert("No matching BLE device found.");
+      }
+      // fetchProductDetails(data); // Process barcode to fetch product details
     } else if (isQrCode(data)) {
       dispatch({ type: "SET_QR_DATA", payload: data });
       const matchingDevice = findMatchingDevice(data);
