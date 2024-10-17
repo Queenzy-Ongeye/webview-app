@@ -136,6 +136,5 @@ export const getDataByBarcode = (barcode) => {
     request.onerror = () => reject("Failed to open database.");
   });
 };
-F
 
 export { addData, getData, getAllData, deleteData, getDataByBarcode };
