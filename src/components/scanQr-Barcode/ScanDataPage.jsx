@@ -121,9 +121,18 @@ const ScanDataPage = () => {
     <div className="scan-data-page">
       <div className="mt-14">
         <h2>Scanned Data</h2>
-        {/* Display scanned QR/Barcode data from the state */}
-        {state.scannedData && (
-          <p>Scanned Data: {JSON.stringify(state.scannedData)}</p>
+        {/* Display the scanned QR/Barcode data */}
+        {state.scannedData && <p>Scanned Data: {state.scannedData}</p>}
+
+        {/* Display matched BLE device information */}
+        {state.matchingDevice ? (
+          <div>
+            <h3>Matching BLE Device:</h3>
+            <p>Name: {state.matchingDevice.name}</p>
+            <p>MAC Address: {state.matchingDevice.macAddress}</p>
+          </div>
+        ) : (
+          <p>No matching BLE device found.</p>
         )}
       </div>
 
