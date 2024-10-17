@@ -46,59 +46,80 @@ const ScanDataPage = () => {
   };
 
   // Function to handle scanned data and find the matching BLE device
-  const handleScanData = (data) => {
-    console.log("Scanned data received:", data);
-    if (isBarcode(data) || isQrCode(data)) {
-      dispatch({ type: "SET_SCANNED_DATA", payload: data });
-      const matchingDevice = findMatchingDevice(data);
-      if (matchingDevice) {
-        console.log("Matching BLE device found:", matchingDevice);
-        dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
-      } else {
-        console.warn("No matching BLE device found for the scanned data.");
-      }
+// Function to handle scanned data and find the matching BLE device
+const handleScanData = (data) => {
+  console.log("Scanned data received:", data);
+  if (isBarcode(data) || isQrCode(data)) {
+    console.log("Valid scan data identified.");
+    dispatch({ type: "SET_SCANNED_DATA", payload: data });
+    const matchingDevice = findMatchingDevice(data);
+    if (matchingDevice) {
+      console.log("Matching BLE device found:", matchingDevice);
+      dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+    } else {
+      console.warn("No matching BLE device found for the scanned data.");
     }
-  };
+  } else {
+    console.error("Invalid scan data. Neither a barcode nor a QR code.");
+  }
+};
 
-  // Find a BLE device that matches the scanned data using the last 6 digits
-  const findMatchingDevice = (scannedData) => {
-    const detectedDevices = state.detectedDevices; // Access detectedDevices from the state
-    if (!detectedDevices || detectedDevices.length === 0) {
-      console.warn("No BLE devices detected.");
-      return null;
-    }
+// Function to check if the data is a barcode
+const isBarcode = (data) => {
+  console.log("Checking if data is a barcode:", data);
+  const alphanumericPattern = /^[a-zA-Z0-9]+$/; // Allow alphanumeric barcodes
+  const minLength = 6; // Minimum length for barcode
+  const maxLength = 20; // Maximum length for barcode
 
-    // Extract the last 6 characters of the scanned data
-    const last6Digits = scannedData.slice(-6);
+  const isAlphanumeric = alphanumericPattern.test(data);
+  const isCorrectLength = data.length >= minLength && data.length <= maxLength;
 
-    // Match the device whose name ends with the same last 6 characters
-    return detectedDevices.find((device) => {
-      const { name } = device;
-      return name && name.slice(-6) === last6Digits;
-    });
-  };
+  if (!isAlphanumeric) {
+    console.log("Data is not alphanumeric.");
+  }
+  if (!isCorrectLength) {
+    console.log(`Data length is not within ${minLength}-${maxLength} range.`);
+  }
+  
+  return isAlphanumeric && isCorrectLength;
+};
 
-  // Helper functions to determine if data is a barcode or a QR code
-  const isBarcode = (data) => {
-    const alphanumericPattern = /^[a-zA-Z0-9]+$/; // Allow alphanumeric barcodes
-    const commonBarcodeLengths = [8, 12, 13, 14, 20]; // Typical barcode lengths
-    return (
-      alphanumericPattern.test(data) &&
-      commonBarcodeLengths.includes(data.length)
-    );
-  };
+// Function to check if the data is a QR code
+const isQrCode = (data) => {
+  console.log("Checking if data is a QR code:", data);
+  const urlPattern = /^(http|https):\/\/[^ "]+$/; // Check if data is a URL
+  const structuredDataPattern = /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Key-value pairs
+  const isNonNumeric = /[^0-9]/.test(data); // Contains non-numeric characters
 
-  const isQrCode = (data) => {
-    const urlPattern = /^(http|https):\/\/[^ "]+$/; // Check if data is a URL
-    const structuredDataPattern =
-      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Key-value pairs
-    const nonNumericPattern = /[^0-9]/; // Contains non-numeric characters
-    return (
-      urlPattern.test(data) ||
-      structuredDataPattern.test(data) ||
-      (data.length > 20 && nonNumericPattern.test(data))
-    );
-  };
+  const isUrl = urlPattern.test(data);
+  const isStructured = structuredDataPattern.test(data);
+  const isLongEnough = data.length > 20 && isNonNumeric;
+
+  if (!isUrl && !isStructured && !isLongEnough) {
+    console.log("Data does not match QR code patterns.");
+  }
+
+  return isUrl || isStructured || isLongEnough;
+};
+
+// Find a BLE device that matches the scanned data using the last 6 digits
+const findMatchingDevice = (scannedData) => {
+  const detectedDevices = state.detectedDevices; // Access detectedDevices from the state
+  if (!detectedDevices || detectedDevices.length === 0) {
+    console.warn("No BLE devices detected.");
+    return null;
+  }
+
+  // Extract the last 6 characters of the scanned data
+  const last6Digits = scannedData.slice(-6);
+
+  // Match the device whose name ends with the same last 6 characters
+  return detectedDevices.find((device) => {
+    const { name } = device;
+    return name && name.slice(-6) === last6Digits;
+  });
+};
+
 
   // // Function to fetch product details from IndexedDB based on barcode
   // const fetchProductDetails = (barcode) => {
