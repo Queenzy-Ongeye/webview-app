@@ -8,11 +8,23 @@ function openDB() {
 
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
+
+      // Create the object store if it doesn't exist
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, {
+        const objectStore = db.createObjectStore(STORE_NAME, {
           keyPath: "id",
           autoIncrement: true,
         });
+
+        // Create an index on 'barcode' for lookups by barcode
+        objectStore.createIndex("barcode", "barcode", { unique: true });
+      } else {
+        const objectStore = event.target.transaction.objectStore(STORE_NAME);
+
+        // Ensure that the 'barcode' index exists
+        if (!objectStore.indexNames.contains("barcode")) {
+          objectStore.createIndex("barcode", "barcode", { unique: true });
+        }
       }
     };
 
