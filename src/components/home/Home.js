@@ -124,17 +124,27 @@ const Home = () => {
           }
         );
 
-        // Handling QR/barcode data
+        // In the bridge setup, register the scanQrcodeResultCallBack handler
         bridge.registerHandler(
           "scanQrcodeResultCallBack",
           (data, responseCallback) => {
             try {
               const parsedData = JSON.parse(data);
-              dispatch({ type: "SET_BARCODE_DATA", paload: parsedData });
+              if (
+                parsedData &&
+                parsedData.respData &&
+                parsedData.respData.value
+              ) {
+                const scannedValue = parsedData.respData.value;
+                console.log("Scanned Value:", scannedValue);
+                handleScanData(scannedValue); // Handle the scanned data
+              } else {
+                throw new Error("No valid scan data received.");
+              }
               responseCallback(parsedData);
             } catch (error) {
               console.error(
-                "Error parsing JSON data from 'scanQrcodeResultCallBack' handler:",
+                "Error parsing JSON data from scanQrcodeResultCallBack:",
                 error
               );
             }
