@@ -20,31 +20,20 @@ const ScanDataPage = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
-        999, // Arbitrary request ID
+        999, // Arbitrary request code
         (responseData) => {
           try {
-            // Parse the outer response
-            const parsedResponse = JSON.parse(responseData);
-
-            // Check if the data field is also a JSON string and parse it
-            if (parsedResponse.data) {
-              const innerParsedData = JSON.parse(parsedResponse.data);
-
-              // Now, check if the expected fields are present
-              if (
-                innerParsedData &&
-                innerParsedData.respData &&
-                innerParsedData.respData.value
-              ) {
-                const scannedValue = innerParsedData.respData.value;
-                console.log("Scanned Value:", scannedValue);
-                handleScanData(scannedValue);
-              } else {
-                throw new Error("No valid QR or barcode scan data received");
-              }
-            } else {
-              throw new Error("Invalid data format");
+            const parsedData = JSON.parse(responseData.data);
+            if (
+              !parsedData ||
+              !parsedData.respData ||
+              !parsedData.respData.value
+            ) {
+              throw new Error("No valid scan data received");
             }
+            const scannedValue = parsedData.respData.value;
+            console.log("Scanned Value:", scannedValue);
+            handleScanData(scannedValue);
           } catch (error) {
             console.error("Error during QR/Barcode scan:", error.message);
           }
@@ -57,38 +46,28 @@ const ScanDataPage = () => {
   };
 
   // Handle scanned data and find the matching BLE device
-  const handleScanData = (scannedValue) => {
-    const matchingDevice = findMatchingDevice(scannedValue);
-    if (isBarcode(scannedValue)) {
-      dispatch({ type: "SET_BARCODE_DATA", payload: matchingDevice });
-      console.log(
-        "Barcode scanned and matching device found: ",
-        matchingDevice
-      );
-    } else if (isQrCode(scannedValue)) {
-      dispatch({ type: "SET_QR_DATA", payload: matchingDevice });
-      console.log(
-        "QR code scanned and matching device found: ",
-        matchingDevice
-      );
+  const handleScanData = (data) => {
+    console.log("Scanned data received:", data);
+    if (isBarcode(data) || isQrCode(data)) {
+      dispatch({ type: "SET_SCANNED_DATA", payload: data });
     } else {
-      console.error("Invalid scan data. Neither barcode nor QR code.");
+      console.error("Invalid scan data. Neither a barcode nor a QR code.");
     }
   };
 
-  // Identify if scanned data is a barcode
+  // Function to check if the data is a barcode
   const isBarcode = (data) => {
-    const numericPattern = /^[0-9]+$/;
-    const barcodeLengths = [8, 12, 13]; // Typical barcode lengths
+    const numericPattern = /^[0-9]+$/; // Check if data consists only of numbers
+    const barcodeLengths = [8, 12, 13]; // Common barcode lengths (EAN, UPC)
     return numericPattern.test(data) && barcodeLengths.includes(data.length);
   };
 
-  // Identify if scanned data is a QR code
+  // Function to check if the data is a QR code
   const isQrCode = (data) => {
-    const urlPattern = /^(http|https):\/\/[^ "]+$/;
+    const urlPattern = /^(http|https):\/\/[^ "]+$/; // Check if data is a URL
     const structuredDataPattern =
-      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/;
-    const nonNumericPattern = /[^0-9]/;
+      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Pattern for key-value pairs
+    const nonNumericPattern = /[^0-9]/; // Contains non-numeric characters
     return (
       urlPattern.test(data) ||
       structuredDataPattern.test(data) ||
@@ -96,37 +75,19 @@ const ScanDataPage = () => {
     );
   };
 
-  // Fetch product details based on the scanned barcode
+  // Function to fetch product details from IndexedDB based on barcode
   const fetchProductDetails = (barcode) => {
     getDataByBarcode(barcode)
       .then((product) => {
         if (product) {
-          dispatch({ type: "SET_QR_DATA", payload: product });
-          navigate("/scan-data", { state: { scannedData: product } });
+          dispatch({ type: "SET_QR_DATA", payload: product }); // Set the product data in state
         } else {
           console.error("Product not found for barcode:", barcode);
         }
       })
       .catch((error) => {
-        console.error("Error fetching product details: ", error);
+        console.error("Error fetching product details:", error);
       });
-  };
-
-  // Find a BLE device that matches the scanned data (by name or MAC address)
-  const findMatchingDevice = (scannedData) => {
-    const { detectedDevices } = state;
-    if (!detectedDevices || detectedDevices.length === 0) {
-      console.warn("No BLE devices detected.");
-      return null;
-    }
-
-    // Match the device either by name or MAC address
-    return detectedDevices.find((device) => {
-      return (
-        device.name.includes(scannedData) ||
-        device.macAddress.includes(scannedData)
-      );
-    });
   };
 
   return (
@@ -134,8 +95,7 @@ const ScanDataPage = () => {
       <div className="mt-14">
         <h2>Scanned Data</h2>
         {/* Display scanned QR/Barcode data from the state */}
-        {state.qrData && <p>Scanned QR Data: {state.qrData}</p>}
-        {state.barcodeData && <p>Scanned Barcode Data: {state.barcodeData}</p>}
+        {state.scannedData && <p>Scanned Data: {JSON.stringify(state.scannedData)}</p>}
       </div>
 
       {/* QR Code scanning button */}
