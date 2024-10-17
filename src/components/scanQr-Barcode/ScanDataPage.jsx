@@ -57,8 +57,6 @@ const ScanDataPage = () => {
       } else {
         console.warn("No matching BLE device found for the scanned data.");
       }
-    } else {
-      console.error("Invalid scan data. Neither a barcode nor a QR code.");
     }
   };
 
