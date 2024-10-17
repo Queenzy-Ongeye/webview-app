@@ -45,28 +45,55 @@ const ScanDataPage = () => {
     }
   };
 
-  // Handle scanned data and find the matching BLE device
+  // Function to handle scanned data and find the matching BLE device
   const handleScanData = (data) => {
     console.log("Scanned data received:", data);
     if (isBarcode(data) || isQrCode(data)) {
       dispatch({ type: "SET_SCANNED_DATA", payload: data });
+      const matchingDevice = findMatchingDevice(data);
+      if (matchingDevice) {
+        console.log("Matching BLE device found:", matchingDevice);
+        dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+      } else {
+        console.warn("No matching BLE device found for the scanned data.");
+      }
     } else {
       console.error("Invalid scan data. Neither a barcode nor a QR code.");
     }
   };
 
-  // Function to check if the data is a barcode
-  const isBarcode = (data) => {
-    const numericPattern = /^[0-9]+$/; // Check if data consists only of numbers
-    const barcodeLengths = [8, 12, 13]; // Common barcode lengths (EAN, UPC)
-    return numericPattern.test(data) && barcodeLengths.includes(data.length);
+  // Find a BLE device that matches the scanned data (by name or MAC address)
+  const findMatchingDevice = (scannedData) => {
+    const detectedDevices = state.detectedDevices; // Access detectedDevices from the state
+    if (!detectedDevices || detectedDevices.length === 0) {
+      console.warn("No BLE devices detected.");
+      return null;
+    }
+
+    // Match the device either by name or MAC address
+    return detectedDevices.find((device) => {
+      const { name, macAddress } = device;
+      return (
+        (name && name.includes(scannedData)) ||
+        (macAddress && macAddress.includes(scannedData))
+      );
+    });
   };
 
-  // Function to check if the data is a QR code
+  // Helper functions to determine if data is a barcode or a QR code
+  const isBarcode = (data) => {
+    const alphanumericPattern = /^[a-zA-Z0-9]+$/; // Allow alphanumeric barcodes
+    const commonBarcodeLengths = [8, 12, 13, 14, 20]; // Typical barcode lengths
+    return (
+      alphanumericPattern.test(data) &&
+      commonBarcodeLengths.includes(data.length)
+    );
+  };
+
   const isQrCode = (data) => {
     const urlPattern = /^(http|https):\/\/[^ "]+$/; // Check if data is a URL
     const structuredDataPattern =
-      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Pattern for key-value pairs
+      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Key-value pairs
     const nonNumericPattern = /[^0-9]/; // Contains non-numeric characters
     return (
       urlPattern.test(data) ||
@@ -95,7 +122,9 @@ const ScanDataPage = () => {
       <div className="mt-14">
         <h2>Scanned Data</h2>
         {/* Display scanned QR/Barcode data from the state */}
-        {state.scannedData && <p>Scanned Data: {JSON.stringify(state.scannedData)}</p>}
+        {state.scannedData && (
+          <p>Scanned Data: {JSON.stringify(state.scannedData)}</p>
+        )}
       </div>
 
       {/* QR Code scanning button */}
