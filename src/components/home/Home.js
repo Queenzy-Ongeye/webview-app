@@ -311,7 +311,7 @@ const Home = () => {
     if (isBarcode(data)) {
       fetchProductDetails(data); // Process barcode to fetch product details
     } else if (isQrCode(data)) {
-      dispatch({ type: "SET_QR_DATA", payload: data });
+      dispatch({ type: "SET_SCANNED_DATA", payload: data });
     } else {
       console.error("Invalid scan data. Neither a barcode nor a QR code.");
     }
@@ -339,7 +339,7 @@ const Home = () => {
     getDataByBarcode(barcode)
       .then((product) => {
         if (product) {
-          dispatch({ type: "SET_QR_DATA", payload: product });
+          dispatch({ type: "SET_SCANNED_DATA", payload: product });
           navigate("/scan-data", { state: { scannedData: product } });
         } else {
           console.error("Product not found for barcode:", barcode);
