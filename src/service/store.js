@@ -7,12 +7,11 @@ const initialState = {
   detectedDevices: [],
   initBleData: null, // State for initialization data
   isQRScanning: false, // New state for QR scanning
-  qrData: null, // state to hold QR Data
+  scannedData: null, // state to hold QR Data
   isLoading: false,
   mqttClient: null,
   mqttMessage: null, // Add state for storing MQTT message
   matchingDevice:null,
-  barcodeData: null,
 };
 
 const reducer = (state, action) => {
@@ -34,7 +33,7 @@ const reducer = (state, action) => {
       return { ...state, initBleData: action.payload };
     case "SET_QR_SCANNING":
       return { ...state, isQRScanning: action.payload };
-    case "SET_QR_DATA":
+    case "SET_SCANNED_DATA":
       return { ...state, qrData: action.payload };
     case "SET_MQTT_CLIENT":
       return { ...state, mqttClient: action.payload };
@@ -42,8 +41,6 @@ const reducer = (state, action) => {
       return { ...state, mqttMessage: action.payload }; // Add case for MQTT messages
     case "SET_MATCHING_DEVICE":
       return { ...state, matchingDevice: action.payload };
-    case "SET_BARCODE_DATA":
-      return { ...state, barcodeData: action.payload};
     default:
       return state;
   }
