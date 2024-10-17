@@ -100,7 +100,7 @@ function deleteData(id) {
   });
 }
 // Example IndexedDB utility for getting all data
-export const getAllData = () => {
+const getAllData = () => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open("myDatabase", 1);
 
@@ -119,7 +119,7 @@ export const getAllData = () => {
 };
 
 // Example IndexedDB utility for getting data by barcode
-export const getDataByBarcode = (barcode) => {
+const getDataByBarcode = (barcode) => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open("myDatabase", 1);
 
@@ -136,5 +136,6 @@ export const getDataByBarcode = (barcode) => {
     request.onerror = () => reject("Failed to open database.");
   });
 };
+
 
 export { addData, getData, getAllData, deleteData, getDataByBarcode };
