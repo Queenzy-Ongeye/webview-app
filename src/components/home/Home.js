@@ -124,6 +124,23 @@ const Home = () => {
           }
         );
 
+        // Handling QR/barcode data
+        bridge.registerHandler(
+          "scanQrcodeResultCallBack",
+          (data, responseCallback) => {
+            try {
+              const parsedData = JSON.parse(data);
+              dispatch({ type: "SET_BARCODE_DATA", paload: parsedData });
+              responseCallback(parsedData);
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'scanQrcodeResultCallBack' handler:",
+                error
+              );
+            }
+          }
+        );
+
         // Registering MQTT handlers
         bridge.registerHandler(
           "mqttMessageReceived",
