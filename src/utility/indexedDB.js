@@ -82,6 +82,24 @@ function getData(id) {
   });
 }
 
+function getAllData() {
+  return openDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, "readonly");
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        resolve(request.result);
+      };
+
+      request.onerror = (event) => {
+        reject(event.target.error);
+      };
+    });
+  });
+}
+
 function deleteData(id) {
   return openDB().then((db) => {
     return new Promise((resolve, reject) => {
@@ -99,29 +117,10 @@ function deleteData(id) {
     });
   });
 }
-// Example IndexedDB utility for getting all data
-const getAllData = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("myDatabase", 1);
 
-    request.onsuccess = () => {
-      const db = request.result;
-      const transaction = db.transaction("products", "readonly");
-      const store = transaction.objectStore("products");
-      const getAllRequest = store.getAll();
-
-      getAllRequest.onsuccess = () => resolve(getAllRequest.result);
-      getAllRequest.onerror = () => reject("Failed to fetch data.");
-    };
-
-    request.onerror = () => reject("Failed to open database.");
-  });
-};
-
-// Example IndexedDB utility for getting data by barcode
 const getDataByBarcode = (barcode) => {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("myDatabase", 1);
+    const request = indexedDB.open(DB_NAME, 1);
 
     request.onsuccess = () => {
       const db = request.result;
@@ -136,6 +135,5 @@ const getDataByBarcode = (barcode) => {
     request.onerror = () => reject("Failed to open database.");
   });
 };
-
 
 export { addData, getData, getAllData, deleteData, getDataByBarcode };
