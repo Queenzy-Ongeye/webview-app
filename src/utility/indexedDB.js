@@ -82,24 +82,6 @@ function getData(id) {
   });
 }
 
-function getAllData() {
-  return openDB().then((db) => {
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, "readonly");
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.getAll();
-
-      request.onsuccess = () => {
-        resolve(request.result);
-      };
-
-      request.onerror = (event) => {
-        reject(event.target.error);
-      };
-    });
-  });
-}
-
 function deleteData(id) {
   return openDB().then((db) => {
     return new Promise((resolve, reject) => {
@@ -117,28 +99,43 @@ function deleteData(id) {
     });
   });
 }
+// Example IndexedDB utility for getting all data
+export const getAllData = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("myDatabase", 1);
 
-function getDataByBarcode(barcode) {
-  return openDB().then((db) => {
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, "readonly");
-      const store = transaction.objectStore(STORE_NAME);
-      const index = store.index("barcode");
-      const request = index.get(barcode);
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction("products", "readonly");
+      const store = transaction.objectStore("products");
+      const getAllRequest = store.getAll();
 
-      request.onsuccess = () => {
-        if (request.result) {
-          resolve(request.result);
-        } else {
-          reject("No matching record found for barcode");
-        }
-      };
+      getAllRequest.onsuccess = () => resolve(getAllRequest.result);
+      getAllRequest.onerror = () => reject("Failed to fetch data.");
+    };
 
-      request.error = (event) => {
-        reject(event.target.error);
-      };
-    });
+    request.onerror = () => reject("Failed to open database.");
   });
-}
+};
+
+// Example IndexedDB utility for getting data by barcode
+export const getDataByBarcode = (barcode) => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("myDatabase", 1);
+
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction("products", "readonly");
+      const store = transaction.objectStore("products");
+      const getRequest = store.get(barcode);
+
+      getRequest.onsuccess = () => resolve(getRequest.result);
+      getRequest.onerror = () => reject("Failed to fetch product details.");
+    };
+
+    request.onerror = () => reject("Failed to open database.");
+  });
+};
+F
 
 export { addData, getData, getAllData, deleteData, getDataByBarcode };
