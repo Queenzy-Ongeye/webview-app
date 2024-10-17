@@ -62,7 +62,7 @@ const ScanDataPage = () => {
     }
   };
 
-  // Find a BLE device that matches the scanned data (by name or MAC address)
+  // Find a BLE device that matches the scanned data using the last 6 digits
   const findMatchingDevice = (scannedData) => {
     const detectedDevices = state.detectedDevices; // Access detectedDevices from the state
     if (!detectedDevices || detectedDevices.length === 0) {
@@ -70,13 +70,13 @@ const ScanDataPage = () => {
       return null;
     }
 
-    // Match the device either by name or MAC address
+    // Extract the last 6 characters of the scanned data
+    const last6Digits = scannedData.slice(-6);
+
+    // Match the device whose name ends with the same last 6 characters
     return detectedDevices.find((device) => {
-      const { name, macAddress } = device;
-      return (
-        (name && name.includes(scannedData)) ||
-        (macAddress && macAddress.includes(scannedData))
-      );
+      const { name } = device;
+      return name && name.slice(-6) === last6Digits;
     });
   };
 
@@ -102,20 +102,20 @@ const ScanDataPage = () => {
     );
   };
 
-  // Function to fetch product details from IndexedDB based on barcode
-  const fetchProductDetails = (barcode) => {
-    getDataByBarcode(barcode)
-      .then((product) => {
-        if (product) {
-          dispatch({ type: "SET_QR_DATA", payload: product }); // Set the product data in state
-        } else {
-          console.error("Product not found for barcode:", barcode);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching product details:", error);
-      });
-  };
+  // // Function to fetch product details from IndexedDB based on barcode
+  // const fetchProductDetails = (barcode) => {
+  //   getDataByBarcode(barcode)
+  //     .then((product) => {
+  //       if (product) {
+  //         dispatch({ type: "SET_QR_DATA", payload: product }); // Set the product data in state
+  //       } else {
+  //         console.error("Product not found for barcode:", barcode);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching product details:", error);
+  //     });
+  // };
 
   return (
     <div className="scan-data-page">
