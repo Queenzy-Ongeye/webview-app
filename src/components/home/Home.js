@@ -10,6 +10,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch existing data from IndexedDB (or any other setup you need)
     getAllData().then((data) => {
       if (data && data.length > 0) {
         dispatch({ type: "SET_BLE_DATA", payload: data });
@@ -189,6 +190,11 @@ const Home = () => {
     };
 
     connectWebViewJavascriptBridge(setupBridge);
+    // Automatically start BLE scan when component mounts
+    startBleScan();
+
+    // Clean up: stop the scan if the component is unmounted
+    return () => stopBleScan();
   }, [state.bridgeInitialized, dispatch]);
 
   const startBleScan = () => {
