@@ -4,35 +4,47 @@ import { FaBluetooth } from "react-icons/fa";
 import { IoMdBarcode } from "react-icons/io";
 import { Link } from "react-router-dom";
 import NavigationBar from "../NavBar";
+import BottomNav from "../BleButtons/BottomNav";
 
 const Header = () => {
   return (
     <div>
       <NavigationBar />
-      {/* Add margin-top and padding for spacing */}
-      <div className="mt-20 grid grid-cols-2 sm:grid-cols-3 gap-4 justify-center">
-        {/* First card with specified width */}
-        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-40 h-48 mx-auto">
-          <FaBluetooth size={64} className="text-blue-500 mt-8" />
-          <h2 className="text-2xl font-semibold mb-4">
-            <Link to="/home">BleScan</Link>
+
+      {/* Cards container with more spacing */}
+      <div className="mt-20 grid grid-cols-1 sm:grid-cols-1 gap-6 px-2 justify-center">
+        {/* First card with solid background */}
+        <div className="flex items-center p-2 bg-blue-100 shadow-xl rounded-xl transition-transform transform hover:scale-105 hover:shadow-2xl overflow-hidden w-80 h-24 mx-auto">
+          <FaBluetooth size={48} className="text-blue-600 mr-2" />
+          <h2 className="text-lg font-semibold text-blue-600">
+            <Link to="/home" className="hover:underline">
+              BleScan
+            </Link>
           </h2>
         </div>
-        {/* Second card with specified width */}
-        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-40 h-48 mx-auto">
-          <BsQrCodeScan size={64} className="text-blue-500 mt-8" />
-          <h2 className="text-xl font-semibold mb-4">
-            <Link to="/scan-data">QRCode Scan</Link>
+
+        {/* Second card with solid background */}
+        <div className="flex items-center p-2 bg-green-100 shadow-xl rounded-xl transition-transform transform hover:scale-105 hover:shadow-2xl overflow-hidden w-80 h-24 mx-auto">
+          <BsQrCodeScan size={48} className="text-green-600 mr-2" />
+          <h2 className="text-lg font-semibold text-green-600">
+            <Link to="/scan-data" className="hover:underline">
+              QRCode Scan
+            </Link>
           </h2>
         </div>
-        {/* Third card with specified width */}
-        <div className="flex flex-col justify-between items-center p-4 bg-white shadow-lg rounded-lg border border-gray-300 transition-transform transform hover:scale-105 overflow-hidden w-40 h-48 mx-auto">
-          <IoMdBarcode size={64} className="text-blue-500 mt-8" />
-          <h2 className="text-xl font-semibold mb-4">
-            <Link to="/barcode">Barcode Scan</Link>
+
+        {/* Third card with solid background */}
+        <div className="flex items-center p-2 bg-purple-100 shadow-xl rounded-xl transition-transform transform hover:scale-105 hover:shadow-2xl overflow-hidden w-80 h-24 mx-auto">
+          <IoMdBarcode size={48} className="text-purple-600 mr-2" />
+          <h2 className="text-lg font-semibold text-purple-600">
+            <Link to="/barcode" className="hover:underline">
+              Barcode Scan
+            </Link>
           </h2>
         </div>
       </div>
+
+      <BottomNav />
     </div>
   );
 };

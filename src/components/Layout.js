@@ -1,14 +1,18 @@
 import React from "react";
-import Header from "./Header/Header";
 import NavigationBar from "./NavBar";
+import BottomNav from "./BleButtons/BottomNav";
 
 const Layout = ({ children }) => {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Include Header */}
+      {/* Include NavigationBar at the top */}
       <NavigationBar />
-      {/* Render the children passed to Layout */}
+
+      {/* Main content area */}
       <main className="flex-grow p-4">{children}</main>
+
+      {/* Include BottomNav at the bottom */}
+      <BottomNav />
     </div>
   );
 };

@@ -38,14 +38,6 @@ const App = () => {
             <Route path="/" element = {<Login />}/>
             {/* Use Layout for all routes to ensure NavigationBar is included */}
             <Route
-              path="/Header"
-              element={
-                <Layout>
-                  <Header />
-                </Layout>
-              }
-            />
-            <Route
               path="/home"
               element={
                 <Layout>
