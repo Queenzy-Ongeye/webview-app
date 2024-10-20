@@ -61,11 +61,11 @@ const NavigationBar = () => {
         {/* Navigation Links */}
         <div className="flex-grow">
           <Link
-            to="/Header"
+            to="/home"
             className="px-4 py-2 hover:bg-cyan-600 rounded my-2 flex items-center"
             onClick={closeMenu}
           >
-            <FaHome className="mr-2" /> Ble Scan
+            <FaHome className="mr-2" /> BLE Scanned Devices
           </Link>
           <Link
             to="/scan-data"

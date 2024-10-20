@@ -26,8 +26,8 @@ const LoginPage = () => {
   return (
     <section class="bg-gray-50 mt-28 m-5">
       <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-          <img class="w-8 h-8 mr-2" src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg" alt="logo"/>
+        <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-oves-cyan dark:text-oves-blue">
+          <img class="h-12 w-30 mr-2 items-center" src='/images/logo-white.png' alt="logo"/>
           Omnivoltaic   
       </a>
         <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 border-gray-700">
@@ -102,7 +102,7 @@ const LoginPage = () => {
               {error && <p className="text-blue-500 text-center">{error}</p>}
               <button
                 type="submit"
-                class="w-full text-white bg-blue-700 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                class="w-full text-white bg-oves-blue hover:bg-oves-cyan hover:text-oves-cyan focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-oves-blue dark:hover:bg-oves-blue dark:focus:ring-primary-800"
               >
                 Login
               </button>
