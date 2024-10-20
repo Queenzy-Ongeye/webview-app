@@ -40,9 +40,6 @@ const NavigationBar = () => {
             ☰
           </button>
         </div>
-        <div >
-        <FaUser className="cursor-pointer hover:text-gray-300" />
-        </div>
       </div>
 
       {/* Overlay to close the menu when clicking outside */}
