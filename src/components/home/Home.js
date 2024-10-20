@@ -370,12 +370,12 @@ const Home = () => {
 
       {/* Fixed action bar at the bottom */}
       <div className="fixed bottom-0 left-0 w-full z-10 row-start-auto">
-        <BottomActionBar
+        {/* <BottomActionBar
           onStartScan={startBleScan}
           onStopScan={stopBleScan}
           onScanData={startQrCode}
           isScanning={state.isScanning}
-        />
+        /> */}
       </div>
     </div>
   );
