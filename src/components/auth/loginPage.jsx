@@ -17,7 +17,7 @@ const LoginPage = () => {
 
         if(email ==="oves.altec@omnivoltaic.com" && password === "Altec1234"){
             setError("");
-            navigate("/Header");
+            navigate("/home");
         }else{
             setError("Invalid email or password");
         };
