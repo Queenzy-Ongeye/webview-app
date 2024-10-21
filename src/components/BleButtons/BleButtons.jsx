@@ -35,6 +35,13 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
 
+    // Validate if macAddress is provided
+    if (!macAddress) {
+      console.error("No MAC address provided");
+      alert("MAC address is invalid or missing");
+      return;
+    }
+
     setConnectingMacAddress(macAddress);
     setLoading(true); // Start loading indicator for the connection and initialization process
 
@@ -45,7 +52,13 @@ const BleButtons = ({
 
       // Step 2: Initialize BLE data after successful connection
       const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+
+      if (!response) {
+        throw new Error("BLE data initialization failed");
+      }
+
+      // Dispatch the initialization response to the store
+      dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
 
       // If both connection and initialization are successful, set success state
       setTimeout(() => {
@@ -53,10 +66,15 @@ const BleButtons = ({
         setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 10000); // Adjust this delay as per your BLE connection timing
     } catch (error) {
-      console.error("Error connecting and initializing BLE data:", error);
+      // Improved error logging and alert
+      console.error(
+        "Error connecting and initializing BLE data:",
+        error.message || error
+      );
       alert("Failed to connect and initialize BLE data. Please try again.");
       setConnectionSuccessMac(null); // Clear any success indicator in case of error
     } finally {
+      // Ensure the loading state is cleared after operation completes
       setTimeout(() => {
         setConnectingMacAddress(null);
         setLoading(false);
@@ -88,22 +106,23 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
+                className="flex items-left justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
               >
-                <div className="w-full mb-2 text-left">
+                {/* Device Information (Name and MAC Address) */}
+                <div className="flex-1">
                   <p className="font-semibold">
                     {device.name || "Unnamed Device"}
                   </p>
                   <p className="text-sm text-gray-500">
                     MAC Address: {device.macAddress}
                   </p>
-                </div>
-                <div className="flex justify-end w-full mt-4">
+
+                  {/* Button to connect and initialize */}
                   <button
                     onClick={(e) =>
                       handleConnectAndInitClick(e, device.macAddress)
                     }
-                    className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
+                    className={`px-4 py-2 border rounded-md transition-colors duration-300 ml-4 ${
                       connectingMacAddress === device.macAddress
                         ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                         : connectionSuccessMac === device.macAddress
