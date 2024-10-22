@@ -32,7 +32,7 @@ const BlePage = () => {
   return (
     <div className="p-4">
       {/* Display ATT, CMD, etc. Buttons after Initialization */}
-      {initBleDataResponse && initBleDataResponse?.macAddress === macAddress ? (
+      {initBleDataResponse && initBleDataResponse.macAddress === device.macAddress && (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           <button
             onClick={() => navigateToPage("/att", "ATT_SERVICE_NAME")}
@@ -72,8 +72,6 @@ const BlePage = () => {
             Connect to MQTT
           </button>
         </div>
-      ) : (
-        <p>No data available or macAddress mismatch.</p>
       )}
 
       {/* Toast Notifications */}
