@@ -9,8 +9,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 const BlePage = () => {
   // Use useLocation to access the state (macAddress) from the navigation
   const location = useLocation();
-  const { macAddress } = location.state || {}; // Extract macAddress from location.state
-  const {initBleDataResponse} = location.state ||{};
+  const { macAddress, initBleDataResponse } = location.state || {}; // Extract macAddress from location.state
   const navigate  = useNavigate();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false)
 

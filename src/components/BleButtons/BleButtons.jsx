@@ -7,7 +7,6 @@ import { connectMqtt } from "../../service/javascriptBridge";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const BleButtons = ({
   connectToBluetoothDevice,
   initBleData,
@@ -79,6 +78,9 @@ const BleButtons = ({
       setTimeout(() => {
         setInitSuccessMac(macAddress);
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+        navigate("/ble", {
+          state: { macAddress: macAddress, initBleDataResponse: response },
+        });
       }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
