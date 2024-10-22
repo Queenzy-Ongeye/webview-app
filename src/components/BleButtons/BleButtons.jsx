@@ -19,7 +19,6 @@ const BleButtons = ({
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
   const [loading, setLoading] = useState(false);
-  const { dispatch } = useStore();
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -29,47 +28,36 @@ const BleButtons = ({
 
   const uniqueDevice = Array.from(uniqueDevicesMap.values());
 
-  const handleConnectAndInitClick = async (e, macAddress) => {
+  const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!macAddress) {
-      console.error("No MAC address provided");
-      alert("MAC address is invalid or missing");
-      return;
-    }
-
     setConnectingMacAddress(macAddress);
-    setLoading(true);
+    setLoading(true); // Start loading indicator for the connection process
 
     try {
-      // Step 1: Connect to the Bluetooth device
+      // Attempt to connect to the Bluetooth device
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
-      // Step 2: Initialize BLE data after successful connection
-      const response = await initBleData(macAddress);
-
-      if (!response) {
-        throw new Error("BLE data initialization failed");
-      }
-
-      dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
-
+      // If the connection is successful, set the success state for the current MAC
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000);
-        navigate("/ble-buttons", { state: { macAddress, response } });
-      }, 350000);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+        navigate("/ble-page")
+      }, 23000);
     } catch (error) {
-      console.error("Error connecting and initializing BLE data:", error.message || error);
-      alert("Failed to connect and initialize BLE data. Please try again.");
-      setConnectionSuccessMac(null);
+      // If the connection fails, log the error and show an alert
+      console.error("Error connecting to Bluetooth device:", error);
+      alert("Failed to connect to Bluetooth device. Please try again.");
+
+      // Ensure that the success state is not set in case of failure
+      setConnectionSuccessMac(null); // Clear any success indicator
     } finally {
       setTimeout(() => {
         setConnectingMacAddress(null);
         setLoading(false);
-      }, 10000);
+      }, 23000);
     }
   };
 
@@ -96,7 +84,7 @@ const BleButtons = ({
                 </div>
                 <div className="flex justify-between w-full mt-4 space-x-2">
                   <button
-                    onClick={(e) => handleConnectAndInitClick(e, device.macAddress)}
+                    onClick={(e) => handleConnectClick(e, device.macAddress)}
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       connectingMacAddress === device.macAddress
                         ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
