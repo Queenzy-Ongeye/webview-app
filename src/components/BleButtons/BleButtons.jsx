@@ -44,7 +44,7 @@ const BleButtons = ({
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
         setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
-        navigate("/device-details", { state: { macAddress } });
+        navigate("/ble", { state: { macAddress } });
       }, 23000);
     } catch (error) {
       // If the connection fails, log the error and show an alert

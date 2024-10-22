@@ -15,6 +15,7 @@ const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanDataPage"));
 const Header = lazy(() => import("./components/Header/Header")); // Lazy load Header
 const Login = lazy(() => import("./components/auth/loginPage"));
+const BlePage = lazy(() => import("./components/DeviceDetails/BlePage"))
 
 
 const App = () => {
@@ -82,6 +83,14 @@ const App = () => {
               element={
                 <Layout>
                   <DIAPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/ble"
+              element={
+                <Layout>
+                  <BlePage/>
                 </Layout>
               }
             />
