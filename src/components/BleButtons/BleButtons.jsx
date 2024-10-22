@@ -19,6 +19,7 @@ const BleButtons = ({
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
   const [loading, setLoading] = useState(false);
+  const { dispatch } = useStore();
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
