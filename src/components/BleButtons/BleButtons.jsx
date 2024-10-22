@@ -15,10 +15,14 @@ const BleButtons = ({
   initBleDataResponse,
   isLoading,
 }) => {
+  const { dispatch } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
+  const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
+  const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
   const [loading, setLoading] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -44,7 +48,6 @@ const BleButtons = ({
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
         setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
-        navigate("/ble", { state: { macAddress } });
       }, 23000);
     } catch (error) {
       // If the connection fails, log the error and show an alert
@@ -58,6 +61,36 @@ const BleButtons = ({
         setConnectingMacAddress(null);
         setLoading(false);
       }, 23000);
+    }
+  };
+
+  const handleInitBleDataClick = async (e, macAddress) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setInitializingMacAddress(macAddress);
+    setLoading(true);
+
+    try {
+      const response = await initBleData(macAddress);
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+
+      // If the initialization is successful, set the success state for the current MAC
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 35000);
+    } catch (error) {
+      console.error("Error during BLE Data Initialization:", error);
+      alert("Failed to initialize BLE data. Please try again.");
+
+      // Ensure that the success state is not set in case of failure
+      setInitSuccessMac(null);
+    } finally {
+      setTimeout(() => {
+        setInitializingMacAddress(null);
+        setLoading(false);
+      }, 35000);
     }
   };
 
@@ -101,6 +134,27 @@ const BleButtons = ({
                       : connectionSuccessMac === device.macAddress
                       ? "Connected"
                       : "Connect"}
+                  </button>
+                  <button
+                    onClick={(e) =>
+                      handleInitBleDataClick(e, device.macAddress)
+                    }
+                    className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
+                      initializingMacAddress === device.macAddress
+                        ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
+                        : initSuccessMac === device.macAddress
+                        ? "bg-green-500 text-white"
+                        : "bg-cyan-700 text-white"
+                    }`}
+                    disabled={
+                      isLoading || initializingMacAddress === device.macAddress
+                    }
+                  >
+                    {initializingMacAddress === device.macAddress
+                      ? "Initializing..."
+                      : initSuccessMac === device.macAddress
+                      ? "Initialized"
+                      : "Init BLE Data"}
                   </button>
                 </div>
               </div>
