@@ -1,35 +1,38 @@
 import React, { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FaCheckCircle } from "react-icons/fa"; // Success Icon
 import { connectMqtt } from "../../service/javascriptBridge";
-import { useStore } from "../../service/store";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const BlePage = () => {
   // Use useLocation to access the state (macAddress) from the navigation
   const location = useLocation();
   const { macAddress, initBleDataResponse } = location.state || {}; // Extract macAddress from location.state
-  const navigate  = useNavigate();
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false)
+  const navigate = useNavigate();
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+  // Debugging log
+  console.log("Location State:", location.state);
+  console.log("macAddress:", macAddress);
+  console.log("initBleDataResponse:", initBleDataResponse);
 
   const navigateToPage = (page, serviceNameEnum) => {
-    const filteredData = initBleDataResponse?.dataList.filter(
+    const filteredData = initBleDataResponse?.dataList?.filter(
       (item) => item.serviceNameEnum === serviceNameEnum
     );
     navigate(page, { state: { data: filteredData } });
   };
 
-    // MQTT Connection
-    const handleMqttConnection = () => {
-      connectMqtt();
-      setIsButtonDisabled(true);
-    };
+  // MQTT Connection
+  const handleMqttConnection = () => {
+    connectMqtt();
+    setIsButtonDisabled(true);
+  };
 
   return (
     <div className="p-4">
       {/* Display ATT, CMD, etc. Buttons after Initialization */}
-      {initBleDataResponse && initBleDataResponse.macAddress === macAddress && (
+      {initBleDataResponse && initBleDataResponse?.macAddress === macAddress ? (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           <button
             onClick={() => navigateToPage("/att", "ATT_SERVICE_NAME")}
@@ -69,6 +72,8 @@ const BlePage = () => {
             Connect to MQTT
           </button>
         </div>
+      ) : (
+        <p>No data available or macAddress mismatch.</p>
       )}
 
       {/* Toast Notifications */}
