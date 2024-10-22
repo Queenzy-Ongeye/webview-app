@@ -81,6 +81,8 @@ const BleButtons = ({
         navigate("/ble", {
           state: { macAddress: macAddress, initBleDataResponse: response },
         });
+        console.log("response is here: ", response);
+        
       }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
