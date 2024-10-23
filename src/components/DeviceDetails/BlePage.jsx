@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { connectMqtt } from "../../service/javascriptBridge";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -10,7 +10,7 @@ const BlePage = () => {
   const location = useLocation();
 
   // Extract macAddress and device from the location state
-  const { macAddress } = location.state || {};
+  const { macAddress, device } = location.state || {};
 
   // Check for initBleDataResponse from global store (or fallback value)
   const initBleDataResponse = state.initBleDataResponse || {};
@@ -55,8 +55,7 @@ const BlePage = () => {
       <h1 className="text-xl">Bluetooth Device Management</h1>
 
       {/* Only display buttons if initBleDataResponse and device.macAddress are valid */}
-      {initBleDataResponse &&
-      initBleDataResponse.macAddress === device?.macAddress ? (
+      {initBleDataResponse?.macAddress && initBleDataResponse.macAddress === device?.macAddress ? (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           <button
             onClick={() => navigateToPage("/att", "ATT_SERVICE_NAME")}
@@ -84,7 +83,7 @@ const BlePage = () => {
           </button>
           <button
             onClick={() => navigateToPage("/dia", "DIA_SERVICE_NAME")}
-            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:border-blue-700 hover:shadow-md transition duration-200"
+            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:shadow-md transition duration-200"
           >
             DIA
           </button>
@@ -97,7 +96,7 @@ const BlePage = () => {
           </button>
         </div>
       ) : (
-        <p>No matching data available or macAddress mismatch.</p>
+        <p className="text-red-500 mt-4">No matching data available or macAddress mismatch.</p>
       )}
 
       {/* Toast Notifications */}

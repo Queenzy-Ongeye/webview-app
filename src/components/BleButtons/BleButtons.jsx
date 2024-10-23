@@ -7,6 +7,7 @@ import { connectMqtt } from "../../service/javascriptBridge";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+
 const BleButtons = ({
   connectToBluetoothDevice,
   initBleData,
@@ -66,26 +67,28 @@ const BleButtons = ({
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-
+  
     setInitializingMacAddress(macAddress);
     setLoading(true);
-
+  
     try {
       const response = await initBleData(macAddress);
-      // Store the initBleDataResponse globally in the store
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-
-      // Success state logic
+  
+      // If initialization is successful, set the success state for the current MAC
       setTimeout(() => {
         setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000);
-        navigate("/ble", {
-          state: { macAddress: macAddress },
-        });
+  
+        // After success, navigate to the page containing the buttons (ATT, STS, CMD, etc.)
+        navigate("/ble-options", { state: { macAddress: macAddress, initBleDataResponse: response } });
+  
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
+      
+      // Ensure that the success state is not set in case of failure
       setInitSuccessMac(null);
     } finally {
       setTimeout(() => {
@@ -93,6 +96,20 @@ const BleButtons = ({
         setLoading(false);
       }, 35000);
     }
+  };
+  
+
+  const navigateToPage = (page, serviceNameEnum) => {
+    const filteredData = initBleDataResponse?.dataList.filter(
+      (item) => item.serviceNameEnum === serviceNameEnum
+    );
+    navigate(page, { state: { data: filteredData } });
+  };
+
+  // MQTT Connection
+  const handleMqttConnection = () => {
+    connectMqtt();
+    setIsButtonDisabled(true);
   };
 
   return (
@@ -106,14 +123,17 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col items-left justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
+                className="flex flex-col items-center justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
               >
-                <div className="w-full mb-2 text-left">
-                  <p className="font-semibold">
+                <div className="w-full mb-2">
+                  <p className="font-semibold text-center">
                     {device.name || "Unnamed Device"}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 text-center">
                     MAC Address: {device.macAddress}
+                  </p>
+                  <p className="text-sm text-gray-500 text-center">
+                    RSSI: {device.rssi}
                   </p>
                 </div>
                 <div className="flex justify-between w-full mt-4 space-x-2">
@@ -158,6 +178,64 @@ const BleButtons = ({
                       : "Init BLE Data"}
                   </button>
                 </div>
+                {connectionSuccessMac === device.macAddress && (
+                  <div className="mt-2">
+                    <FaCheckCircle className="text-green-500" size={24} />
+                  </div>
+                )}
+                {initBleDataResponse &&
+                  initBleDataResponse.macAddress === device.macAddress && (
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                      <button
+                        onClick={() =>
+                          navigateToPage("/att", "ATT_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                      >
+                        ATT
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/cmd", "CMD_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                      >
+                        CMD
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/sts", "STS_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                      >
+                        STS
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/dta", "DTA_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                      >
+                        DTA
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/dia", "DIA_SERVICE_NAME")
+                        }
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                      >
+                        DIA
+                      </button>
+                      <button
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                        onClick={handleMqttConnection}
+                        disabled={isButtonDisabled}
+                      >
+                        Connect to MQTT
+                      </button>
+                      <ToastContainer />
+                    </div>
+                  )}
               </div>
             ))
           ) : (
