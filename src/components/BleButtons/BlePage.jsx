@@ -7,90 +7,61 @@ import { useStore } from "../../service/store";
 
 const BlePage = () => {
   const location = useLocation();
-
-  // Extract macAddress and device from the location state
-  const { macAddress, initBleDataResponse } = location.state || {};
-  // Check for initBleDataResponse from global store (or fallback value)
-
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("ATT_SERVICE_NAME");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  
+  const { initBleDataResponse, macAddress } = location.state || {};
 
   const navigateToPage = (page, serviceNameEnum) => {
-    // Filter the data based on the serviceNameEnum
     const filteredData = initBleDataResponse?.dataList?.filter(
       (item) => item.serviceNameEnum === serviceNameEnum
     );
-    // Check if filteredData exists and has at least one item
-    if (filteredData && filteredData.length > 0) {
-      navigate(page, { state: { data: filteredData } });
-    } else {
-      // If no data is available, display a toast notification
-      toast.error("No matching BLE data available for this service.", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: true,
-      });
-    }
+    setActiveTab(serviceNameEnum);
+    navigate(page, { state: { data: filteredData } });
   };
 
-  // MQTT Connection
   const handleMqttConnection = () => {
     connectMqtt();
     setIsButtonDisabled(true);
   };
 
-  return (
-    <div className="p-4">
-      {/* Always show this to avoid blank page */}
-      <h1 className="text-xl">Bluetooth Device Management</h1>
+  const services = [
+    { name: "ATT", route: "/att", enum: "ATT_SERVICE_NAME" },
+    { name: "CMD", route: "/cmd", enum: "CMD_SERVICE_NAME" },
+    { name: "STS", route: "/sts", enum: "STS_SERVICE_NAME" },
+    { name: "DTA", route: "/dta", enum: "DTA_SERVICE_NAME" },
+    { name: "DIA", route: "/dia", enum: "DIA_SERVICE_NAME" },
+  ];
 
-      {/* Only display buttons if initBleDataResponse and device.macAddress are valid */}
-      {initBleDataResponse?.macAddress && initBleDataResponse.macAddress === macAddress ? (
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+  return (
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-2xl font-bold mb-6 text-center">Available Services</h2>
+        <div className="flex flex-wrap gap-4 justify-center mb-6">
+          {services.map((service) => (
+            <button
+              key={service.name}
+              onClick={() => navigateToPage(service.route, service.enum)}
+              className={`px-6 py-3 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
+                activeTab === service.enum ? "bg-gray-200 text-blue-500" : ""
+              }`}
+            >
+              {service.name}
+            </button>
+          ))}
+        </div>
+        <div className="text-center">
           <button
-            onClick={() => navigateToPage("/att", "ATT_SERVICE_NAME")}
-            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:border-blue-700 hover:shadow-md transition duration-200"
-          >
-            ATT
-          </button>
-          <button
-            onClick={() => navigateToPage("/cmd", "CMD_SERVICE_NAME")}
-            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:border-blue-700 hover:shadow-md transition duration-200"
-          >
-            CMD
-          </button>
-          <button
-            onClick={() => navigateToPage("/sts", "STS_SERVICE_NAME")}
-            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:border-blue-700 hover:shadow-md transition duration-200"
-          >
-            STS
-          </button>
-          <button
-            onClick={() => navigateToPage("/dta", "DTA_SERVICE_NAME")}
-            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:border-blue-700 hover:shadow-md transition duration-200"
-          >
-            DTA
-          </button>
-          <button
-            onClick={() => navigateToPage("/dia", "DIA_SERVICE_NAME")}
-            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:shadow-md transition duration-200"
-          >
-            DIA
-          </button>
-          <button
-            className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 hover:shadow-md transition duration-200"
+            className="px-6 py-3 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
             onClick={handleMqttConnection}
             disabled={isButtonDisabled}
           >
             Connect to MQTT
           </button>
         </div>
-      ) : (
-        <p className="text-red-500 mt-4">No matching data available or macAddress mismatch.</p>
-      )}
-
-      {/* Toast Notifications */}
-      <ToastContainer />
+        <ToastContainer />
+      </div>
     </div>
   );
 };
