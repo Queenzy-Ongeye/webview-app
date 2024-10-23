@@ -72,23 +72,20 @@ const BleButtons = ({
 
     try {
       const response = await initBleData(macAddress);
+      // Store the initBleDataResponse globally in the store
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
 
-      // If the initialization is successful, set the success state for the current MAC
+      // Success state logic
       setTimeout(() => {
         setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+        setTimeout(() => setInitSuccessMac(null), 10000);
         navigate("/ble", {
-          state: { macAddress: macAddress, initBleDataResponse: response },
+          state: { macAddress: macAddress },
         });
-        console.log("response is here: ", response);
-        
       }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
       setInitSuccessMac(null);
     } finally {
       setTimeout(() => {
