@@ -80,7 +80,7 @@ const BleButtons = ({
         setInitSuccessMac(macAddress);
   
         // After success, navigate to the page containing the buttons (ATT, STS, CMD, etc.)
-        navigate("/ble-options", { state: { macAddress: macAddress, initBleDataResponse: response } });
+        navigate("/ble", { state: { macAddress: macAddress, initBleDataResponse: response } });
   
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 35000);
@@ -123,17 +123,14 @@ const BleButtons = ({
             uniqueDevice.map((device, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
+                className="flex flex-col items-left justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
               >
                 <div className="w-full mb-2">
-                  <p className="font-semibold text-center">
+                  <p className="font-semibold text-left">
                     {device.name || "Unnamed Device"}
                   </p>
-                  <p className="text-sm text-gray-500 text-center">
+                  <p className="text-sm text-gray-500 text-left">
                     MAC Address: {device.macAddress}
-                  </p>
-                  <p className="text-sm text-gray-500 text-center">
-                    RSSI: {device.rssi}
                   </p>
                 </div>
                 <div className="flex justify-between w-full mt-4 space-x-2">
@@ -178,11 +175,6 @@ const BleButtons = ({
                       : "Init BLE Data"}
                   </button>
                 </div>
-                {connectionSuccessMac === device.macAddress && (
-                  <div className="mt-2">
-                    <FaCheckCircle className="text-green-500" size={24} />
-                  </div>
-                )}
                 {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
