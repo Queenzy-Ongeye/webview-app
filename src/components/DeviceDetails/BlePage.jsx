@@ -10,7 +10,7 @@ const BlePage = () => {
   const location = useLocation();
   
   // Extract macAddress and device from the location state
-  const { macAddress, device } = location.state || {}; 
+  const { macAddress } = location.state || {}; 
   
   // Check for initBleDataResponse from global store (or fallback value)
   const initBleDataResponse = state.initBleDataResponse || {}; 
@@ -38,16 +38,12 @@ const BlePage = () => {
   };
 
   return (
-    <div className="p-4">
-      {/* Debugging: Show fallback content if macAddress or device is undefined */}
-      {!macAddress && <p>No macAddress provided.</p>}
-      {!device && <p>No device information provided.</p>}
-      
+    <div className="p-4">      
       {/* Always show this to avoid blank page */}
-      <h1 className="text-xl">Bluetooth Device Management</h1>
+      <h1 className="text-xl font-bold">Bluetooth Device Management</h1>
       
       {/* Only display buttons if initBleDataResponse and device.macAddress are valid */}
-      {initBleDataResponse && initBleDataResponse.macAddress === device?.macAddress ? (
+      {initBleDataResponse && initBleDataResponse.macAddress === macAddress ? (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           <button
             onClick={() => navigateToPage("/att", "ATT_SERVICE_NAME")}
