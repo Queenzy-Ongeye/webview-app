@@ -11,7 +11,8 @@ const initialState = {
   isLoading: false,
   mqttClient: null,
   mqttMessage: null, // Add state for storing MQTT message
-  matchingDevice:null,
+  matchingDevice: null,
+  initBleDataResponse: null,
 };
 
 const reducer = (state, action) => {
@@ -41,6 +42,11 @@ const reducer = (state, action) => {
       return { ...state, mqttMessage: action.payload }; // Add case for MQTT messages
     case "SET_MATCHING_DEVICE":
       return { ...state, matchingDevice: action.payload };
+    case "SET_INIT_BLE_DATA_RESPONSE":
+      return {
+        ...state,
+        initBleDataResponse: action.payload,
+      };
     default:
       return state;
   }
