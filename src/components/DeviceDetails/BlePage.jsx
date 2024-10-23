@@ -21,7 +21,6 @@ const BlePage = () => {
   // Debugging: log out important variables to ensure they're defined
   console.log("Location State:", location.state);
   console.log("macAddress:", macAddress);
-  console.log("device:", device);
   console.log("initBleDataResponse:", initBleDataResponse);
 
   const navigateToPage = (page, serviceNameEnum) => {
