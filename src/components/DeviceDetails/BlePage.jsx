@@ -6,17 +6,22 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useStore } from "../../service/store";
 
 const BlePage = () => {
-  const { state } =useStore();
-  // Use useLocation to access the state (macAddress) from the navigation
+  const { state } = useStore();
   const location = useLocation();
-  const { macAddress, device } = location.state || {}; // Extract macAddress from location.state
-  const initBleDataResponse = state.initBleDataResponse
+  
+  // Extract macAddress and device from the location state
+  const { macAddress, device } = location.state || {}; 
+  
+  // Check for initBleDataResponse from global store (or fallback value)
+  const initBleDataResponse = state.initBleDataResponse || {}; 
+  
   const navigate = useNavigate();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  // Debugging log
+  // Debugging: log out important variables to ensure they're defined
   console.log("Location State:", location.state);
   console.log("macAddress:", macAddress);
+  console.log("device:", device);
   console.log("initBleDataResponse:", initBleDataResponse);
 
   const navigateToPage = (page, serviceNameEnum) => {
@@ -34,8 +39,15 @@ const BlePage = () => {
 
   return (
     <div className="p-4">
-      {/* Display ATT, CMD, etc. Buttons after Initialization */}
-      {initBleDataResponse && initBleDataResponse.macAddress === device.macAddress && (
+      {/* Debugging: Show fallback content if macAddress or device is undefined */}
+      {!macAddress && <p>No macAddress provided.</p>}
+      {!device && <p>No device information provided.</p>}
+      
+      {/* Always show this to avoid blank page */}
+      <h1 className="text-xl">Bluetooth Device Management</h1>
+      
+      {/* Only display buttons if initBleDataResponse and device.macAddress are valid */}
+      {initBleDataResponse && initBleDataResponse.macAddress === device?.macAddress ? (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           <button
             onClick={() => navigateToPage("/att", "ATT_SERVICE_NAME")}
@@ -75,6 +87,8 @@ const BlePage = () => {
             Connect to MQTT
           </button>
         </div>
+      ) : (
+        <p>No matching data available or macAddress mismatch.</p>
       )}
 
       {/* Toast Notifications */}
