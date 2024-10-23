@@ -1,30 +1,23 @@
-import React, { useState, useEffect } from "react";
-import { useStore } from "../../service/store";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useStore } from "../../service/store";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FaCheckCircle } from "react-icons/fa"; // Success Icon
-import { connectMqtt } from "../../service/javascriptBridge";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 
 const BleButtons = ({
   connectToBluetoothDevice,
   initBleData,
   detectedDevices,
-  initBleDataResponse,
   isLoading,
 }) => {
   const { dispatch } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
-  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
-  const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
+  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
   detectedDevices.forEach((device) => {
     uniqueDevicesMap.set(device.macAddress, device);
@@ -37,25 +30,16 @@ const BleButtons = ({
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setLoading(true); // Start loading indicator for the connection process
+    setLoading(true);
 
     try {
-      // Attempt to connect to the Bluetooth device
       await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device", macAddress);
-
-      // If the connection is successful, set the success state for the current MAC
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+        setTimeout(() => setConnectionSuccessMac(null), 10000);
       }, 23000);
     } catch (error) {
-      // If the connection fails, log the error and show an alert
-      console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
-      setConnectionSuccessMac(null); // Clear any success indicator
     } finally {
       setTimeout(() => {
         setConnectingMacAddress(null);
@@ -67,49 +51,26 @@ const BleButtons = ({
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-  
+
     setInitializingMacAddress(macAddress);
     setLoading(true);
-  
+
     try {
       const response = await initBleData(macAddress);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-  
-      // If initialization is successful, set the success state for the current MAC
-      setTimeout(() => {
-        setInitSuccessMac(macAddress);
-  
-        // After success, navigate to the page containing the buttons (ATT, STS, CMD, etc.)
-        navigate("/ble", { state: { macAddress: macAddress, initBleDataResponse: response } });
-  
-        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 35000);
+
+      // Navigate to the accordion page after initialization is complete
+      navigate("/ble", {
+        state: { macAddress, initBleDataResponse: response },
+      });
     } catch (error) {
-      console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
-      
-      // Ensure that the success state is not set in case of failure
-      setInitSuccessMac(null);
     } finally {
       setTimeout(() => {
         setInitializingMacAddress(null);
         setLoading(false);
       }, 35000);
     }
-  };
-  
-
-  const navigateToPage = (page, serviceNameEnum) => {
-    const filteredData = initBleDataResponse?.dataList.filter(
-      (item) => item.serviceNameEnum === serviceNameEnum
-    );
-    navigate(page, { state: { data: filteredData } });
-  };
-
-  // MQTT Connection
-  const handleMqttConnection = () => {
-    connectMqtt();
-    setIsButtonDisabled(true);
   };
 
   return (
@@ -160,8 +121,6 @@ const BleButtons = ({
                     className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                       initializingMacAddress === device.macAddress
                         ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                        : initSuccessMac === device.macAddress
-                        ? "bg-green-500 text-white"
                         : "bg-cyan-700 text-white"
                     }`}
                     disabled={
@@ -170,64 +129,9 @@ const BleButtons = ({
                   >
                     {initializingMacAddress === device.macAddress
                       ? "Initializing..."
-                      : initSuccessMac === device.macAddress
-                      ? "Initialized"
                       : "Init BLE Data"}
                   </button>
                 </div>
-                {initBleDataResponse &&
-                  initBleDataResponse.macAddress === device.macAddress && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                      <button
-                        onClick={() =>
-                          navigateToPage("/att", "ATT_SERVICE_NAME")
-                        }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                      >
-                        ATT
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/cmd", "CMD_SERVICE_NAME")
-                        }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                      >
-                        CMD
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/sts", "STS_SERVICE_NAME")
-                        }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                      >
-                        STS
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/dta", "DTA_SERVICE_NAME")
-                        }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                      >
-                        DTA
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/dia", "DIA_SERVICE_NAME")
-                        }
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                      >
-                        DIA
-                      </button>
-                      <button
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                        onClick={handleMqttConnection}
-                        disabled={isButtonDisabled}
-                      >
-                        Connect to MQTT
-                      </button>
-                      <ToastContainer />
-                    </div>
-                  )}
               </div>
             ))
           ) : (
@@ -240,6 +144,7 @@ const BleButtons = ({
           <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };
