@@ -3,11 +3,14 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { connectMqtt } from "../../service/javascriptBridge";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useStore } from "../../service/store";
 
 const BlePage = () => {
+  const { state } =useStore();
   // Use useLocation to access the state (macAddress) from the navigation
   const location = useLocation();
-  const { macAddress, initBleDataResponse } = location.state || {}; // Extract macAddress from location.state
+  const { macAddress, device } = location.state || {}; // Extract macAddress from location.state
+  const initBleDataResponse = state.initBleDataResponse
   const navigate = useNavigate();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
