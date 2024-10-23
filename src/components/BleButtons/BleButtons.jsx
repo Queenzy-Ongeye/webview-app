@@ -80,7 +80,7 @@ const BleButtons = ({
         setInitSuccessMac(macAddress);
 
         // After success, navigate to the page containing the buttons (ATT, STS, CMD, etc.)
-        navigate("/ble", { state: { macAddress: macAddress, initBleDataResponse: response } });
+        navigate("/ble", { state: { macAddress, initBleDataResponse } });
 
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 35000);
