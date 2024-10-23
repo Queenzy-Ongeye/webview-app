@@ -15,7 +15,7 @@ const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanDataPage"));
 const Header = lazy(() => import("./components/Header/Header")); // Lazy load Header
 const Login = lazy(() => import("./components/auth/loginPage"));
-const BlePage = lazy(() => import("./components/DeviceDetails/BlePage"))
+const BlePage = lazy(() => import("./components/BleButtons/BlePage"))
 
 
 const App = () => {
