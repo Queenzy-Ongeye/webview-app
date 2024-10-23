@@ -10,26 +10,18 @@ const BlePage = () => {
   const location = useLocation();
 
   // Extract macAddress and device from the location state
-  const { macAddress, device } = location.state || {};
-
+  const { macAddress } = location.state || {};
   // Check for initBleDataResponse from global store (or fallback value)
   const initBleDataResponse = state.initBleDataResponse || {};
 
   const navigate = useNavigate();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
-  // Debugging: log out important variables to ensure they're defined
-  console.log("Location State:", location.state);
-  console.log("macAddress:", macAddress);
-  console.log("device:", device);
-  console.log("initBleDataResponse:", initBleDataResponse);
-
   const navigateToPage = (page, serviceNameEnum) => {
     // Filter the data based on the serviceNameEnum
     const filteredData = initBleDataResponse?.dataList?.filter(
       (item) => item.serviceNameEnum === serviceNameEnum
     );
-
     // Check if filteredData exists and has at least one item
     if (filteredData && filteredData.length > 0) {
       navigate(page, { state: { data: filteredData } });
@@ -55,7 +47,7 @@ const BlePage = () => {
       <h1 className="text-xl">Bluetooth Device Management</h1>
 
       {/* Only display buttons if initBleDataResponse and device.macAddress are valid */}
-      {initBleDataResponse?.macAddress && initBleDataResponse.macAddress === device?.macAddress ? (
+      {initBleDataResponse?.macAddress && initBleDataResponse.macAddress === macAddress ? (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           <button
             onClick={() => navigateToPage("/att", "ATT_SERVICE_NAME")}
