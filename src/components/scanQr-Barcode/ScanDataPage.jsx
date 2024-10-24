@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import { getDataByBarcode } from "../../utility/indexedDB";
-import Button from "../BleButtons/Button";
 
+// Main component
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ const ScanDataPage = () => {
     }
   }, [state.detectedDevices]);
 
-  // Initiate QR code scanning
+  // Initiate QR code or barcode scanning
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
@@ -33,7 +32,7 @@ const ScanDataPage = () => {
             }
             const scannedValue = parsedData.respData.value;
             console.log("Scanned Value:", scannedValue);
-            handleScanData(scannedValue);
+            handleScanData(scannedValue); // Process the scanned data
           } catch (error) {
             console.error("Error during QR/Barcode scan:", error.message);
           }
@@ -46,104 +45,82 @@ const ScanDataPage = () => {
   };
 
   // Function to handle scanned data and find the matching BLE device
-// Function to handle scanned data and find the matching BLE device
-const handleScanData = (data) => {
-  console.log("Scanned data received:", data);
-  if (isBarcode(data) || isQrCode(data)) {
-    console.log("Valid scan data identified.");
-    dispatch({ type: "SET_SCANNED_DATA", payload: data });
-    const matchingDevice = findMatchingDevice(data);
-    if (matchingDevice) {
-      console.log("Matching BLE device found:", matchingDevice);
-      dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+  const handleScanData = (data) => {
+    console.log("Scanned data received:", data);
+
+    const deviceId = extractDeviceIdFromScan(data); // Extract the device ID from the scanned data
+    if (deviceId) {
+      dispatch({ type: "SET_SCANNED_DATA", payload: deviceId });
+      const matchingDevice = findMatchingDevice(deviceId);
+      if (matchingDevice) {
+        console.log("Matching BLE device found:", matchingDevice);
+        dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+        connectToDevice(matchingDevice); // Use BLE API to connect to the device
+      } else {
+        console.warn("No matching BLE device found for the scanned data.");
+      }
     } else {
-      console.warn("No matching BLE device found for the scanned data.");
+      console.error("Invalid scan data. Unable to extract device ID.");
     }
-  } else {
-    console.error("Invalid scan data. Neither a barcode nor a QR code.");
-  }
-};
+  };
 
-// Function to check if the data is a barcode
-const isBarcode = (data) => {
-  console.log("Checking if data is a barcode:", data);
-  const alphanumericPattern = /^[a-zA-Z0-9]+$/; // Allow alphanumeric barcodes
-  const minLength = 6; // Minimum length for barcode
-  const maxLength = 20; // Maximum length for barcode
+  const extractDeviceIdFromScan = (scannedData) => scannedData.trim(); // Trim and extract the device ID
 
-  const isAlphanumeric = alphanumericPattern.test(data);
-  const isCorrectLength = data.length >= minLength && data.length <= maxLength;
+  const findMatchingDevice = (deviceId) => {
+    const detectedDevices = state.detectedDevices;
+    if (!detectedDevices || detectedDevices.length === 0) {
+      console.warn("No BLE devices detected.");
+      return null;
+    }
+    const last6Digits = deviceId.slice(-6);
+    return detectedDevices.find(
+      (device) => device.name && device.name.slice(-6) === last6Digits
+    );
+  };
 
-  if (!isAlphanumeric) {
-    console.log("Data is not alphanumeric.");
-  }
-  if (!isCorrectLength) {
-    console.log(`Data length is not within ${minLength}-${maxLength} range.`);
-  }
-  
-  return isAlphanumeric && isCorrectLength;
-};
-
-// Function to check if the data is a QR code
-const isQrCode = (data) => {
-  console.log("Checking if data is a QR code:", data);
-  const urlPattern = /^(http|https):\/\/[^ "]+$/; // Check if data is a URL
-  const structuredDataPattern = /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/; // Key-value pairs
-  const isNonNumeric = /[^0-9]/.test(data); // Contains non-numeric characters
-
-  const isUrl = urlPattern.test(data);
-  const isStructured = structuredDataPattern.test(data);
-  const isLongEnough = data.length > 20 && isNonNumeric;
-
-  if (!isUrl && !isStructured && !isLongEnough) {
-    console.log("Data does not match QR code patterns.");
-  }
-
-  return isUrl || isStructured || isLongEnough;
-};
-
-// Find a BLE device that matches the scanned data using the last 6 digits
-const findMatchingDevice = (scannedData) => {
-  const detectedDevices = state.detectedDevices; // Access detectedDevices from the state
-  if (!detectedDevices || detectedDevices.length === 0) {
-    console.warn("No BLE devices detected.");
-    return null;
-  }
-
-  // Extract the last 6 characters of the scanned data
-  const last6Digits = scannedData.slice(-6);
-
-  // Match the device whose name ends with the same last 6 characters
-  return detectedDevices.find((device) => {
-    const { name } = device;
-    return name && name.slice(-6) === last6Digits;
-  });
-};
-
-
-  // // Function to fetch product details from IndexedDB based on barcode
-  // const fetchProductDetails = (barcode) => {
-  //   getDataByBarcode(barcode)
-  //     .then((product) => {
-  //       if (product) {
-  //         dispatch({ type: "SET_QR_DATA", payload: product }); // Set the product data in state
-  //       } else {
-  //         console.error("Product not found for barcode:", barcode);
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching product details:", error);
-  //     });
-  // };
+  const connectToDevice = (device) => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        device.macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === "200") {
+              console.log(
+                "Connected to the BLE device successfully:",
+                parsedData
+              );
+              dispatch({
+                type: "SET_BLE_CONNECTION_STATUS",
+                payload: "connected",
+              });
+            } else {
+              console.error(
+                "Failed to connect to the BLE device:",
+                parsedData.respDesc
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Error parsing BLE connection response:",
+              error.message
+            );
+          }
+        }
+      );
+    } else {
+      console.error(
+        "WebViewJavascriptBridge is not initialized for BLE connection."
+      );
+    }
+  };
 
   return (
     <div className="scan-data-page">
       <div className="mt-14">
         <h2>Scanned Data</h2>
-        {/* Display the scanned QR/Barcode data */}
         {state.scannedData && <p>Scanned Data: {state.scannedData}</p>}
-
-        {/* Display matched BLE device information */}
         {state.matchingDevice ? (
           <div>
             <h3>Matching BLE Device:</h3>
@@ -155,15 +132,13 @@ const findMatchingDevice = (scannedData) => {
         )}
       </div>
 
-      {/* QR Code scanning button */}
-      <div className="fixed bottom-0 left-0 w-full z-10 row-start-auto bg-cyan-500">
-        <Button
-          onClick={startQrCodeScan}
-          className="bg-white text-cyan-700 mx-20 w-52"
-        >
-          Scan QR Code
-        </Button>
-      </div>
+      {/* Floating Button to Initiate QR Code Scan */}
+      <button
+        onClick={startQrCodeScan}
+        className="fixed bottom-10 right-10 w-16 h-16 bg-cyan-500 text-white rounded-full shadow-lg flex items-center justify-center"
+      >
+        <i className="fas fa-camera text-2xl"></i>
+      </button>
     </div>
   );
 };
