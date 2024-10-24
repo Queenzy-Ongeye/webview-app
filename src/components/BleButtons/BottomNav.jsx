@@ -1,6 +1,7 @@
 // src/components/BottomNav.js
 import React, { useState } from "react";
 import { FaHome, FaQrcode, FaUserAlt } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const BottomNav = () => {
   const [active, setActive] = useState("home"); // Track active button
