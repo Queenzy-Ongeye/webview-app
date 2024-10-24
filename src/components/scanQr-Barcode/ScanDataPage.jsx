@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
+import { IoQrCodeOutline } from "react-icons/io5";
+
 
 // Main component
 const ScanDataPage = () => {
@@ -135,9 +137,9 @@ const ScanDataPage = () => {
       {/* Floating Button to Initiate QR Code Scan */}
       <button
         onClick={startQrCodeScan}
-        className="fixed bottom-10 right-10 w-16 h-16 bg-cyan-500 text-white rounded-full shadow-lg flex items-center justify-center"
+        className="fixed bottom-20 right-10 w-16 h-16 bg-oves-blue text-white rounded-full shadow-lg flex items-center justify-center"
       >
-        <i className="fas fa-camera text-2xl"></i>
+        <IoQrCodeOutline className="text-2xl text-white" />
       </button>
     </div>
   );
