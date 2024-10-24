@@ -119,8 +119,8 @@ const ScanDataPage = () => {
 
   return (
     <div className="scan-data-page">
-      <div className="mt-14">
-        <h2>Scanned Data</h2>
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold">Scanned Data</h2>
         {state.scannedData && <p>Scanned Data: {state.scannedData}</p>}
 
         {/* Display matched BLE device information */}
@@ -143,7 +143,7 @@ const ScanDataPage = () => {
       {/* Floating Button to Initiate QR Code Scan */}
       <button
         onClick={startQrCodeScan}
-        className="fixed bottom-20 right-10 w-16 h-16 bg-oves-blue text-white rounded-full shadow-lg flex items-center justify-center"
+        className="fixed bottom-20 right-4 w-16 h-16 bg-oves-blue text-white rounded-full shadow-lg flex items-center justify-center"
       >
         <IoQrCodeOutline className="text-2xl text-white"/>
       </button>
