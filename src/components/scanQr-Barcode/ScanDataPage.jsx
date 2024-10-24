@@ -6,17 +6,23 @@ import { IoQrCodeOutline } from "react-icons/io5";
 // Main component for handling BLE and QR code scanning
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
-  const navigate = useNavigate();
 
   // Function to start BLE scanning and store detected devices in the state
   const scanBleDevices = () => {
     if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler("startBleScan", null, (responseData) => {
-        const parsedData = JSON.parse(responseData);
-        if (parsedData && parsedData.devices) {
-          dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData.devices });
+      window.WebViewJavascriptBridge.callHandler(
+        "startBleScan",
+        null,
+        (responseData) => {
+          const parsedData = JSON.parse(responseData);
+          if (parsedData && parsedData.devices) {
+            dispatch({
+              type: "ADD_DETECTED_DEVICE",
+              payload: parsedData.devices,
+            });
+          }
         }
-      });
+      );
     } else {
       console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
     }
@@ -31,7 +37,11 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData.data);
-            if (!parsedData || !parsedData.respData || !parsedData.respData.value) {
+            if (
+              !parsedData ||
+              !parsedData.respData ||
+              !parsedData.respData.value
+            ) {
               throw new Error("No valid scan data received");
             }
             const scannedValue = parsedData.respData.value;
@@ -52,18 +62,27 @@ const ScanDataPage = () => {
   const handleScanData = (barcode) => {
     console.log("Scanned data received:", barcode);
 
-    // Store the scanned data in the state
-    dispatch({ type: "SET_SCANNED_DATA", payload: barcode });
+    if (isBarcode(barcode)) {
+      console.log("Data is a valid barcode");
+      dispatch({ type: "SET_SCANNED_DATA", payload: barcode });
 
-    // Find the BLE device that matches the entire barcode
-    const matchingDevice = findMatchingDeviceByBarcode(barcode);
+      // Find the BLE device that matches the barcode
+      const matchingDevice = findMatchingDeviceByBarcode(barcode);
 
-    if (matchingDevice) {
-      console.log("Matching BLE device found:", matchingDevice);
-      dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
-      connectToDevice(matchingDevice); // Connect to the matching BLE device
+      if (matchingDevice) {
+        console.log("Matching BLE device found:", matchingDevice);
+        dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+        connectToDevice(matchingDevice); // Connect to the matching BLE device
+      } else {
+        console.warn("No matching BLE device found for the scanned barcode.");
+      }
+    } else if (isQrCode(barcode)) {
+      console.log("Data is a valid QR code");
+      dispatch({ type: "SET_SCANNED_DATA", payload: barcode });
     } else {
-      console.warn("No matching BLE device found for the scanned barcode.");
+      console.error(
+        "Invalid scan data. Neither a valid barcode nor a QR code."
+      );
     }
   };
 
@@ -92,20 +111,40 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(responseData);
             if (parsedData.respCode === "200") {
-              console.log("Connected to the BLE device successfully:", parsedData);
-              dispatch({ type: "SET_BLE_CONNECTION_STATUS", payload: "connected" });
+              console.log(
+                "Connected to the BLE device successfully:",
+                parsedData
+              );
+              dispatch({
+                type: "SET_BLE_CONNECTION_STATUS",
+                payload: "connected",
+              });
             } else {
-              console.error("Failed to connect to the BLE device:", parsedData.respDesc);
-              dispatch({ type: "SET_BLE_CONNECTION_STATUS", payload: "disconnected" });
+              console.error(
+                "Failed to connect to the BLE device:",
+                parsedData.respDesc
+              );
+              dispatch({
+                type: "SET_BLE_CONNECTION_STATUS",
+                payload: "disconnected",
+              });
             }
           } catch (error) {
-            console.error("Error parsing BLE connection response:", error.message);
-            dispatch({ type: "SET_BLE_CONNECTION_STATUS", payload: "disconnected" });
+            console.error(
+              "Error parsing BLE connection response:",
+              error.message
+            );
+            dispatch({
+              type: "SET_BLE_CONNECTION_STATUS",
+              payload: "disconnected",
+            });
           }
         }
       );
     } else {
-      console.error("WebViewJavascriptBridge is not initialized for BLE connection.");
+      console.error(
+        "WebViewJavascriptBridge is not initialized for BLE connection."
+      );
     }
   };
 
@@ -145,7 +184,7 @@ const ScanDataPage = () => {
         onClick={startQrCodeScan}
         className="fixed bottom-20 right-4 w-16 h-16 bg-oves-blue text-white rounded-full shadow-lg flex items-center justify-center"
       >
-        <IoQrCodeOutline className="text-2xl text-white"/>
+        <IoQrCodeOutline className="text-2xl text-white" />
       </button>
     </div>
   );
