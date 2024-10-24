@@ -1,52 +1,90 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast, Bounce, ToastContainer } from "react-toastify"; // Added Bounce for transition
+import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Import a loading icon
 
 const ATTPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
-  // Debug log when component mounts
-  useEffect(() => {
-    console.log("ATTPage Location State:", location.state);
-  }, [location.state]);
-
-  const { data, macAddress, serviceNameEnum } = location.state || {};
+  
+  // Destructure both data and macAddress from location state
+  const { data, macAddress } = location.state || {};
 
   // Verify data on component mount
   useEffect(() => {
-    if (!location.state) {
-      console.error("No state provided to ATTPage");
-      toast.error("No data provided. Redirecting to services page...");
-      navigate("/services");
-      return;
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      console.error("Invalid or missing ATT data");
+      toast.error("No ATT data available", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
+  }, [data]);
 
-    if (!data || !Array.isArray(data)) {
-      console.error("Invalid ATT data format:", data);
-      toast.error("Invalid data format received");
-      return;
-    }
+  const publishMqttMessage = (topic) => {
+    if (window.WebViewJavascriptBridge) {
+      if (!data || data.length === 0) {
+        console.error("No BLE data available to publish.");
+        toast.error("No BLE data available to publish.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        return;
+      }
 
-    if (data.length === 0) {
-      console.log("Empty ATT data array received");
-      toast.warning("No ATT data available for this device");
-      return;
-    }
+      const publishData = {
+        topic: topic,
+        qos: 0,
+        content: JSON.stringify(data),
+      };
 
-    // Verify we're looking at ATT data
-    if (serviceNameEnum !== "ATT_SERVICE_NAME") {
-      console.error("Wrong service type received:", serviceNameEnum);
-      toast.error("Incorrect service type data received");
-      return;
-    }
+      setLoading(true);
 
-    // Log the structure of the first data item
-    if (data[0]) {
-      console.log("First ATT data item structure:", data[0]);
+      window.WebViewJavascriptBridge.callHandler(
+        "mqttPublishMsg",
+        publishData,
+        (responseData) => {
+          setLoading(false);
+          toast.success("Message published successfully", {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "light",
+            transition: Bounce,
+          });
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+      toast.error("Error: WebViewJavascriptBridge is not initialized.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
-  }, [data, serviceNameEnum, navigate, location.state]);
+  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -54,21 +92,68 @@ const ATTPage = () => {
         ATT Data
       </h2>
       
+      {/* Display MAC Address */}
       {macAddress && (
         <div className="mb-4 text-center text-gray-600">
           MAC Address: {macAddress}
         </div>
       )}
 
-      {/* Debug Info Panel */}
-      <div className="mb-4 p-4 bg-gray-100 rounded-lg">
-        <h3 className="font-semibold">Debug Info:</h3>
-        <p>Data Available: {data ? 'Yes' : 'No'}</p>
-        <p>Data Length: {data ? data.length : 0}</p>
-        <p>Service Type: {serviceNameEnum || 'Not specified'}</p>
-      </div>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-4 py-2 px-4 bg-cyan-800 text-white font-semibold rounded-lg shadow-md hover:bg-cyan-900 transition duration-300"
+      >
+        Back
+      </button>
 
-      {/* Rest of the ATTPage component code ... */}
+      {data && data.length > 0 ? (
+        data.map((item, index) => (
+          <div key={index} className="mb-6 p-6 bg-white shadow-lg rounded-lg">
+            {Object.keys(item.characterMap).map((uuid) => (
+              <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {item.characterMap[uuid].desc}
+                </h3>
+
+                <table className="w-full text-left mt-4 border border-gray-300 rounded-lg overflow-hidden">
+                  <tbody>
+                    <tr className="border-b bg-gray-50">
+                      <td className="p-3 font-semibold text-gray-600">Name</td>
+                      <td className="p-3">{item.characterMap[uuid].name}</td>
+                    </tr>
+                    {/* ... rest of the table rows ... */}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        ))
+      ) : (
+        <p className="text-center text-gray-500">No data available</p>
+      )}
+
+      <div className="mqtt-controls my-8 flex justify-center">
+        <ToastContainer />
+        <button
+          className={`py-3 px-6 font-semibold rounded-lg shadow-md transition duration-300 flex justify-center items-center ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          } text-white focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50`}
+          onClick={() => publishMqttMessage("emit/content/bleData/att")}
+          disabled={loading}
+        >
+          {loading ? (
+            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
+          ) : (
+            "Publish BLE Init Data"
+          )}
+          {loading && "Publishing..."}
+        </button>
+      </div>
     </div>
   );
 };
+
+export default ATTPage;
