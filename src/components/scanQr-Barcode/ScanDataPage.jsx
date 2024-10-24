@@ -25,11 +25,11 @@ const ScanDataPage = () => {
 
   // Start QR code or barcode scanning (with requestCode)
   const startQrCodeScan = () => {
-    const requestCode = 999; // Assign a requestCode
+    const requestCode = "999"; // Use requestCode as a string
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
-        requestCode, // Pass the requestCode
+        requestCode, // Pass the requestCode as a string
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
@@ -57,18 +57,22 @@ const ScanDataPage = () => {
       window.WebViewJavascriptBridge.registerHandler(
         "scanQrcodeResultCallBack", // Handler name (as provided in the documentation)
         (data) => {
-          // This function will be called when the scan completes
           console.log("QR/Barcode scan callback received:", data);
 
-          // The result contains the scanned value and requestCode
-          const scannedValue = data.value;
-          const requestCode = data.requestCode;
+          // The result contains the respData with scanned value and requestCode
+          const { respData } = data;
+          
+          // Extract requestCode and value from respData
+          const requestCode = respData?.requestCode; // Keep requestCode as a string
+          const scannedValue = respData?.value;
 
-          // Check if the requestCode matches
+          // Check if the requestCode matches the string "999"
           if (requestCode === "999") {
             console.log("Scanned Value:", scannedValue);
+
             // Store the scanned data in the state
             dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+
             // Handle the scanned data (whether it's a barcode or QR code)
             const matchingDevice = findMatchingDeviceByScannedData(scannedValue);
 
@@ -80,7 +84,7 @@ const ScanDataPage = () => {
               console.warn("No matching BLE device found for the scanned data.");
             }
           } else {
-            console.error("Request code mismatch. Expected 999 but got:", requestCode);
+            console.error("Request code mismatch. Expected '999' but got:", requestCode);
           }
         }
       );
@@ -165,7 +169,7 @@ const ScanDataPage = () => {
       {/* Floating Button to Initiate QR Code Scan */}
       <button
         onClick={startQrCodeScan}
-        className="fixed bottom-20 right-4 w-16 h-16 bg-oves-blue text-white rounded-full shadow-lg flex items-center justify-center"
+        className="fixed bottom-20 right-5 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
       >
         <IoQrCodeOutline className="text-2xl text-white" />
       </button>
