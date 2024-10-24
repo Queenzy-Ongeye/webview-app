@@ -120,15 +120,25 @@ function deleteData(id) {
 
 const getDataByBarcode = (barcode) => {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
+    const request = indexedDB.open(DB_NAME, DB_VERSION); // Ensure you're using the correct DB name and version
 
     request.onsuccess = () => {
       const db = request.result;
-      const transaction = db.transaction("products", "readonly");
-      const store = transaction.objectStore("products");
-      const getRequest = store.get(barcode);
+      const transaction = db.transaction(STORE_NAME, "readonly"); // Use the correct store name (bleDataStore)
+      const store = transaction.objectStore(STORE_NAME);
 
-      getRequest.onsuccess = () => resolve(getRequest.result);
+      // Access the 'barcode' index to query the record by barcode
+      const index = store.index("barcode");
+      const getRequest = index.get(barcode);
+
+      getRequest.onsuccess = () => {
+        if (getRequest.result) {
+          resolve(getRequest.result); // Resolve the matching record
+        } else {
+          reject("No matching record found for barcode.");
+        }
+      };
+
       getRequest.onerror = () => reject("Failed to fetch product details.");
     };
 
