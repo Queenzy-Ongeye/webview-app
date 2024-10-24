@@ -65,12 +65,10 @@ const ScanDataPage = () => {
           const requestCode = data.requestCode;
 
           // Check if the requestCode matches
-          if (requestCode === 999) {
+          if (requestCode === "999") {
             console.log("Scanned Value:", scannedValue);
-
             // Store the scanned data in the state
             dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-
             // Handle the scanned data (whether it's a barcode or QR code)
             const matchingDevice = findMatchingDeviceByScannedData(scannedValue);
 
