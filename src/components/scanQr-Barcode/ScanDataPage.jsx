@@ -55,61 +55,49 @@ const ScanDataPage = () => {
   // Handle the scanned data and match it with the opid in ATT_SERVICE_ENUM
   const handleScanData = (barcode) => {
     console.log("Scanned data received:", barcode);
-
-    // Store the scanned data in the state
-    dispatch({ type: "SET_SCANNED_DATA", payload: barcode });
-
-    // Find the opid that matches the barcode in ATT_SERVICE_ENUM
-    const matchingOpid = findMatchingOpidInServiceEnum(barcode);
-
-    if (matchingOpid) {
-      console.log("Matching opid found:", matchingOpid);
-      dispatch({ type: "SET_MATCHING_OPID", payload: matchingOpid });
-      // You can now handle the matching opid (e.g., connect to a BLE device or perform other logic)
+  
+    // 1. Filter the nearby BLE devices based on the scanned barcode/device ID
+    const matchingDevice = findMatchingDeviceByBarcode(barcode);
+  
+    if (matchingDevice) {
+      console.log("Matching BLE device found:", matchingDevice);
+      
+      // 2. Connect to the device (if needed) or perform other business logic
+      connectToDevice(matchingDevice);
+  
+      // 3. Fetch additional information or perform any business logic
+      fetchAdditionalDeviceInfo(matchingDevice);
+  
     } else {
-      console.warn("No matching opid found for the scanned barcode.");
+      console.warn("No matching BLE device found for the scanned barcode.");
     }
   };
-
-  // Find the opid that matches the scanned barcode in ATT_SERVICE_ENUM
-  const findMatchingOpidInServiceEnum = (barcode) => {
-    return ATT_SERVICE_ENUM.find((service) => service.opid === barcode);
+  
+  // Function to match the scanned barcode/device ID with a BLE device
+  const findMatchingDeviceByBarcode = (barcode) => {
+    const detectedDevices = state.detectedDevices;
+    // Find a BLE device that matches the barcode (could be by name, MAC, or opid)
+    return detectedDevices.find(device => device.opid === barcode || device.name === barcode);
   };
-
-  // Connect to the BLE device (if needed) using its MAC address (optional depending on your use case)
+  
+  // Function to connect to the device (if needed)
   const connectToDevice = (device) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress", // BLE connection handler
-        device.macAddress, // Pass the MAC address of the BLE device
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData.respCode === "200") {
-              console.log("Connected to the BLE device successfully:", parsedData);
-              dispatch({ type: "SET_BLE_CONNECTION_STATUS", payload: "connected" });
-            } else {
-              console.error("Failed to connect to the BLE device:", parsedData.respDesc);
-              dispatch({ type: "SET_BLE_CONNECTION_STATUS", payload: "disconnected" });
-            }
-          } catch (error) {
-            console.error("Error parsing BLE connection response:", error.message);
-            dispatch({ type: "SET_BLE_CONNECTION_STATUS", payload: "disconnected" });
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized for BLE connection.");
-    }
+    // Use WebViewJavascriptBridge or Bluetooth API to connect
+    window.WebViewJavascriptBridge.callHandler(
+      "connBleByMacAddress", 
+      device.macAddress, 
+      (responseData) => {
+        console.log("Connected to BLE device:", responseData);
+      }
+    );
   };
-
-  // UseEffect hook to start BLE scanning when the component is mounted
-  useEffect(() => {
-    if (!state.detectedDevices || state.detectedDevices.length === 0) {
-      console.warn("No BLE devices detected. Starting BLE scan...");
-      scanBleDevices(); // Start scanning BLE devices
-    }
-  }, [state.detectedDevices]);
+  
+  // Function to fetch additional device information
+  const fetchAdditionalDeviceInfo = (device) => {
+    // Use the matched device's data to fetch more info or take actions
+    console.log("Fetching additional info for device:", device);
+    // Business logic to retrieve device info from a database, API, etc.
+  };  
 
   return (
     <div className="scan-data-page">
