@@ -3,46 +3,52 @@ import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { IoQrCodeOutline } from "react-icons/io5";
 
-
 // Main component for handling BLE and QR code scanning
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
-  const navigate = useNavigate();
-
-  // Assume ATT_SERVICE_ENUM is part of your state or you fetch it during component mount
-  const ATT_SERVICE_ENUM = state.attServiceEnum || []; // Loaded ATT_SERVICE_ENUM data
-
   // Function to start BLE scanning and store detected devices in the state
   const scanBleDevices = () => {
     if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler("startBleScan", null, (responseData) => {
-        const parsedData = JSON.parse(responseData);
-        if (parsedData && parsedData.devices) {
-          dispatch({ type: "SET_DETECTED_DEVICES", payload: parsedData.devices });
+      window.WebViewJavascriptBridge.callHandler(
+        "startBleScan",
+        null,
+        (responseData) => {
+          const parsedData = JSON.parse(responseData);
+          if (parsedData) {
+            dispatch({
+              type: "ADD_DETECTED_DEVICE",
+              payload: parsedData,
+            });
+          }
         }
-      });
+      );
     } else {
       console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
     }
   };
 
-  // Start QR code or barcode scanning
+  // Start QR code or barcode scanning (with requestCode)
   const startQrCodeScan = () => {
+    const requestCode = 999; // Assign a requestCode
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
-        999, // Arbitrary request code
+        requestCode, // Pass the requestCode
         (responseData) => {
           try {
-            const parsedData = JSON.parse(responseData.data);
-            if (!parsedData || !parsedData.respData || !parsedData.respData.value) {
-              throw new Error("No valid scan data received");
+            // Handle the response
+            const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === "200" && parsedData.respData === true) {
+              console.log("QR/Barcode scan initiated successfully.");
+              // Now wait for the callback to receive the scanned data
+            } else {
+              console.error(
+                "Failed to start QR/Barcode scan:",
+                parsedData.respDesc
+              );
             }
-            const scannedValue = parsedData.respData.value;
-            console.log("Scanned Value:", scannedValue);
-            handleScanData(scannedValue); // Process the scanned data
           } catch (error) {
-            console.error("Error during QR/Barcode scan:", error.message);
+            console.error("Error initiating QR/Barcode scan:", error.message);
           }
         }
       );
@@ -52,52 +58,107 @@ const ScanDataPage = () => {
     }
   };
 
-  // Handle the scanned data and match it with the opid in ATT_SERVICE_ENUM
-  const handleScanData = (barcode) => {
-    console.log("Scanned data received:", barcode);
-  
-    // 1. Filter the nearby BLE devices based on the scanned barcode/device ID
-    const matchingDevice = findMatchingDeviceByBarcode(barcode);
-  
-    if (matchingDevice) {
-      console.log("Matching BLE device found:", matchingDevice);
-      
-      // 2. Connect to the device (if needed) or perform other business logic
-      connectToDevice(matchingDevice);
-  
-      // 3. Fetch additional information or perform any business logic
-      fetchAdditionalDeviceInfo(matchingDevice);
-  
+  // Asynchronous callback method: scanQrcodeResultCallBack(data)
+  const scanQrcodeResultCallBack = (data) => {
+    console.log("QR/Barcode scan callback received:", data);
+
+    // The result contains the scanned value and requestCode
+    const scannedValue = data.value;
+    const requestCode = data.requestCode;
+
+    // Check if the requestCode matches
+    if (requestCode === 999) {
+      console.log("Scanned Value:", scannedValue);
+
+      // Store the scanned data in the state
+      dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+
+      // Handle the scanned data (whether it's a barcode or QR code)
+      const matchingDevice = findMatchingDeviceByScannedData(scannedValue);
+
+      if (matchingDevice) {
+        console.log("Matching BLE device found:", matchingDevice);
+        dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+        connectToDevice(matchingDevice); // Connect to the matching BLE device
+      } else {
+        console.warn("No matching BLE device found for the scanned data.");
+      }
     } else {
-      console.warn("No matching BLE device found for the scanned barcode.");
+      console.error(
+        "Request code mismatch. Expected 999 but got:",
+        requestCode
+      );
     }
   };
-  
-  // Function to match the scanned barcode/device ID with a BLE device
-  const findMatchingDeviceByBarcode = (barcode) => {
+
+  // Find a BLE device that matches the scanned data (whether it's a barcode or QR code)
+  const findMatchingDeviceByScannedData = (scannedData) => {
     const detectedDevices = state.detectedDevices;
-    // Find a BLE device that matches the barcode (could be by name, MAC, or opid)
-    return detectedDevices.find(device => device.opid === barcode || device.name === barcode);
+
+    if (!detectedDevices || detectedDevices.length === 0) {
+      console.warn("No BLE devices detected.");
+      return null;
+    }
+    // Find a BLE device whose name or MAC address matches the scanned data
+    return detectedDevices.find((device) => {
+      return device.name === scannedData || device.macAddress === scannedData;
+    });
   };
-  
-  // Function to connect to the device (if needed)
+
+  // Connect to the BLE device using its MAC address
   const connectToDevice = (device) => {
-    // Use WebViewJavascriptBridge or Bluetooth API to connect
-    window.WebViewJavascriptBridge.callHandler(
-      "connBleByMacAddress", 
-      device.macAddress, 
-      (responseData) => {
-        console.log("Connected to BLE device:", responseData);
-      }
-    );
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress", // BLE connection handler
+        device.macAddress, // Pass the MAC address of the BLE device
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === "200") {
+              console.log(
+                "Connected to the BLE device successfully:",
+                parsedData
+              );
+              dispatch({
+                type: "SET_BLE_CONNECTION_STATUS",
+                payload: "connected",
+              });
+            } else {
+              console.error(
+                "Failed to connect to the BLE device:",
+                parsedData.respDesc
+              );
+              dispatch({
+                type: "SET_BLE_CONNECTION_STATUS",
+                payload: "disconnected",
+              });
+            }
+          } catch (error) {
+            console.error(
+              "Error parsing BLE connection response:",
+              error.message
+            );
+            dispatch({
+              type: "SET_BLE_CONNECTION_STATUS",
+              payload: "disconnected",
+            });
+          }
+        }
+      );
+    } else {
+      console.error(
+        "WebViewJavascriptBridge is not initialized for BLE connection."
+      );
+    }
   };
-  
-  // Function to fetch additional device information
-  const fetchAdditionalDeviceInfo = (device) => {
-    // Use the matched device's data to fetch more info or take actions
-    console.log("Fetching additional info for device:", device);
-    // Business logic to retrieve device info from a database, API, etc.
-  };  
+
+  // UseEffect hook to start BLE scanning when the component is mounted
+  useEffect(() => {
+    if (!state.detectedDevices || state.detectedDevices.length === 0) {
+      console.warn("No BLE devices detected. Starting BLE scan...");
+      scanBleDevices(); // Start scanning BLE devices
+    }
+  }, [state.detectedDevices]);
 
   return (
     <div className="scan-data-page">
@@ -110,7 +171,8 @@ const ScanDataPage = () => {
           <div>
             <h3>Matching opid found:</h3>
             <p>{state.matchingOpid.opid}</p>
-            <p>{state.matchingOpid.deviceName}</p> {/* Or other info from ATT_SERVICE_ENUM */}
+            <p>{state.matchingOpid.deviceName}</p>{" "}
+            {/* Or other info from ATT_SERVICE_ENUM */}
           </div>
         ) : (
           <p>No matching opid found.</p>
@@ -127,7 +189,7 @@ const ScanDataPage = () => {
         onClick={startQrCodeScan}
         className="fixed bottom-20 right-4 w-16 h-16 bg-oves-blue text-white rounded-full shadow-lg flex items-center justify-center"
       >
-        <IoQrCodeOutline className="text-2xl text-whie"/>
+        <IoQrCodeOutline className="text-2xl text-whie" />
         <i className="fas fa-camera text-2xl"></i>
       </button>
     </div>
