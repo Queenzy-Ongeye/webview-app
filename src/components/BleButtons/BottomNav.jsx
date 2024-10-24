@@ -9,26 +9,34 @@ const BottomNav = () => {
     <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-lg shadow-xl rounded-t-3xl z-10 animate-fadeIn">
       <div className="flex justify-between items-center px-6 py-4">
         {/* Home Button */}
-        <NavItem
-          icon={<FaHome />}
-          label="Home"
-          active={active === "home"}
-          onClick={() => setActive("home")}
-        />
+        <Link to="/home">
+          <NavItem
+            icon={<FaHome />}
+            label="Home"
+            active={active === "home"}
+            onClick={() => setActive("home")}
+          />
+        </Link>
+
         {/* Scan QR Code Button */}
-        <NavItem
-          icon={<FaQrcode />}
-          label="Scan QR"
-          active={active === "scanqr"}
-          onClick={() => setActive("scanqr")}
-        />
+        <Link to="/scan-data">
+          <NavItem
+            icon={<FaQrcode />}
+            label="Scan QR"
+            active={active === "scanqr"}
+            onClick={() => setActive("scanqr")}
+          />
+        </Link>
+
         {/* User Profile Button */}
-        <NavItem
-          icon={<FaUserAlt />}
-          label="Profile"
-          active={active === "profile"}
-          onClick={() => setActive("profile")}
-        />
+        <Link to="/profile">
+          <NavItem
+            icon={<FaUserAlt />}
+            label="Profile"
+            active={active === "profile"}
+            onClick={() => setActive("profile")}
+          />
+        </Link>
       </div>
     </div>
   );
