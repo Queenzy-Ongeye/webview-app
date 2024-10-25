@@ -119,7 +119,21 @@ const DTAPage = () => {
                         Enable Indicate
                       </td>
                       <td className="p-3">
-                        {item.characterMap[uuid].enableIndicate ? "Yes" : "No"}
+                        {item.characterMap[uuid].enableIndicate}
+                      </td>
+                    </tr>
+                    <tr className="border-b bg-gray-50">
+                      <td className="p-3 font-semibold text-gray-600">
+                        Real Value
+                      </td>
+                      <td className="p-3">
+                        {characteristic.name === "opid" ? (
+                          <span className="text-blue-600 font-bold">
+                            OPID: {characteristic.realVal}
+                          </span>
+                        ) : (
+                          characteristic.realVal
+                        )}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
@@ -127,7 +141,7 @@ const DTAPage = () => {
                         Enable Notify
                       </td>
                       <td className="p-3">
-                        {item.characterMap[uuid].enableNotify ? "Yes" : "No"}
+                        {item.characterMap[uuid].enableNotify}
                       </td>
                     </tr>
                     <tr className="border-b">
@@ -135,7 +149,7 @@ const DTAPage = () => {
                         Enable Read
                       </td>
                       <td className="p-3">
-                        {item.characterMap[uuid].enableRead ? "Yes" : "No"}
+                        {item.characterMap[uuid].enableRead}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
@@ -143,7 +157,7 @@ const DTAPage = () => {
                         Enable Write
                       </td>
                       <td className="p-3">
-                        {item.characterMap[uuid].enableWrite ? "Yes" : "No"}
+                        {item.characterMap[uuid].enableWrite}
                       </td>
                     </tr>
                     <tr className="border-b">
