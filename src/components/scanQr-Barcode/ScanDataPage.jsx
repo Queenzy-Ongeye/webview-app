@@ -68,7 +68,7 @@ const ScanDataPage = () => {
             console.log("QR/Barcode scan callback received:", data);
 
             // The result contains the respData with scanned value and requestCode
-            const { respData } = data;
+            const { respData } = JSON.parse(data);
             
             // Extract requestCode and value from respData
             const requestCode = respData?.requestCode; // Keep requestCode as a string
