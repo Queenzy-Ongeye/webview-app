@@ -83,7 +83,7 @@ const ScanDataPage = () => {
           const { respData } = data;
           const scannedValue = respData?.value;
 
-          if (respData?.requestCode === "999") {
+          if (respData?.requestCode === 999) {
             console.log("Scanned Value:", scannedValue);
 
             // Store the scanned data in the state
