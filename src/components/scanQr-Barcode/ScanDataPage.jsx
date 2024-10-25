@@ -113,9 +113,9 @@ const ScanDataPage = () => {
   // Find a BLE device that matches the scanned barcode/QR code by checking the realVal of the DTA_SERVICE_NAME
   const findMatchingDeviceByOpid = (scannedBarcode) => {
     const detectedDevices = state.detectedDevices;
+    console.log("BLE devices detected:", detectedDevices);
 
     if (!detectedDevices || detectedDevices.length === 0) {
-      console.warn("No BLE devices detected.");
       return null;
     }
     // Log scanned barcode for reference
