@@ -45,10 +45,7 @@ const ScanDataPage = () => {
           (responseData) => {
             try {
               const parsedData = JSON.parse(responseData);
-              if (
-                parsedData.respCode === 200 &&
-                parsedData.respData === true
-              ) {
+              if (parsedData.respCode === 200 && parsedData.respData === true) {
                 console.log("QR/Barcode scan initiated successfully.");
                 // Now wait for the callback to receive the scanned data
               } else {
@@ -85,13 +82,10 @@ const ScanDataPage = () => {
 
           if (respData?.requestCode === 999) {
             console.log("Scanned Value:", scannedValue);
-
             // Store the scanned data in the state
             dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-
             // Handle the scanned data: Match it with the realVal in DTA_SERVICE_NAME
             const matchingDevice = findMatchingDeviceByOpid(scannedValue);
-
             if (matchingDevice) {
               console.log("Matching BLE device found:", matchingDevice);
               dispatch({
@@ -112,47 +106,20 @@ const ScanDataPage = () => {
 
   // Find a BLE device that matches the scanned barcode/QR code by checking the realVal of the DTA_SERVICE_NAME
   const findMatchingDeviceByOpid = (scannedBarcode) => {
-    const detectedDevices = state.detectedDevices;
-    console.log("BLE devices detected:", detectedDevices);
-
-    if (!detectedDevices || detectedDevices.length === 0) {
-      return null;
-    }
-    // Log scanned barcode for reference
-    console.log("Scanned Barcode for Matching:", scannedBarcode);
-
-    // Iterate through the detected devices to find the DTA_SERVICE_NAME with a matching realVal
+    const detectedDevices = state.initBleDataResponse?.dataList;
+    if (!detectedDevices) return null;
+    console.log("device detected here:", detectedDevices);
+    
     return detectedDevices.find((device) => {
-      // Find the DTA_SERVICE_NAME in the device services
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
-
-      if (!dtaService) {
-        console.warn("DTA_SERVICE_NAME not found in device:", device.name);
-        return false;
-      }
-
-      // Log the found DTA service for debugging
-      console.log("DTA Service Found:", dtaService);
-
-      // Iterate over the characterMap in the DTA service to find the matching realVal
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
-
-        // Log each characteristic's realVal for debugging purposes
-        console.log(
-          "Checking characteristic realVal:",
-          characteristic?.realVal
-        );
-
-        // Normalize realVal and compare with the scanned barcode
         const normalizedRealVal = characteristic?.realVal
           ?.toString()
           .trim()
           .toLowerCase();
-
-        // Check if the normalized realVal matches the normalized scanned barcode
         return normalizedRealVal === scannedBarcode;
       });
     });
