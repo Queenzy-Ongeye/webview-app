@@ -80,7 +80,7 @@ const ScanDataPage = () => {
       window.WebViewJavascriptBridge.registerHandler(
         "scanQrcodeResultCallBack", // Handler name
         (data) => {
-          const { respData } = data;
+          const { respData } = JSON.parse(data);
           const scannedValue = respData?.value;
 
           if (respData?.requestCode === 999) {
