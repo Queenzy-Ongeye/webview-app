@@ -46,7 +46,7 @@ const ScanDataPage = () => {
             try {
               const parsedData = JSON.parse(responseData);
               if (
-                parsedData.respCode === "200" &&
+                parsedData.respCode === 200 &&
                 parsedData.respData === true
               ) {
                 console.log("QR/Barcode scan initiated successfully.");
