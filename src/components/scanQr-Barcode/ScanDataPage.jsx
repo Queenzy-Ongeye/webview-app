@@ -11,24 +11,17 @@ const ScanDataPage = () => {
   // Function to start BLE scanning and store detected devices in the state
   const scanBleDevices = () => {
     if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "startBleScan",
-        null,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData && parsedData.devices) {
-              // Store BLE devices with their metadata in state
-              dispatch({
-                type: "SET_DETECTED_DEVICES",
-                payload: parsedData.devices,
-              });
-            }
-          } catch (error) {
-            console.error("Error parsing BLE scan data:", error.message);
+      window.WebViewJavascriptBridge.callHandler("startBleScan", null, (responseData) => {
+        try {
+          const parsedData = JSON.parse(responseData);
+          if (parsedData && parsedData.devices) {
+            // Store BLE devices in state with their metadata
+            dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData.devices });
           }
+        } catch (error) {
+          console.error("Error parsing BLE scan data:", error.message);
         }
-      );
+      });
     } else {
       console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
     }
@@ -45,17 +38,11 @@ const ScanDataPage = () => {
           (responseData) => {
             try {
               const parsedData = JSON.parse(responseData);
-              if (
-                parsedData.respCode === "200" &&
-                parsedData.respData === true
-              ) {
+              if (parsedData.respCode === "200" && parsedData.respData === true) {
                 console.log("QR/Barcode scan initiated successfully.");
                 // Now wait for the callback to receive the scanned data
               } else {
-                console.error(
-                  "Failed to start QR/Barcode scan:",
-                  parsedData.respDesc
-                );
+                console.error("Failed to start QR/Barcode scan:", parsedData.respDesc);
               }
             } catch (error) {
               console.error("Error initiating QR/Barcode scan:", error.message);
@@ -64,10 +51,7 @@ const ScanDataPage = () => {
         );
         dispatch({ type: "SET_QR_SCANNING", payload: true });
       } catch (error) {
-        console.error(
-          "Error invoking WebViewJavascriptBridge for QR/Barcode scan:",
-          error.message
-        );
+        console.error("Error invoking WebViewJavascriptBridge for QR/Barcode scan:", error.message);
       }
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
@@ -85,7 +69,7 @@ const ScanDataPage = () => {
 
             // The result contains the respData with scanned value and requestCode
             const { respData } = data;
-
+            
             // Extract requestCode and value from respData
             const requestCode = respData?.requestCode; // Keep requestCode as a string
             const scannedValue = respData?.value;
@@ -97,42 +81,30 @@ const ScanDataPage = () => {
               // Store the scanned data in the state
               dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
 
-              // Handle the scanned data: Match it with the BLE device's opid from ATT service
+              // Handle the scanned data: Match it with any characteristic's realVal across services
               const matchingDevice = findMatchingDeviceByOpid(scannedValue);
 
               if (matchingDevice) {
                 console.log("Matching BLE device found:", matchingDevice);
-                dispatch({
-                  type: "SET_MATCHING_DEVICE",
-                  payload: matchingDevice,
-                });
+                dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+                // Additional logic to display or interact with the matched device
               } else {
-                console.warn(
-                  "No matching BLE device found for the scanned barcode/QR code."
-                );
+                console.warn("No matching BLE device found for the scanned barcode.");
               }
             } else {
-              console.error(
-                "Request code mismatch. Expected '999' but got:",
-                requestCode
-              );
+              console.error("Request code mismatch. Expected '999' but got:", requestCode);
             }
           }
         );
       } catch (error) {
-        console.error(
-          "Error registering WebViewJavascriptBridge handler:",
-          error.message
-        );
+        console.error("Error registering WebViewJavascriptBridge handler:", error.message);
       }
     } else {
-      console.error(
-        "WebViewJavascriptBridge is not initialized for callback registration."
-      );
+      console.error("WebViewJavascriptBridge is not initialized for callback registration.");
     }
-  }, []);
+  }, [state.detectedDevices]);
 
-  // Find a BLE device that matches the scanned barcode/QR code in the ATT service (opid)
+  // Find a BLE device that matches the scanned barcode/QR code by checking the realVal of all characteristics
   const findMatchingDeviceByOpid = (scannedBarcode) => {
     const detectedDevices = state.detectedDevices;
 
@@ -141,13 +113,17 @@ const ScanDataPage = () => {
       return null;
     }
 
-    // Match BLE device based on the opid stored in the ATT service
+    // Iterate through the detected devices to find any characteristic with a matching realVal
     return detectedDevices.find((device) => {
-      // Assuming the opid is stored as part of the att service under ATT service enum
-      const attService = device.services.find(
-        (service) => service.type === "ATT_SERVICE_ENUM"
-      );
-      return attService?.opid === scannedBarcode; // Match the opid with the scanned barcode
+      // Iterate over each service of the device
+      return device.services.some((service) => {
+        // Iterate over the characterMap in the service
+        return Object.keys(service.characterMap).some((charUuid) => {
+          const characteristic = service.characterMap[charUuid];
+          // Check if the realVal matches the scanned barcode
+          return characteristic?.realVal === scannedBarcode;
+        });
+      });
     });
   };
 
