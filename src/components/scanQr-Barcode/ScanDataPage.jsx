@@ -75,7 +75,7 @@ const ScanDataPage = () => {
             const scannedValue = respData?.value;
 
             // Check if the requestCode matches the string "999"
-            if (requestCode === "999") {
+            if (requestCode === 999) {
               console.log("Scanned Value:", scannedValue);
 
               // Store the scanned data in the state
