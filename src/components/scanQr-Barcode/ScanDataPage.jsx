@@ -36,7 +36,7 @@ const ScanDataPage = () => {
 
   // Start QR code or barcode scanning (with requestCode)
   const startQrCodeScan = () => {
-    const requestCode = "999"; // Use requestCode as a string
+    const requestCode = 999; // Use requestCode as a string
     if (window.WebViewJavascriptBridge) {
       try {
         window.WebViewJavascriptBridge.callHandler(
