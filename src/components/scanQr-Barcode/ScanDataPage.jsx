@@ -2,11 +2,11 @@ import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { IoQrCodeOutline } from "react-icons/io5";
+import { toast } from "react-toastify";
 
 // Main component for handling BLE and QR code scanning
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
-  const navigate = useNavigate();
 
   // Function to start BLE scanning and store detected devices in the state
   const scanBleDevices = () => {
@@ -129,6 +129,17 @@ const ScanDataPage = () => {
   useEffect(() => {
     if (!state.detectedDevices || state.detectedDevices.length === 0) {
       console.warn("No BLE devices detected. Starting BLE scan...");
+      toast.error("No BLE devices detected. Starting BLE scan...", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
       scanBleDevices(); // Start scanning BLE devices
     }
   }, [state.detectedDevices]);

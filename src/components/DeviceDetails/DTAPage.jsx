@@ -86,48 +86,47 @@ const DTAPage = () => {
       {data && data.length > 0 ? (
         data.map((item, index) => (
           <div key={index} className="mb-6 p-6 bg-white shadow-lg rounded-lg">
-            {Object.keys(item.characterMap).map((uuid) => {
-              const characteristic = item.characterMap[uuid];
+            {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  {characteristic.desc}
+                  {item.characterMap[uuid].desc}
                 </h3>
 
                 <table className="w-full text-left mt-4 border border-gray-300 rounded-lg overflow-hidden">
                   <tbody>
                     <tr className="border-b bg-gray-50">
                       <td className="p-3 font-semibold text-gray-600">Name</td>
-                      <td className="p-3">{characteristic.name}</td>
+                      <td className="p-3">{item.characterMap[uuid].name}</td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-3 font-semibold text-gray-600">
                         Service UUID
                       </td>
-                      <td className="p-3">{characteristic.serviceUuid}</td>
+                      <td className="p-3">{item.characterMap[uuid].serviceUuid}</td>
                     </tr>
                     <tr className="border-b bg-gray-50">
                       <td className="p-3 font-semibold text-gray-600">
                         Properties
                       </td>
-                      <td className="p-3">{characteristic.properties}</td>
+                      <td className="p-3">{item.characterMap[uuid].properties}</td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-3 font-semibold text-gray-600">
                         Enable Indicate
                       </td>
-                      <td className="p-3">{characteristic.enableIndicate}</td>
+                      <td className="p-3">{item.characterMap[uuid].enableIndicate}</td>
                     </tr>
                     <tr className="border-b bg-gray-50">
                       <td className="p-3 font-semibold text-gray-600">
                         Real Value
                       </td>
                       <td className="p-3">
-                        {characteristic.name === "opid" ? (
+                        {item.characterMap[uuid].name === "opid" ? (
                           <span className="text-gray-600 font-bold p-3">
-                            OPID: {characteristic.realVal}
+                            OPID: {item.characterMap[uuid].realVal}
                           </span>
                         ) : (
-                          characteristic.realVal
+                          item.characterMap[uuid].realVal
                         )}
                       </td>
                     </tr>
@@ -135,38 +134,38 @@ const DTAPage = () => {
                       <td className="p-3 font-semibold text-gray-600">
                         Enable Notify
                       </td>
-                      <td className="p-3">{characteristic.enableNotify}</td>
+                      <td className="p-3">{item.characterMap[uuid].enableNotify}</td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-3 font-semibold text-gray-600">
                         Enable Read
                       </td>
-                      <td className="p-3">{characteristic.enableRead}</td>
+                      <td className="p-3">{item.characterMap[uuid].enableRead}</td>
                     </tr>
                     <tr className="border-b bg-gray-50">
                       <td className="p-3 font-semibold text-gray-600">
                         Enable Write
                       </td>
-                      <td className="p-3">{characteristic.enableWrite}</td>
+                      <td className="p-3">{item.characterMap[uuid].enableWrite}</td>
                     </tr>
                     <tr className="border-b">
                       <td className="p-3 font-semibold text-gray-600">
                         Enable Write No Response
                       </td>
                       <td className="p-3">
-                        {characteristic.enableWriteNoResp}
+                        {item.characterMap[uuid].enableWriteNoResp}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
                       <td className="p-3 font-semibold text-gray-600">
                         Real Value
                       </td>
-                      <td className="p-3">{characteristic.realVal}</td>
+                      <td className="p-3">{item.characterMap[uuid].realVal}</td>
                     </tr>
                   </tbody>
                 </table>
-              </div>;
-            })}
+              </div>
+            ))}
           </div>
         ))
       ) : (
