@@ -85,16 +85,16 @@ const ScanDataPage = () => {
   }, [state.detectedDevices]);
 
   return (
-    <div className="scan-data-page flex flex-col items-center justify-center h-screen">
-      <div className="mt-14">
-        <h2 className="text-2xl font-bold text-center">Scanned Data</h2>
+    <div className="scan-data-page flex flex-col h-screen">
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
-          <p className="text-center mt-2">{state.scannedData}</p>
+          <p className="text-left mt-2">{state.scannedData}</p>
         )}
 
         {/* Display matched BLE device information */}
         {state.matchingDevice ? (
-          <div className="mt-6 text-center">
+          <div className="mt-2 text-left">
             <h3 className="text-lg font-semibold">Matching BLE Device:</h3>
             <p className="text-gray-700">Name: {state.matchingDevice.name}</p>
             <p className="text-gray-700">
@@ -102,17 +102,17 @@ const ScanDataPage = () => {
             </p>
           </div>
         ) : (
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-left">
             <p className="text-gray-500">No matching BLE device found.</p>
           </div>
         )}
 
         {/* Display BLE connection status */}
         <div className="mt-6">
-          <h3 className="text-lg font-semibold text-center">
+          <h3 className="text-lg font-semibold text-left">
             BLE Connection Status:
           </h3>
-          <p className="text-center text-gray-700">
+          <p className="text-left text-gray-700">
             {state.bleConnectionStatus || "Not connected"}
           </p>
         </div>
@@ -137,7 +137,7 @@ const ScanDataPage = () => {
               <p className="text-lg text-gray-600">No BLE devices found.</p>
               <button
                 onClick={scanBleDevices}
-                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center"
+                className="mt-4 px-6 py-2 bg-oves-blue text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center"
               >
                 <FiRefreshCw className="mr-2" />
                 Retry Scan
@@ -150,7 +150,7 @@ const ScanDataPage = () => {
       {/* Floating Button to Initiate QR Code Scan */}
       <button
         onClick={startQrCodeScan}
-        className="fixed bottom-20 right-5 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
+        className="fixed bottom-20 right-3 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
       >
         <IoQrCodeOutline className="text-2xl text-white" />
       </button>
