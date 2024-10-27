@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { IoQrCodeOutline } from "react-icons/io5";
-import { toast } from "react-toastify";
+import { toast, Bounce } from "react-toastify";
 
 // Main component for handling BLE and QR code scanning
 const ScanDataPage = () => {
