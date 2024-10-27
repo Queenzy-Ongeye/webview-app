@@ -1,15 +1,18 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
-import { useNavigate } from "react-router-dom";
 import { IoQrCodeOutline } from "react-icons/io5";
-import { toast, Bounce } from "react-toastify";
+import { FiRefreshCw } from "react-icons/fi"; // Refresh icon for retry
+import Lottie from "lottie-react"; // Lottie for animations (assuming you have installed lottie-react)
+import loadingAnimation from "../../assets/loading.json"; // Import a Lottie animation file
 
 // Main component for handling BLE and QR code scanning
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
+  const [isScanning, setIsScanning] = useState(false);
 
   // Function to start BLE scanning and store detected devices in the state
   const scanBleDevices = () => {
+    setIsScanning(true);
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "startBleScan",
@@ -26,28 +29,30 @@ const ScanDataPage = () => {
             }
           } catch (error) {
             console.error("Error parsing BLE scan data:", error.message);
+          } finally {
+            setIsScanning(false); // Stop scanning indicator
           }
         }
       );
     } else {
       console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
+      setIsScanning(false);
     }
   };
 
   // Start QR code or barcode scanning (with requestCode)
   const startQrCodeScan = () => {
-    const requestCode = 999; // Use requestCode as a string
+    const requestCode = 999;
     if (window.WebViewJavascriptBridge) {
       try {
         window.WebViewJavascriptBridge.callHandler(
           "startQrCodeScan",
-          requestCode, // Pass the requestCode as a string
+          requestCode,
           (responseData) => {
             try {
               const parsedData = JSON.parse(responseData);
               if (parsedData.respCode === 200 && parsedData.respData === true) {
                 console.log("QR/Barcode scan initiated successfully.");
-                // Now wait for the callback to receive the scanned data
               } else {
                 console.error(
                   "Failed to start QR/Barcode scan:",
@@ -71,102 +76,76 @@ const ScanDataPage = () => {
     }
   };
 
-  // Register the scanQrcodeResultCallBack for handling scanned data
-  useEffect(() => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.registerHandler(
-        "scanQrcodeResultCallBack", // Handler name
-        (data) => {
-          const { respData } = JSON.parse(data);
-          const scannedValue = respData?.value;
-
-          if (respData?.requestCode === 999) {
-            console.log("Scanned Value:", scannedValue);
-            // Store the scanned data in the state
-            dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-            // Handle the scanned data: Match it with the realVal in DTA_SERVICE_NAME
-            const matchingDevice = findMatchingDeviceByOpid(scannedValue);
-            if (matchingDevice) {
-              console.log("Matching BLE device found:", matchingDevice);
-              dispatch({
-                type: "SET_MATCHING_DEVICE",
-                payload: matchingDevice,
-              });
-              // Additional logic to display or interact with the matched device
-            } else {
-              console.warn(
-                "No matching BLE device found for the scanned barcode."
-              );
-            }
-          }
-        }
-      );
-    }
-  }, [state.detectedDevices]);
-
-  // Find a BLE device that matches the scanned barcode/QR code by checking the realVal of the DTA_SERVICE_NAME
-  const findMatchingDeviceByOpid = (scannedBarcode) => {
-    const detectedDevices = state.initBleDataResponse?.dataList;
-    if (!detectedDevices) return null;
-    console.log("device detected here:", detectedDevices);
-    
-    return detectedDevices.find((device) => {
-      const dtaService = device.services.find(
-        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
-      );
-      return Object.keys(dtaService.characterMap).some((charUuid) => {
-        const characteristic = dtaService.characterMap[charUuid];
-        const normalizedRealVal = characteristic?.realVal
-          ?.toString()
-          .trim()
-          .toLowerCase();
-        return normalizedRealVal === scannedBarcode;
-      });
-    });
-  };
-
   // UseEffect hook to start BLE scanning when the component is mounted
   useEffect(() => {
     if (!state.detectedDevices || state.detectedDevices.length === 0) {
       console.warn("No BLE devices detected. Starting BLE scan...");
-      toast.error("No BLE devices detected. Starting BLE scan...", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce,
-      });
       scanBleDevices(); // Start scanning BLE devices
     }
   }, [state.detectedDevices]);
 
   return (
-    <div className="scan-data-page">
+    <div className="scan-data-page flex flex-col items-center justify-center h-screen">
       <div className="mt-14">
-        <h2>Scanned Data</h2>
-        {state.scannedData && <p>Scanned Data: {state.scannedData}</p>}
+        <h2 className="text-2xl font-bold text-center">Scanned Data</h2>
+        {state.scannedData && (
+          <p className="text-center mt-2">{state.scannedData}</p>
+        )}
 
         {/* Display matched BLE device information */}
         {state.matchingDevice ? (
-          <div>
-            <h3>Matching BLE Device:</h3>
-            <p>Name: {state.matchingDevice.name}</p>
-            <p>MAC Address: {state.matchingDevice.macAddress}</p>
-            {/* Add more device details as necessary */}
+          <div className="mt-6 text-center">
+            <h3 className="text-lg font-semibold">Matching BLE Device:</h3>
+            <p className="text-gray-700">Name: {state.matchingDevice.name}</p>
+            <p className="text-gray-700">
+              MAC Address: {state.matchingDevice.macAddress}
+            </p>
           </div>
         ) : (
-          <p>No matching BLE device found.</p>
+          <div className="mt-6 text-center">
+            <p className="text-gray-500">No matching BLE device found.</p>
+          </div>
         )}
 
         {/* Display BLE connection status */}
-        <div>
-          <h3>BLE Connection Status: {state.bleConnectionStatus}</h3>
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold text-center">
+            BLE Connection Status:
+          </h3>
+          <p className="text-center text-gray-700">
+            {state.bleConnectionStatus || "Not connected"}
+          </p>
         </div>
       </div>
+
+      {/* Show a loading animation and retry button if no devices detected */}
+      {(!state.detectedDevices || state.detectedDevices.length === 0) && (
+        <div className="mt-10 text-center">
+          {isScanning ? (
+            <>
+              <Lottie
+                animationData={loadingAnimation}
+                loop={true}
+                className="w-32 h-32 mx-auto"
+              />
+              <p className="text-lg text-gray-600 mt-4">
+                Scanning for BLE devices...
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg text-gray-600">No BLE devices found.</p>
+              <button
+                onClick={scanBleDevices}
+                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center"
+              >
+                <FiRefreshCw className="mr-2" />
+                Retry Scan
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Floating Button to Initiate QR Code Scan */}
       <button
