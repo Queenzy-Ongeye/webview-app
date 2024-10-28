@@ -6,70 +6,79 @@ import Lottie from "lottie-react";
 import loadingAnimation from "../../assets/loading.json";
 import stringSimilarity from "string-similarity";
 
-
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
   const [isScanning, setIsScanning] = useState(false);
 
+  // Partial matching: checks if the first few characters are similar
+  const partialMatch = (val1, val2) => {
+    // Check if the first 4 characters match
+    return val1.slice(0, 4) === val2.slice(0, 4);
+  };
+
+  // Fuzzy matching with a similarity threshold
+  const fuzzyMatch = (val1, val2, threshold = 0.6) => {
+    const similarity = stringSimilarity.compareTwoStrings(val1, val2);
+    return similarity >= threshold;
+  };
+
+  // Function to find a BLE device that matches the scanned barcode/QR code
   const findMatchingDeviceByOpid = (scannedData) => {
     const detectedDevices = state.initBleDataResponse?.dataList;
     if (!detectedDevices) return null;
-  
+
     // Step 1: Try exact matching
     let matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
       if (!dtaService) return false;
-  
+
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString().trim();
+        const realVal = characteristic?.realVal?.toString();
         return realVal === scannedData;
       });
     });
-  
+
     if (matchingDevice) {
       return matchingDevice; // Exact match found
     }
-  
-    // Step 2: Try partial matching (first 4 characters)
+
+    // Step 2: Try partial matching
     matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
       if (!dtaService) return false;
-  
+
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString().trim();
-        return realVal?.substring(0, 4) === scannedData.substring(0, 4);
+        const realVal = characteristic?.realVal?.toString();
+        return partialMatch(realVal, scannedData);
       });
     });
-  
+
     if (matchingDevice) {
       return matchingDevice; // Partial match found
     }
 
-    // Step 3: Fuzzy matching using string-similarity
+    // Step 3: Use fuzzy matching as a last resort
     matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
       if (!dtaService) return false;
-  
+
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString().trim();
-        // Use a similarity threshold, e.g., 0.7 (70%)
-        const similarity = stringSimilarity.compareTwoStrings(realVal, scannedData);
-        return similarity >= 0.7;
+        const realVal = characteristic?.realVal?.toString();
+        return fuzzyMatch(realVal, scannedData);
       });
     });
-  
+
     return matchingDevice || null; // Return the matching device or null if none found
   };
-  
 
   const handleScanData = (scannedValue) => {
     console.log("Scanned Value:", scannedValue);
