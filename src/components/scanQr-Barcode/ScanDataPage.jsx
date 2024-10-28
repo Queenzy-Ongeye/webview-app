@@ -11,9 +11,8 @@ const ScanDataPage = () => {
   const [isScanning, setIsScanning] = useState(false);
 
   // Partial matching: checks if the first few characters are similar
-  const partialMatch = (val1, val2) => {
-    // Check if the first 4 characters match
-    return val1.slice(0, 4) === val2.slice(0, 4);
+  const partialMatch = (val1, val2, length = 4) => {
+    return val1.slice(0, length) === val2.slice(0, length);
   };
 
   // Fuzzy matching with a similarity threshold
