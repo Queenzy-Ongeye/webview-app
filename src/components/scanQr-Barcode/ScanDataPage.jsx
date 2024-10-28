@@ -16,8 +16,9 @@ const ScanDataPage = () => {
   };
 
   // Fuzzy matching with a similarity threshold
-  const fuzzyMatch = (val1, val2, threshold = 0.6) => {
+  const fuzzyMatch = (val1, val2, threshold = 0.5) => {
     const similarity = stringSimilarity.compareTwoStrings(val1, val2);
+    console.log("Fuzzy match similarity:", similarity);
     return similarity >= threshold;
   };
 
