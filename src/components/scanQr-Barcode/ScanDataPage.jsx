@@ -28,7 +28,8 @@ const ScanDataPage = () => {
     if (!detectedDevices) return null;
 
     // Step 1: Try exact matching
-    let matchingDevice = detectedDevices.find((device) => {
+    console.log("Attempting exact match...");
+    matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
@@ -37,15 +38,13 @@ const ScanDataPage = () => {
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
         const realVal = characteristic?.realVal?.toString();
+        console.log("Comparing exact match:", { realVal, scannedData });
         return realVal === scannedData;
       });
     });
 
-    if (matchingDevice) {
-      return matchingDevice; // Exact match found
-    }
-
     // Step 2: Try partial matching
+    console.log("Attempting partial match...");
     matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
@@ -55,15 +54,13 @@ const ScanDataPage = () => {
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
         const realVal = characteristic?.realVal?.toString();
+        console.log("Comparing partial match:", { realVal, scannedData });
         return partialMatch(realVal, scannedData);
       });
     });
 
-    if (matchingDevice) {
-      return matchingDevice; // Partial match found
-    }
-
     // Step 3: Use fuzzy matching as a last resort
+    console.log("Attempting fuzzy match...");
     matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
@@ -73,6 +70,7 @@ const ScanDataPage = () => {
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
         const realVal = characteristic?.realVal?.toString();
+        console.log("Comparing fuzzy match:", { realVal, scannedData });
         return fuzzyMatch(realVal, scannedData);
       });
     });
