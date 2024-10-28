@@ -12,20 +12,29 @@ const ScanDataPage = () => {
   const findMatchingDeviceByOpid = (scannedData) => {
     const detectedDevices = state.initBleDataResponse?.dataList;
     if (!detectedDevices) return null;
-
+  
     return detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
       if (!dtaService) return false;
-
+  
+      // Iterate over the characterMap to find if the scanned data loosely matches any realVal
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString().trim();
-        return realVal === scannedData;
+        const realVal = characteristic?.realVal?.toString().trim().toLowerCase();
+        const normalizedScannedData = scannedData.trim().toLowerCase();
+  
+        // Check for partial match or if one contains the other
+        return (
+          realVal === normalizedScannedData ||
+          realVal.includes(normalizedScannedData) ||
+          normalizedScannedData.includes(realVal)
+        );
       });
     });
   };
+  
 
   const handleScanData = (scannedValue) => {
     console.log("Scanned Value:", scannedValue);
