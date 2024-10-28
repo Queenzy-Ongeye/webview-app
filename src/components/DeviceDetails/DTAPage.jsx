@@ -118,16 +118,10 @@ const DTAPage = () => {
                     </tr>
                     <tr className="border-b bg-gray-50">
                       <td className="p-3 font-semibold text-gray-600">
-                        Real Value
+                       OPID : Real Value
                       </td>
                       <td className="p-3">
-                        {item.characterMap[uuid].name === "opid" ? (
-                          <span className="text-gray-600 font-bold p-3">
-                            OPID: {item.characterMap[uuid].realVal}
-                          </span>
-                        ) : (
-                          item.characterMap[uuid].realVal
-                        )}
+                        {item.characterMap[uuid].opid.realVal}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
