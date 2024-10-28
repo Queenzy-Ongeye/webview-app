@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast, Bounce, ToastContainer } from "react-toastify"; // Added Bounce for transition
-import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Import a loading icon
+import { toast, Bounce, ToastContainer } from "react-toastify";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 const DTAPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  const [loading, setLoading] = useState(false); // Loading state;
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Function for publishing to MQTT
@@ -29,20 +29,17 @@ const DTAPage = () => {
 
       const publishData = {
         topic: topic,
-        qos: 0, // Quality of Service level
-        content: JSON.stringify(data), // Publish BLE data as content
+        qos: 0,
+        content: JSON.stringify(data),
       };
 
-      // Start loading before publishing
       setLoading(true);
 
       window.WebViewJavascriptBridge.callHandler(
         "mqttPublishMsg",
         publishData,
         (responseData) => {
-          // Stop loading once the publishing is successful
           setLoading(false);
-
           toast.success("Message published successfully", {
             position: "top-right",
             autoClose: 5000,
@@ -78,7 +75,7 @@ const DTAPage = () => {
       </h2>
       {/* Back Button */}
       <button
-        onClick={() => navigate(-1)} // Go back to the previous page
+        onClick={() => navigate(-1)}
         className="mb-4 py-2 px-4 bg-cyan-800 text-white font-semibold rounded-lg shadow-md transition duration-300"
       >
         Back
@@ -94,68 +91,22 @@ const DTAPage = () => {
 
                 <table className="w-full text-left mt-4 border border-gray-300 rounded-lg overflow-hidden">
                   <tbody>
-                    <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">Name</td>
-                      <td className="p-3">{item.characterMap[uuid].name}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Service UUID
-                      </td>
-                      <td className="p-3">{item.characterMap[uuid].serviceUuid}</td>
-                    </tr>
-                    <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Properties
-                      </td>
-                      <td className="p-3">{item.characterMap[uuid].properties}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Enable Indicate
-                      </td>
-                      <td className="p-3">{item.characterMap[uuid].enableIndicate}</td>
-                    </tr>
-                    <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
-                       OPID : Real Value
-                      </td>
-                      <td className="p-3">
-                        {item.characterMap[uuid].opid}
-                      </td>
-                    </tr>
-                    <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Enable Notify
-                      </td>
-                      <td className="p-3">{item.characterMap[uuid].enableNotify}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Enable Read
-                      </td>
-                      <td className="p-3">{item.characterMap[uuid].enableRead}</td>
-                    </tr>
-                    <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Enable Write
-                      </td>
-                      <td className="p-3">{item.characterMap[uuid].enableWrite}</td>
-                    </tr>
-                    <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Enable Write No Response
-                      </td>
-                      <td className="p-3">
-                        {item.characterMap[uuid].enableWriteNoResp}
-                      </td>
-                    </tr>
-                    <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
-                        Real Value
-                      </td>
-                      <td className="p-3">{item.characterMap[uuid].realVal}</td>
-                    </tr>
+                    {Object.entries(item.characterMap[uuid]).map(
+                      ([key, value]) => (
+                        <tr key={key} className="border-b">
+                          <td className="p-3 font-semibold text-gray-600 capitalize">
+                            {key}
+                          </td>
+                          <td className="p-3">
+                            {typeof value === "boolean"
+                              ? value
+                                ? "Yes"
+                                : "No"
+                              : value}
+                          </td>
+                        </tr>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -175,7 +126,7 @@ const DTAPage = () => {
               : "bg-blue-600 hover:bg-blue-700"
           } text-white focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50`}
           onClick={() => publishMqttMessage("emit/content/bleData/DTA")}
-          disabled={loading} // Disable button when loading
+          disabled={loading}
         >
           {loading ? (
             <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
@@ -188,4 +139,5 @@ const DTAPage = () => {
     </div>
   );
 };
+
 export default DTAPage;
