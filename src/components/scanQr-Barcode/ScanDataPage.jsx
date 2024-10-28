@@ -25,8 +25,13 @@ const ScanDataPage = () => {
   // Function to find a BLE device that matches the scanned barcode/QR code
   const findMatchingDeviceByOpid = (scannedData) => {
     const detectedDevices = state.initBleDataResponse?.dataList;
-    if (!detectedDevices) return null;
+    if (!detectedDevices) {
+      console.warn("No devices detected.");
+      return null;
+    }
 
+    console.log("Detected Devices:", detectedDevices);
+    console.log("Scanned Data:", scannedData);
 
     // Step 1: Try exact matching
     console.log("Attempting exact match...");
@@ -39,10 +44,15 @@ const ScanDataPage = () => {
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
         const realVal = characteristic?.realVal?.toString();
-        console.log("Comparing exact match:", { realVal, scannedData });
+        console.log("Checking exact match with realVal:", realVal);
         return realVal === scannedData;
       });
     });
+
+    if (matchingDevice) {
+      console.log("Exact match found:", matchingDevice);
+      return matchingDevice;
+    }
 
     // Step 2: Try partial matching
     console.log("Attempting partial match...");
@@ -55,10 +65,15 @@ const ScanDataPage = () => {
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
         const realVal = characteristic?.realVal?.toString();
-        console.log("Comparing partial match:", { realVal, scannedData });
+        console.log("Checking partial match with realVal:", realVal);
         return partialMatch(realVal, scannedData);
       });
     });
+
+    if (matchingDevice) {
+      console.log("Partial match found:", matchingDevice);
+      return matchingDevice;
+    }
 
     // Step 3: Use fuzzy matching as a last resort
     console.log("Attempting fuzzy match...");
@@ -71,12 +86,32 @@ const ScanDataPage = () => {
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
         const realVal = characteristic?.realVal?.toString();
-        console.log("Comparing fuzzy match:", { realVal, scannedData });
+        console.log("Checking fuzzy match with realVal:", realVal);
         return fuzzyMatch(realVal, scannedData);
       });
     });
 
-    return matchingDevice || null; // Return the matching device or null if none found
+    if (matchingDevice) {
+      console.log("Fuzzy match found:", matchingDevice);
+      return matchingDevice;
+    }
+
+    // If no match is found, log each device's relevant information
+    console.warn("No matching BLE device found for the scanned data.");
+    detectedDevices.forEach((device) => {
+      const dtaService = device.services.find(
+        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
+      );
+      if (dtaService) {
+        Object.keys(dtaService.characterMap).forEach((charUuid) => {
+          const characteristic = dtaService.characterMap[charUuid];
+          const realVal = characteristic?.realVal?.toString();
+          console.log("Available realVal for comparison:", realVal);
+        });
+      }
+    });
+
+    return null; // No matching device found
   };
 
   const handleScanData = (scannedValue) => {
