@@ -98,11 +98,9 @@ const DTAPage = () => {
                             {key}
                           </td>
                           <td className="p-3">
-                            {typeof value === "boolean"
-                              ? value
-                                ? "Yes"
-                                : "No"
-                              : value}
+                            {typeof value === "object"
+                              ? JSON.stringify(value)
+                              : value.toString()}
                           </td>
                         </tr>
                       )
