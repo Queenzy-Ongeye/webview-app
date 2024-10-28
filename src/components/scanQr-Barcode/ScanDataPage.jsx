@@ -4,6 +4,8 @@ import { IoQrCodeOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
 import Lottie from "lottie-react";
 import loadingAnimation from "../../assets/loading.json";
+import stringSimilarity from "string-similarity";
+
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -13,26 +15,59 @@ const ScanDataPage = () => {
     const detectedDevices = state.initBleDataResponse?.dataList;
     if (!detectedDevices) return null;
   
-    return detectedDevices.find((device) => {
+    // Step 1: Try exact matching
+    let matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
       if (!dtaService) return false;
   
-      // Iterate over the characterMap to find if the scanned data loosely matches any realVal
       return Object.keys(dtaService.characterMap).some((charUuid) => {
         const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString().trim().toLowerCase();
-        const normalizedScannedData = scannedData.trim().toLowerCase();
-  
-        // Check for partial match or if one contains the other
-        return (
-          realVal === normalizedScannedData ||
-          realVal.includes(normalizedScannedData) ||
-          normalizedScannedData.includes(realVal)
-        );
+        const realVal = characteristic?.realVal?.toString().trim();
+        return realVal === scannedData;
       });
     });
+  
+    if (matchingDevice) {
+      return matchingDevice; // Exact match found
+    }
+  
+    // Step 2: Try partial matching (first 4 characters)
+    matchingDevice = detectedDevices.find((device) => {
+      const dtaService = device.services.find(
+        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
+      );
+      if (!dtaService) return false;
+  
+      return Object.keys(dtaService.characterMap).some((charUuid) => {
+        const characteristic = dtaService.characterMap[charUuid];
+        const realVal = characteristic?.realVal?.toString().trim();
+        return realVal?.substring(0, 4) === scannedData.substring(0, 4);
+      });
+    });
+  
+    if (matchingDevice) {
+      return matchingDevice; // Partial match found
+    }
+
+    // Step 3: Fuzzy matching using string-similarity
+    matchingDevice = detectedDevices.find((device) => {
+      const dtaService = device.services.find(
+        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
+      );
+      if (!dtaService) return false;
+  
+      return Object.keys(dtaService.characterMap).some((charUuid) => {
+        const characteristic = dtaService.characterMap[charUuid];
+        const realVal = characteristic?.realVal?.toString().trim();
+        // Use a similarity threshold, e.g., 0.7 (70%)
+        const similarity = stringSimilarity.compareTwoStrings(realVal, scannedData);
+        return similarity >= 0.7;
+      });
+    });
+  
+    return matchingDevice || null; // Return the matching device or null if none found
   };
   
 
