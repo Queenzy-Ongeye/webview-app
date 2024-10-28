@@ -130,6 +130,9 @@ const BleButtons = ({
                   <p className="text-sm text-gray-500 text-left">
                     MAC Address: {device.macAddress}
                   </p>
+                  <p className="text-sm text-gray-500 text-left">
+                    Signal Strength: {device.rssi}
+                  </p>
                 </div>
                 <div className="flex justify-between w-full mt-4 space-x-2">
                   <button
