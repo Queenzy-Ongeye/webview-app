@@ -121,7 +121,7 @@ const DTAPage = () => {
                        OPID : Real Value
                       </td>
                       <td className="p-3">
-                        {item.characterMap[uuid].opid.realVal}
+                        {item.characterMap[uuid].opid}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
