@@ -27,9 +27,10 @@ const ScanDataPage = () => {
     const detectedDevices = state.initBleDataResponse?.dataList;
     if (!detectedDevices) return null;
 
+
     // Step 1: Try exact matching
     console.log("Attempting exact match...");
-    matchingDevice = detectedDevices.find((device) => {
+    let matchingDevice = detectedDevices.find((device) => {
       const dtaService = device.services.find(
         (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
       );
