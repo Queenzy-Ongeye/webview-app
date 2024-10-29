@@ -9,7 +9,6 @@ const DTAPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Function for publishing to MQTT
   const publishMqttMessage = (topic) => {
     if (window.WebViewJavascriptBridge) {
       if (!data || data.length === 0) {
@@ -73,7 +72,6 @@ const DTAPage = () => {
       <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">
         DTA Data
       </h2>
-      {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
         className="mb-4 py-2 px-4 bg-cyan-800 text-white font-semibold rounded-lg shadow-md transition duration-300"
@@ -82,23 +80,30 @@ const DTAPage = () => {
       </button>
       {data && data.length > 0 ? (
         data.map((item, index) => (
-          <div key={index} className="mb-6 p-4 bg-white shadow-md rounded-lg">
+          <div key={index} className="mb-6 p-6 bg-white shadow-lg rounded-lg">
             {Object.keys(item.characterMap).map((uuid) => (
               <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
-                <div className="flex justify-between">
-                  <div className="text-sm font-bold uppercase text-gray-500">
-                    {item.characterMap[uuid].name || "N/A"}
-                  </div>
-                  <div className="text-blue-500 cursor-pointer text-sm">
-                    READ
-                  </div>
-                </div>
-                <div className="mt-1 text-lg font-semibold text-gray-800">
-                  VALUE: {item.characterMap[uuid].realVal || "N/A"}
-                </div>
-                <div className="mt-1 text-sm text-gray-500">
-                  {item.characterMap[uuid].desc || "No description available"}
-                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  {item.characterMap[uuid].desc || "No Description Available"}
+                </h3>
+                <table className="w-full text-left mt-4 border border-gray-300 rounded-lg overflow-hidden">
+                  <tbody>
+                    {Object.entries(item.characterMap[uuid]).map(
+                      ([key, value]) => (
+                        <tr key={key} className="border-b">
+                          <td className="p-3 font-semibold text-gray-600 capitalize">
+                            {key}
+                          </td>
+                          <td className="p-3">
+                            {typeof value === "object"
+                              ? JSON.stringify(value)
+                              : value?.toString() || "N/A"}
+                          </td>
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
               </div>
             ))}
           </div>
