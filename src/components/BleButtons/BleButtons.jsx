@@ -30,7 +30,10 @@ const BleButtons = ({
     uniqueDevicesMap.set(device.macAddress, device);
   });
 
-  const uniqueDevice = Array.from(uniqueDevicesMap.values());
+  // Convert the Map to an array and sort by signal strength (RSSI)
+  const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
+    (a, b) => b.rssi - a.rssi
+  );
 
   const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
@@ -208,8 +211,11 @@ const BleButtons = ({
                           navigateToPage("/sts", "STS_SERVICE_NAME")
                         }
                         className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "STS_SERVICE_NAME" ? "bg-gray-200 text-blue-500" : ""
-                        }`}                      >
+                          activeTab === "STS_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
                         STS
                       </button>
                       <button
@@ -217,8 +223,11 @@ const BleButtons = ({
                           navigateToPage("/dta", "DTA_SERVICE_NAME")
                         }
                         className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "DTA_SERVICE_NAME" ? "bg-gray-200 text-blue-500" : ""
-                        }`}                      >
+                          activeTab === "DTA_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
                         DTA
                       </button>
                       <button
@@ -226,8 +235,11 @@ const BleButtons = ({
                           navigateToPage("/dia", "DIA_SERVICE_NAME")
                         }
                         className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "DIA_SERVICE_NAME" ? "bg-gray-200 text-blue-500" : ""
-                        }`}                      >
+                          activeTab === "DIA_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
                         DIA
                       </button>
                       <button
