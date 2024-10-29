@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast, Bounce, ToastContainer } from "react-toastify";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { AiOutlineLoading3Quarters, AiOutlineArrowLeft,  } from "react-icons/ai";
+import { BsInfoCircle } from "react-icons/bs"; // Icon for info display
 
 const DTAPage = () => {
   const location = useLocation();
