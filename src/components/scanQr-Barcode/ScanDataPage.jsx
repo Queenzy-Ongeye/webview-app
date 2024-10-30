@@ -8,152 +8,95 @@ import stringSimilarity from "string-similarity";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
+  const [scannedBarcode, setScannedBarcode] = useState(null);
+  const [deviceQueue, setDeviceQueue] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
 
-  // Partial matching: checks if the first few characters are similar
-  const partialMatch = (val1, val2, length = 4) => {
-    return val1.slice(0, length) === val2.slice(0, length);
-  };
-
-  // Fuzzy matching with a similarity threshold
-  const fuzzyMatch = (val1, val2, threshold = 0.5) => {
-    const similarity = stringSimilarity.compareTwoStrings(val1, val2);
-    console.log("Fuzzy match similarity:", similarity);
-    return similarity >= threshold;
-  };
-
-  // Function to find a BLE device that matches the scanned barcode/QR code
-  const findMatchingDeviceByOpid = (scannedData) => {
-    const detectedDevices = state.initBleDataResponse?.dataList;
-    if (!detectedDevices) {
-      console.warn("No devices detected.");
-      return null;
-    }
-
-    console.log("Detected Devices:", detectedDevices);
-    console.log("Scanned Data:", scannedData);
-
-    // Step 1: Try exact matching
-    console.log("Attempting exact match...");
-    let matchingDevice = detectedDevices.find((device) => {
-      const dtaService = device.services.find(
-        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
-      );
-      if (!dtaService) return false;
-
-      return Object.keys(dtaService.characterMap).some((charUuid) => {
-        const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString();
-        console.log("Checking exact match with realVal:", realVal);
-        return realVal === scannedData;
-      });
-    });
-
-    if (matchingDevice) {
-      console.log("Exact match found:", matchingDevice);
-      return matchingDevice;
-    }
-
-    // Step 2: Try partial matching
-    console.log("Attempting partial match...");
-    matchingDevice = detectedDevices.find((device) => {
-      const dtaService = device.services.find(
-        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
-      );
-      if (!dtaService) return false;
-
-      return Object.keys(dtaService.characterMap).some((charUuid) => {
-        const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString();
-        console.log("Checking partial match with realVal:", realVal);
-        return partialMatch(realVal, scannedData);
-      });
-    });
-
-    if (matchingDevice) {
-      console.log("Partial match found:", matchingDevice);
-      return matchingDevice;
-    }
-
-    // Step 3: Use fuzzy matching as a last resort
-    console.log("Attempting fuzzy match...");
-    matchingDevice = detectedDevices.find((device) => {
-      const dtaService = device.services.find(
-        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
-      );
-      if (!dtaService) return false;
-
-      return Object.keys(dtaService.characterMap).some((charUuid) => {
-        const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString();
-        console.log("Checking fuzzy match with realVal:", realVal);
-        return fuzzyMatch(realVal, scannedData);
-      });
-    });
-
-    if (matchingDevice) {
-      console.log("Fuzzy match found:", matchingDevice);
-      return matchingDevice;
-    }
-
-    // If no match is found, log each device's relevant information
-    console.warn("No matching BLE device found for the scanned data.");
-    detectedDevices.forEach((device) => {
-      const dtaService = device.services.find(
-        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
-      );
-      if (dtaService) {
-        Object.keys(dtaService.characterMap).forEach((charUuid) => {
-          const characteristic = dtaService.characterMap[charUuid];
-          const realVal = characteristic?.realVal?.toString();
-          console.log("Available realVal for comparison:", realVal);
-        });
-      }
-    });
-
-    return null; // No matching device found
-  };
-
+  // Function to handle scanned data and start pairing process
   const handleScanData = (scannedValue) => {
     console.log("Scanned Value:", scannedValue);
+    setScannedBarcode(scannedValue);
+    initiateDeviceQueue(); // Initialize device queue
+  };
 
-    const matchingDevice = findMatchingDeviceByOpid(scannedValue);
-    if (matchingDevice) {
-      console.log("Matching BLE device found:", matchingDevice);
-      dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+  // Initiate the device queue based on the top 5 strongest signals
+  const initiateDeviceQueue = () => {
+    const detectedDevices = state.detectedDevices;
+    if (detectedDevices && detectedDevices.length > 0) {
+      const topDevices = detectedDevices.sort((a, b) => b.rssi - a.rssi).slice(0, 5);
+      setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
+      connectToNextDevice(); // Start the pairing process
     } else {
-      console.warn("No matching BLE device found for the scanned data.");
+      console.warn("No BLE devices detected.");
     }
   };
 
-  const scanBleDevices = () => {
-    setIsScanning(true);
+  // Attempt to connect to the next device in the queue
+  const connectToNextDevice = () => {
+    if (deviceQueue.length === 0) {
+      alert("No matching device found. Please scan again.");
+      return;
+    }
+
+    const nextDeviceMac = deviceQueue[0];
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
-        "startBleScan",
-        null,
+        "connBleByMacAddress",
+        nextDeviceMac,
         (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData && parsedData.devices) {
-              dispatch({
-                type: "ADD_DETECTED_DEVICE",
-                payload: parsedData.devices,
-              });
-            }
-          } catch (error) {
-            console.error("Error parsing BLE scan data:", error.message);
-          } finally {
-            setIsScanning(false);
+          const parsedData = JSON.parse(responseData);
+          if (parsedData.respCode === "200") {
+            initBleData(nextDeviceMac);
+          } else {
+            alert("Connection failed. Trying next device...");
+            setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove current device and retry
+            connectToNextDevice();
           }
         }
       );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
-      setIsScanning(false);
     }
   };
 
+  // Initialize and check BLE data for a barcode match
+  const initBleData = (macAddress) => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          const parsedData = JSON.parse(responseData);
+          const matchingDevice = findMatchingDevice(parsedData, scannedBarcode);
+
+          if (matchingDevice) {
+            console.log("Matching BLE device found:", matchingDevice);
+            dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+          } else {
+            alert("No match found. Trying next device...");
+            setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Continue with next device
+            connectToNextDevice();
+          }
+        }
+      );
+    }
+  };
+
+  // Helper function to find a matching device based on the barcode
+  const findMatchingDevice = (deviceData, scannedData) => {
+    return deviceData.dataList.find((device) => {
+      const dtaService = device.services.find(
+        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
+      );
+      if (!dtaService) return false;
+
+      return Object.keys(dtaService.characterMap).some((charUuid) => {
+        const characteristic = dtaService.characterMap[charUuid];
+        const realVal = characteristic?.realVal?.toString();
+        return realVal === scannedData;
+      });
+    });
+  };
+
+  // Start QR code scan
   const startQrCodeScan = () => {
     const requestCode = 999;
     if (window.WebViewJavascriptBridge) {
@@ -164,65 +107,47 @@ const ScanDataPage = () => {
           (responseData) => {
             try {
               const parsedData = JSON.parse(responseData);
-              if (parsedData.respCode === 200 && parsedData.respData === true) {
-                console.log("QR/Barcode scan initiated successfully.");
-              } else {
-                console.error(
-                  "Failed to start QR/Barcode scan:",
-                  parsedData.respDesc
-                );
-              }
+              const scannedValue = parsedData?.respData?.value;
+              if (scannedValue) handleScanData(scannedValue);
             } catch (error) {
-              console.error("Error initiating QR/Barcode scan:", error.message);
+              console.error("Error parsing QR scan data:", error.message);
             }
           }
         );
         dispatch({ type: "SET_QR_SCANNING", payload: true });
       } catch (error) {
-        console.error(
-          "Error invoking WebViewJavascriptBridge for QR/Barcode scan:",
-          error.message
-        );
+        console.error("Error starting QR scan:", error.message);
       }
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
 
-  // Register the scanQrcodeResultCallBack to handle scanned data
-  useEffect(() => {
+  // Start scanning for BLE devices
+  const scanBleDevices = () => {
+    setIsScanning(true);
     if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.registerHandler(
-        "scanQrcodeResultCallBack",
-        (data) => {
-          try {
-            const parsedData = JSON.parse(data);
-            const scannedValue = parsedData?.respData?.value;
-            const requestCode = parsedData?.respData?.requestCode;
-
-            if (requestCode === 999) {
-              console.log("Scanned data received:", scannedValue);
-              handleScanData(scannedValue); // Call handleScanData with the scanned value
-            } else {
-              console.error(
-                "Request code mismatch. Expected 999 but got:",
-                requestCode
-              );
-            }
-          } catch (error) {
-            console.error("Error handling scan callback data:", error.message);
+      window.WebViewJavascriptBridge.callHandler("startBleScan", null, (responseData) => {
+        try {
+          const parsedData = JSON.parse(responseData);
+          if (parsedData && parsedData.devices) {
+            dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData.devices });
           }
+        } catch (error) {
+          console.error("Error parsing BLE scan data:", error.message);
+        } finally {
+          setIsScanning(false);
         }
-      );
+      });
     } else {
       console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
+      setIsScanning(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (!state.detectedDevices || state.detectedDevices.length === 0) {
-      console.warn("No BLE devices detected. Starting BLE scan...");
-      scanBleDevices();
+      scanBleDevices(); // Start BLE scan if no devices are detected
     }
   }, [state.detectedDevices]);
 
@@ -248,50 +173,41 @@ const ScanDataPage = () => {
           </div>
         )}
 
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold text-left">
-            BLE Connection Status:
-          </h3>
-          <p className="text-left text-gray-700">
-            {state.bleConnectionStatus || "Not connected"}
-          </p>
-        </div>
+        {(!state.detectedDevices || state.detectedDevices.length === 0) && (
+          <div className="mt-10 text-center">
+            {isScanning ? (
+              <>
+                <Lottie
+                  animationData={loadingAnimation}
+                  loop={true}
+                  className="w-32 h-32 mx-auto"
+                />
+                <p className="text-lg text-gray-600 mt-4">
+                  Scanning for BLE devices...
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-lg text-gray-600">No BLE devices found.</p>
+                <button
+                  onClick={scanBleDevices}
+                  className="mt-4 px-6 py-2 bg-oves-blue text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center"
+                >
+                  <FiRefreshCw className="mr-2" />
+                  Retry Scan
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        <button
+          onClick={startQrCodeScan}
+          className="fixed bottom-20 right-3 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
+        >
+          <IoQrCodeOutline className="text-2xl text-white" />
+        </button>
       </div>
-
-      {(!state.detectedDevices || state.detectedDevices.length === 0) && (
-        <div className="mt-10 text-center">
-          {isScanning ? (
-            <>
-              <Lottie
-                animationData={loadingAnimation}
-                loop={true}
-                className="w-32 h-32 mx-auto"
-              />
-              <p className="text-lg text-gray-600 mt-4">
-                Scanning for BLE devices...
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="text-lg text-gray-600">No BLE devices found.</p>
-              <button
-                onClick={scanBleDevices}
-                className="mt-4 px-6 py-2 bg-oves-blue text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center"
-              >
-                <FiRefreshCw className="mr-2" />
-                Retry Scan
-              </button>
-            </>
-          )}
-        </div>
-      )}
-
-      <button
-        onClick={startQrCodeScan}
-        className="fixed bottom-20 right-3 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
-      >
-        <IoQrCodeOutline className="text-2xl text-white" />
-      </button>
     </div>
   );
 };
