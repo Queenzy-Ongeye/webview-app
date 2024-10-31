@@ -38,8 +38,8 @@ const ScanDataPage = () => {
     setProcessingMacAddress(macAddress);
     setLoading(true);
 
+    let actionType = "connect";
     try {
-      let actionType = "connect";
       if (actionSuccessMac === macAddress) {
         actionType = "initialize";
       }
