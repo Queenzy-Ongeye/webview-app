@@ -15,7 +15,7 @@ const ScanDataPage = () => {
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
-  const requestCode = 999;
+  const requestCode = '999';
 
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
@@ -187,7 +187,7 @@ const ScanDataPage = () => {
 
     try {
       // Assume connectToBluetoothDevice is a function to connect to the BLE device
-      await connectToBluetoothDevice(macAddress);
+      connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device:", macAddress);
 
       setConnectionSuccessMac(macAddress);
