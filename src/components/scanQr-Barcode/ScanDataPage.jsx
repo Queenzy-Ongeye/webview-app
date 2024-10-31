@@ -178,10 +178,10 @@ const ScanDataPage = () => {
   );
 
   useEffect(() => {
-    if (!state.detectedDevices || state.detectedDevices.length === 0) {
+    if (!uniqueDevice || uniqueDevice.length === 0) {
       scanBleDevices(); // Start BLE scan if no devices are detected
     }
-  }, [state.detectedDevices]);
+  }, [uniqueDevice]);
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
