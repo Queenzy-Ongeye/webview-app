@@ -25,34 +25,25 @@ const ScanDataPage = () => {
   const [scannedBarcode, setScannedBarcode] = useState(null);
   const [deviceQueue, setDeviceQueue] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
+  const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [processingMacAddress, setProcessingMacAddress] = useState(null);
   const [actionSuccessMac, setActionSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Combined function for Bluetooth actions: connect or initialize
-  const handleBluetoothAction = async (e, macAddress, actionType) => {
+  const handleBluetoothAction = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
 
     setProcessingMacAddress(macAddress);
     setLoading(true);
 
-    // Set loading and action-specific states
-    if (actionType === "connect") {
-      setConnectingMacAddress(macAddress);
-    } else if (actionType === "initialize") {
-      setInitializingMacAddress(macAddress);
-    }
-    setLoading(true);
-
     try {
       let actionType = "connect";
-      // Check if the device is already connected; if so, proceed to initialize BLE data
       if (actionSuccessMac === macAddress) {
         actionType = "initialize";
       }
 
-      // Perform the action based on actionType
       if (actionType === "connect") {
         await connectToBluetoothDevice(macAddress);
         console.log("Connected to Bluetooth device", macAddress);
@@ -61,21 +52,11 @@ const ScanDataPage = () => {
         dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
       }
 
-      // Set success state with action-specific timeout
       setActionSuccessMac(macAddress);
       setTimeout(() => setActionSuccessMac(null), 10000); // Clear success state after 10 seconds
     } catch (error) {
-      console.error(
-        `Error during ${
-          actionType === "connect" ? "connection" : "BLE data initialization"
-        }:`,
-        error
-      );
-      alert(
-        `Failed to ${
-          actionType === "connect" ? "connect to" : "initialize"
-        } Bluetooth device. Please try again.`
-      );
+      console.error(`Error during ${actionType} action:`, error);
+      alert(`Failed to ${actionType} Bluetooth device. Please try again.`);
       setActionSuccessMac(null);
     } finally {
       setTimeout(
