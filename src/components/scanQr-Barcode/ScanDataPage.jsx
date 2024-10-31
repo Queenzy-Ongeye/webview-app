@@ -166,17 +166,6 @@ const ScanDataPage = () => {
     }
   };
 
-  // Create a Map to ensure uniqueness based on MAC Address
-  const uniqueDevicesMap = new Map();
-  state.detectedDevices.forEach((device) => {
-    uniqueDevicesMap.set(state.device.macAddress, device);
-  });
-
-  // Convert the Map to an array and sort by signal strength (RSSI)
-  const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
-    (a, b) => b.rssi - a.rssi
-  );
-
   useEffect(() => {
     if (!state.detectedDevices || state.detectedDevices.length === 0) {
       scanBleDevices(); // Start BLE scan if no devices are detected
@@ -217,10 +206,10 @@ const ScanDataPage = () => {
                   <p className="text-gray-700">
                     {device.name || "Unknown Device"}
                   </p>
-                  <p className="text-gray-700">{device.macAddress}</p>
                   <p className="text-gray-700">
-                    Signal Strength: {device.rssi}
+                    {device.macAddress}
                   </p>
+                  <p className="text-gray-700">{device.rssi}db</p>
                 </li>
               ))}
             </ul>
