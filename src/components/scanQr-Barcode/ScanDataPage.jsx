@@ -178,10 +178,10 @@ const ScanDataPage = () => {
   );
 
   useEffect(() => {
-    if (!uniqueDevice || uniqueDevice.length === 0) {
+    if (!state.detectedDevices || state.detectedDevices.length === 0) {
       scanBleDevices(); // Start BLE scan if no devices are detected
     }
-  }, [uniqueDevice]);
+  }, [state.detectedDevices]);
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
@@ -210,9 +210,9 @@ const ScanDataPage = () => {
           <h3 className="text-lg font-semibold text-left">
             Detected BLE Devices:
           </h3>
-          {uniqueDevice && uniqueDevice.length > 0 ? (
+          {state.detectedDevices && state.detectedDevices.length > 0 ? (
             <ul className="text-left">
-              {uniqueDevice.map((device, index) => (
+              {state.detectedDevices.map((device, index) => (
                 <li key={index} className="mt-2 p-2 border rounded-md shadow">
                   <p className="text-gray-700">
                     {device.name || "Unknown Device"}
