@@ -4,19 +4,6 @@ import { IoQrCodeOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
 import Lottie from "lottie-react";
 import loadingAnimation from "../../assets/loading.json";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
-
-// Placeholder for the connect and initialize functions if not imported
-const connectToBluetoothDevice = async (macAddress) => {
-  console.log(`Simulating connection to device with MAC: ${macAddress}`);
-  return new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate async delay
-};
-
-const initBleData = async (macAddress) => {
-  console.log(`Simulating BLE data initialization for device with MAC: ${macAddress}`);
-  return new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate async delay
-};
-
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -28,70 +15,8 @@ const ScanDataPage = () => {
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
-  
-  // Combined function for Bluetooth actions: connect or initialize
-  const handleConnectClick = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
 
-    setConnectingMacAddress(macAddress);
-    setLoading(true); // Start loading indicator for the connection process
-
-    try {
-      // Attempt to connect to the Bluetooth device
-      await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device", macAddress);
-
-      // If the connection is successful, set the success state for the current MAC
-      setTimeout(() => {
-        setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 23000);
-    } catch (error) {
-      // If the connection fails, log the error and show an alert
-      console.error("Error connecting to Bluetooth device:", error);
-      alert("Failed to connect to Bluetooth device. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
-      setConnectionSuccessMac(null); // Clear any success indicator
-    } finally {
-      setTimeout(() => {
-        setConnectingMacAddress(null);
-        setLoading(false);
-      }, 23000);
-    }
-  };
-
-  const handleInitBleDataClick = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    setInitializingMacAddress(macAddress);
-    setLoading(true);
-
-    try {
-      const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-
-      // If initialization is successful, set the success state for the current MAC
-      setTimeout(() => {
-        setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 35000);
-    } catch (error) {
-      console.error("Error during BLE Data Initialization:", error);
-      alert("Failed to initialize BLE data. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
-      setInitSuccessMac(null);
-    } finally {
-      setTimeout(() => {
-        setInitializingMacAddress(null);
-        setLoading(false);
-      }, 35000);
-    }
-  };
-
+ 
   // Function to handle scanned data and start pairing process
   const handleScanData = (scannedValue) => {
     console.log("Scanned Value:", scannedValue);
@@ -294,69 +219,20 @@ const ScanDataPage = () => {
           {uniqueDevice && uniqueDevice.length > 0 ? (
             <ul className="text-left">
               {uniqueDevice.map((device, index) => (
-                <>
-                  <li key={index} className="mt-2 p-2 border rounded-md shadow">
-                    <p className="text-gray-700">
-                      {device.name || "Unknown Device"}
-                    </p>
-                    <p className="text-gray-700">{device.macAddress}</p>
-                    <p className="text-gray-700">
-                      Signal Strength: {device.rssi}
-                    </p>
-                  </li>
-                  <li className="flex justify-between w-full mt-4 space-x-2">
-                    <button
-                      onClick={(e) => handleConnectClick(e, device.macAddress)}
-                      className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
-                        connectingMacAddress === device.macAddress
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : connectionSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : "bg-cyan-600 text-white hover:bg-cyan-700"
-                      }`}
-                      disabled={
-                        loading || connectingMacAddress === device.macAddress
-                      }
-                    >
-                      {connectingMacAddress === device.macAddress
-                        ? "Connecting..."
-                        : connectionSuccessMac === device.macAddress
-                        ? "Connected"
-                        : "Connect"}
-                    </button>
-                    <button
-                      onClick={(e) =>
-                        handleInitBleDataClick(e, device.macAddress)
-                      }
-                      className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
-                        initializingMacAddress === device.macAddress
-                          ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                          : initSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : "bg-cyan-700 text-white"
-                      }`}
-                      disabled={
-                        loading ||
-                        initializingMacAddress === device.macAddress
-                      }
-                    >
-                      {initializingMacAddress === device.macAddress
-                        ? "Initializing..."
-                        : initSuccessMac === device.macAddress
-                        ? "Initialized"
-                        : "Init BLE Data"}
-                    </button>
-                  </li>
-                </>
+                <li key={index} className="mt-2 p-2 border rounded-md shadow">
+                  <p className="text-gray-700">
+                    {device.name || "Unknown Device"}
+                  </p>
+                  <p className="text-gray-700">{device.macAddress}</p>
+                  <p className="text-gray-700">
+                    Signal Strength: {device.rssi}
+                  </p>
+                </li>
+                
               ))}
             </ul>
           ) : (
             <p className="text-gray-500">No BLE devices detected.</p>
-          )}
-          {loading && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-              <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
-            </div>
           )}
         </div>
 
