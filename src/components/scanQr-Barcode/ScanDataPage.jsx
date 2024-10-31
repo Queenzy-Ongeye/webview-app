@@ -4,6 +4,19 @@ import { IoQrCodeOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
 import Lottie from "lottie-react";
 import loadingAnimation from "../../assets/loading.json";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
+// Placeholder for the connect and initialize functions if not imported
+const connectToBluetoothDevice = async (macAddress) => {
+  console.log(`Simulating connection to device with MAC: ${macAddress}`);
+  return new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate async delay
+};
+
+const initBleData = async (macAddress) => {
+  console.log(`Simulating BLE data initialization for device with MAC: ${macAddress}`);
+  return new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate async delay
+};
+
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -15,7 +28,7 @@ const ScanDataPage = () => {
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
-
+  
   // Combined function for Bluetooth actions: connect or initialize
   const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
@@ -302,7 +315,7 @@ const ScanDataPage = () => {
                           : "bg-cyan-600 text-white hover:bg-cyan-700"
                       }`}
                       disabled={
-                        isLoading || connectingMacAddress === device.macAddress
+                        loading || connectingMacAddress === device.macAddress
                       }
                     >
                       {connectingMacAddress === device.macAddress
@@ -323,7 +336,7 @@ const ScanDataPage = () => {
                           : "bg-cyan-700 text-white"
                       }`}
                       disabled={
-                        isLoading ||
+                        loading ||
                         initializingMacAddress === device.macAddress
                       }
                     >
