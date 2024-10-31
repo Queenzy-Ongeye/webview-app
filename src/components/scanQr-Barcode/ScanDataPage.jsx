@@ -15,15 +15,14 @@ const ScanDataPage = () => {
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
-  const requestCode = '999';
-
+  
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
       try {
         window.WebViewJavascriptBridge.callHandler(
           "startQrCodeScan",
-          requestCode,
+          999,
           (responseData) => {
             const parsedResponse = JSON.parse(responseData);
             // Check if the scan initiation was successful
@@ -55,6 +54,7 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(data);
             const scannedValue = parsedData?.value;
+            const requestCode = 999;
             const callbackRequestCode = parsedData?.requestCode;
 
             // Validate the request code to ensure it matches the original request
@@ -320,9 +320,16 @@ const ScanDataPage = () => {
           </h3>
           {state.detectedDevices && state.detectedDevices.length > 0 ? (
             <ul className="text-left">
-              {state.detectedDevices.map((device, index) => (
-                <>
-                  <li key={index} className="mt-2 p-2 border rounded-md shadow">
+              {Array.from(
+                new Map(
+                  state.detectedDevices.map((device) => [
+                    device.macAddress,
+                    device,
+                  ])
+                ).values()
+              ).map((device, index) => (
+                <React.Fragment key={device.macAddress}>
+                  <li className="mt-2 p-2 border rounded-md shadow">
                     <p className="text-gray-700">
                       {device.name || "Unknown Device"}
                     </p>
@@ -369,7 +376,7 @@ const ScanDataPage = () => {
                         : "Init BLE Data"}
                     </button>
                   </div>
-                </>
+                </React.Fragment>
               ))}
             </ul>
           ) : (
