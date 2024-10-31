@@ -4,7 +4,6 @@ import { IoQrCodeOutline } from "react-icons/io5";
 import { FiRefreshCw } from "react-icons/fi";
 import Lottie from "lottie-react";
 import loadingAnimation from "../../assets/loading.json";
-import stringSimilarity from "string-similarity";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -23,7 +22,9 @@ const ScanDataPage = () => {
   const initiateDeviceQueue = () => {
     const detectedDevices = state.detectedDevices;
     if (detectedDevices && detectedDevices.length > 0) {
-      const topDevices = detectedDevices.sort((a, b) => b.rssi - a.rssi).slice(0, 5);
+      const topDevices = detectedDevices
+        .sort((a, b) => b.rssi - a.rssi)
+        .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       connectToNextDevice(); // Start the pairing process
     } else {
@@ -80,18 +81,31 @@ const ScanDataPage = () => {
     }
   };
 
-  // Helper function to find a matching device based on the barcode
+  // Helper function to recursively search for a value within an object
+  const recursiveSearch = (obj, searchValue) => {
+    if (typeof obj === "string" || typeof obj === "number") {
+      // Convert both to strings for comparison
+      return obj.toString() === searchValue.toString();
+    } else if (Array.isArray(obj)) {
+      // If obj is an array, recursively search each item
+      return obj.some((item) => recursiveSearch(item, searchValue));
+    } else if (typeof obj === "object" && obj !== null) {
+      // If obj is an object, recursively search each property
+      return Object.values(obj).some((value) =>
+        recursiveSearch(value, searchValue)
+      );
+    }
+    return false;
+  };
+
+  // Modified function to find a matching device by searching dynamically through all metadata
   const findMatchingDevice = (deviceData, scannedData) => {
     return deviceData.dataList.find((device) => {
-      const dtaService = device.services.find(
-        (service) => service.serviceNameEnum === "DTA_SERVICE_NAME"
-      );
-      if (!dtaService) return false;
-
-      return Object.keys(dtaService.characterMap).some((charUuid) => {
-        const characteristic = dtaService.characterMap[charUuid];
-        const realVal = characteristic?.realVal?.toString();
-        return realVal === scannedData;
+      return device.services.some((service) => {
+        return Object.keys(service.characterMap).some((charUuid) => {
+          const characteristic = service.characterMap[charUuid];
+          return recursiveSearch(characteristic, scannedData); // Dynamically search characteristic metadata
+        });
       });
     });
   };
@@ -127,18 +141,25 @@ const ScanDataPage = () => {
   const scanBleDevices = () => {
     setIsScanning(true);
     if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler("startBleScan", null, (responseData) => {
-        try {
-          const parsedData = JSON.parse(responseData);
-          if (parsedData && parsedData.devices) {
-            dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData.devices });
+      window.WebViewJavascriptBridge.callHandler(
+        "startBleScan",
+        null,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData && parsedData.devices) {
+              dispatch({
+                type: "ADD_DETECTED_DEVICE",
+                payload: parsedData.devices,
+              });
+            }
+          } catch (error) {
+            console.error("Error parsing BLE scan data:", error.message);
+          } finally {
+            setIsScanning(false);
           }
-        } catch (error) {
-          console.error("Error parsing BLE scan data:", error.message);
-        } finally {
-          setIsScanning(false);
         }
-      });
+      );
     } else {
       console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
       setIsScanning(false);
@@ -172,6 +193,30 @@ const ScanDataPage = () => {
             <p className="text-gray-500">No matching BLE device found.</p>
           </div>
         )}
+
+        {/* Display detected BLE devices */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold text-left">
+            Detected BLE Devices:
+          </h3>
+          {state.detectedDevices && state.detectedDevices.length > 0 ? (
+            <ul className="text-left">
+              {state.detectedDevices.map((device, index) => (
+                <li key={index} className="mt-2 p-2 border rounded-md shadow">
+                  <p className="text-gray-700">
+                    Name: {device.name || "Unknown Device"}
+                  </p>
+                  <p className="text-gray-700">
+                    MAC Address: {device.macAddress}
+                  </p>
+                  <p className="text-gray-700">RSSI: {device.rssi}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No BLE devices detected.</p>
+          )}
+        </div>
 
         {(!state.detectedDevices || state.detectedDevices.length === 0) && (
           <div className="mt-10 text-center">
