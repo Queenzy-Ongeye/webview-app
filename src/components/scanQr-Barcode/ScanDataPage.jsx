@@ -10,13 +10,7 @@ const ScanDataPage = () => {
   const [scannedBarcode, setScannedBarcode] = useState(null);
   const [deviceQueue, setDeviceQueue] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
-  const [connectingMacAddress, setConnectingMacAddress] = useState(null);
-  const [initializingMacAddress, setInitializingMacAddress] = useState(null);
-  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
-  const [initSuccessMac, setInitSuccessMac] = useState(null);
-  const [loading, setLoading] = useState(false);
 
- 
   // Function to handle scanned data and start pairing process
   const handleScanData = (scannedValue) => {
     console.log("Scanned Value:", scannedValue);
@@ -228,7 +222,6 @@ const ScanDataPage = () => {
                     Signal Strength: {device.rssi}
                   </p>
                 </li>
-                
               ))}
             </ul>
           ) : (
