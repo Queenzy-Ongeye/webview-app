@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
-import { FiRefreshCw } from "react-icons/fi";
-import Lottie from "lottie-react";
-import loadingAnimation from "../../assets/loading.json";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -303,20 +302,6 @@ const ScanDataPage = () => {
           <p className="text-left mt-2">{state.scannedData}</p>
         )}
 
-        {state.matchingDevice ? (
-          <div className="mt-2 text-left">
-            <h3 className="text-lg font-semibold">Matching BLE Device:</h3>
-            <p className="text-gray-700">Name: {state.matchingDevice.name}</p>
-            <p className="text-gray-700">
-              MAC Address: {state.matchingDevice.macAddress}
-            </p>
-          </div>
-        ) : (
-          <div className="mt-6 text-left">
-            <p className="text-gray-500">No matching BLE device found.</p>
-          </div>
-        )}
-
         {/* Display detected BLE devices */}
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-left">
@@ -340,15 +325,15 @@ const ScanDataPage = () => {
                     <p className="text-gray-700">{device.macAddress}</p>
                     <p className="text-gray-700">{device.rssi}db</p>
                   </li>
-                  <div className="flex justify-between mt-2">
+                  <div className="flex justify-between w-full mt-4 space-x-2">
                     <button
-                      onClick={() => handleConnectClick(device.macAddress)}
-                      className={`w-full px-4 py-2 border rounded-md ${
+                      onClick={(e) => handleConnectClick(e, device.macAddress)}
+                      className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                         connectingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : connectionSuccessMac === device.macAddress
                           ? "bg-green-500 text-white"
-                          : "bg-blue-500 text-white"
+                          : "bg-cyan-600 text-white hover:bg-cyan-700"
                       }`}
                       disabled={
                         loading || connectingMacAddress === device.macAddress
@@ -361,13 +346,15 @@ const ScanDataPage = () => {
                         : "Connect"}
                     </button>
                     <button
-                      onClick={() => handleInitBleDataClick(device.macAddress)}
-                      className={`w-full px-4 py-2 border rounded-md ${
+                      onClick={(e) =>
+                        handleInitBleDataClick(e, device.macAddress)
+                      }
+                      className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
                         initializingMacAddress === device.macAddress
                           ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
                           : initSuccessMac === device.macAddress
                           ? "bg-green-500 text-white"
-                          : "bg-yellow-500 text-white"
+                          : "bg-cyan-700 text-white"
                       }`}
                       disabled={
                         loading || initializingMacAddress === device.macAddress
@@ -395,6 +382,11 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+        </div>
+      )}
     </div>
   );
 };
