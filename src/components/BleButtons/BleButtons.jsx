@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FaCheckCircle } from "react-icons/fa";
+import { FaCheckCircle } from "react-icons/fa"; // Success Icon
 import { connectMqtt } from "../../service/javascriptBridge";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -18,11 +18,10 @@ const BleButtons = ({
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
-  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
-  const [initSuccessMac, setInitSuccessMac] = useState(null);
+  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
+  const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [lock, setLock] = useState(false); // Prevents concurrent connections
   const [activeTab, setActiveTab] = useState("ATT");
 
   // Create a Map to ensure uniqueness based on MAC Address
@@ -40,30 +39,30 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
 
-    // Prevent simultaneous connections
-    if (lock) return;
-    setLock(true);
-
     setConnectingMacAddress(macAddress);
-    setLoading(true);
+    setLoading(true); // Start loading indicator for the connection process
 
     try {
+      // Attempt to connect to the Bluetooth device
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
+      // If the connection is successful, set the success state for the current MAC
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 23000);
     } catch (error) {
+      // If the connection fails, log the error and show an alert
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
-      setConnectionSuccessMac(null);
+
+      // Ensure that the success state is not set in case of failure
+      setConnectionSuccessMac(null); // Clear any success indicator
     } finally {
       setTimeout(() => {
         setConnectingMacAddress(null);
         setLoading(false);
-        setLock(false); // Release the lock after completion
       }, 23000);
     }
   };
@@ -72,9 +71,6 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
 
-    if (lock) return;
-    setLock(true);
-
     setInitializingMacAddress(macAddress);
     setLoading(true);
 
@@ -82,19 +78,21 @@ const BleButtons = ({
       const response = await initBleData(macAddress);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
 
+      // If initialization is successful, set the success state for the current MAC
       setTimeout(() => {
         setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
+
+      // Ensure that the success state is not set in case of failure
       setInitSuccessMac(null);
     } finally {
       setTimeout(() => {
         setInitializingMacAddress(null);
         setLoading(false);
-        setLock(false); // Release the lock after completion
       }, 35000);
     }
   };
@@ -103,10 +101,13 @@ const BleButtons = ({
     const filteredData = initBleDataResponse?.dataList?.filter(
       (item) => item.serviceNameEnum === serviceNameEnum
     );
+    // Update the active tab based on the service name
     setActiveTab(serviceNameEnum);
+    // Navigate to the selected page, passing filtered data
     navigate(page, { state: { data: filteredData } });
   };
 
+  // MQTT Connection
   const handleMqttConnection = () => {
     connectMqtt();
     setIsButtonDisabled(true);
@@ -178,6 +179,79 @@ const BleButtons = ({
                       : "Init BLE Data"}
                   </button>
                 </div>
+                {initBleDataResponse &&
+                  initBleDataResponse.macAddress === device.macAddress && (
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                      <button
+                        onClick={() =>
+                          navigateToPage("/att", "ATT_SERVICE_NAME")
+                        }
+                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
+                          activeTab === "ATT_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
+                        ATT
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/cmd", "CMD_SERVICE_NAME")
+                        }
+                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
+                          activeTab === "CMD_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
+                        CMD
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/sts", "STS_SERVICE_NAME")
+                        }
+                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
+                          activeTab === "STS_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
+                        STS
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/dta", "DTA_SERVICE_NAME")
+                        }
+                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
+                          activeTab === "DTA_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
+                        DTA
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigateToPage("/dia", "DIA_SERVICE_NAME")
+                        }
+                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
+                          activeTab === "DIA_SERVICE_NAME"
+                            ? "bg-gray-200 text-blue-500"
+                            : ""
+                        }`}
+                      >
+                        DIA
+                      </button>
+                      <button
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                        onClick={handleMqttConnection}
+                        disabled={isButtonDisabled}
+                      >
+                        Connect to MQTT
+                      </button>
+                      <ToastContainer />
+                    </div>
+                  )}
               </div>
             ))
           ) : (
@@ -190,7 +264,6 @@ const BleButtons = ({
           <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
       )}
-      <ToastContainer />
     </div>
   );
 };

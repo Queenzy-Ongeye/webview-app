@@ -130,8 +130,6 @@ const ScanDataPage = () => {
       );
     }
   };
-
-
   // Initialize and check BLE data for a barcode match
   const initBleData = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
@@ -139,79 +137,63 @@ const ScanDataPage = () => {
         "initBleData",
         macAddress,
         (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+          const parsedData = JSON.parse(responseData);
+          dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+          const matchingDevice = findMatchingDevice(parsedData, scannedBarcode);
 
-            // Check if dataList exists before proceeding
-            if (!parsedData || !parsedData.dataList) {
-              console.error("Missing dataList in response:", parsedData);
-              alert(
-                "Initialization data is missing or incomplete. Please try again."
-              );
-              setDeviceQueue((prevQueue) => prevQueue.slice(1));
-              connectToNextDevice();
-              return;
-            }
-
-            // Proceed with matching device data if dataList is available
-            const matchingDevice = findMatchingDevice(
-              parsedData,
-              scannedBarcode
-            );
-            if (matchingDevice) {
-              console.log("Matching BLE device found:", matchingDevice);
-              dispatch({
-                type: "SET_MATCHING_DEVICE",
-                payload: matchingDevice,
-              });
-            } else {
-              alert("No match found. Trying next device...");
-              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Continue with next device
-              connectToNextDevice();
-            }
-          } catch (error) {
-            console.error("Error parsing response data in initBleData:", error.message);
-            alert("Error initializing BLE data. Please try again.");
+          if (matchingDevice) {
+            console.log("Matching BLE device found:", matchingDevice);
+            dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+          } else {
+            alert("No match found. Trying next device...");
+            setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Continue with next device
+            connectToNextDevice();
           }
         }
       );
     }
   };
 
-  const handleConnectClick = async (macAddress) => {
+  const handleConnectClick = async (e, macAddress) => {
     // Ensure only one device is connecting at a time
-    if (connectingMacAddress || initializingMacAddress) return;
+    e.preventDefault();
+    e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
+    setLoading(true);
 
     try {
       await connectToBluetoothDevice(macAddress);
-      setConnectionSuccessMac(macAddress);
       console.log("Connected to Bluetooth device:", macAddress);
-      // Clear the success state after a delay
-      setTimeout(() => setConnectionSuccessMac(null), 10000);
+      // If the connection is successful, set the success state for the current MAC
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 23000);
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
     } finally {
-      setConnectingMacAddress(null);
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        setLoading(false);
+      }, 23000);
     }
   };
 
-  const handleInitBleDataClick = async (macAddress) => {
+  const handleInitBleDataClick = async (e, macAddress) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     setInitializingMacAddress(macAddress);
     setLoading(true);
 
     try {
       const response = await initBleData(macAddress);
-
-      // Debugging: Log the response structure
       console.log("Response from initBleData:", response);
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
 
-      if (response && response.dataList) {
-        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-
+      if (response?.dataList) {
         const matchingDevice = findMatchingDevice(response, scannedBarcode);
         if (matchingDevice) {
           dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
@@ -219,21 +201,23 @@ const ScanDataPage = () => {
         } else {
           alert("No match found for the scanned barcode.");
         }
-
-        setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000);
       } else {
-        console.warn("Response from initBleData does not contain dataList.");
-        alert(
-          "Initialization data is missing or incomplete. Please try again."
-        );
+        console.warn("Initialization data is incomplete or missing.");
+        alert("Initialization data is missing. Please try again.");
       }
+      // If initialization is successful, set the success state for the current MAC
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error.message);
       alert("Failed to initialize BLE data. Please try again.");
     } finally {
-      setInitializingMacAddress(null);
-      setLoading(false);
+      setTimeout(() => {
+        setInitializingMacAddress(null);
+        setLoading(false);
+      }, 10000);
     }
   };
 
@@ -264,14 +248,9 @@ const ScanDataPage = () => {
   };
 
   const findMatchingDevice = (deviceData, scannedData) => {
-    if (!deviceData || !deviceData.dataList) {
-      console.warn("findMatchingDevice: dataList is undefined or empty.");
-      return null;
-    }
-
-    return deviceData.dataList.find((device) =>
-      device?.services?.some((service) =>
-        Object.values(service.characterMap || {}).some((characteristic) =>
+    return deviceData?.dataList?.find((device) =>
+      device.services.some((service) =>
+        Object.values(service.characterMap).some((characteristic) =>
           recursiveSearch(characteristic, scannedData)
         )
       )
@@ -279,7 +258,6 @@ const ScanDataPage = () => {
   };
 
   const recursiveSearch = (obj, searchValue) => {
-    if (!obj) return false; // Ensure obj is defined
     if (typeof obj === "string" || typeof obj === "number") {
       return obj.toString() === searchValue.toString();
     } else if (Array.isArray(obj)) {
@@ -360,7 +338,7 @@ const ScanDataPage = () => {
                   </li>
                   <div className="flex justify-between mt-2">
                     <button
-                      onClick={() => handleConnectClick(device.macAddress)}
+                      onClick={() => handleConnectClick(e, device.macAddress)}
                       className={`w-full px-4 py-2 border rounded-md ${
                         connectingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
@@ -379,7 +357,7 @@ const ScanDataPage = () => {
                         : "Connect"}
                     </button>
                     <button
-                      onClick={() => handleInitBleDataClick(device.macAddress)}
+                      onClick={() => handleInitBleDataClick(e, device.macAddress)}
                       className={`w-full px-4 py-2 border rounded-md ${
                         initializingMacAddress === device.macAddress
                           ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
