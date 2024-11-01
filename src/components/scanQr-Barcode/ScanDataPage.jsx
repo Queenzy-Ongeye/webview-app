@@ -3,7 +3,6 @@ import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
-
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
   const [scannedBarcode, setScannedBarcode] = useState(null);
@@ -298,8 +297,12 @@ const ScanDataPage = () => {
     <div className="scan-data-page flex flex-col h-screen">
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
-        {state.scannedData && (
+        {state.scannedData ? (
           <p className="text-left mt-2">{state.scannedData}</p>
+        ) : (
+          <p className="text-left mt-2 text-gray-500">
+            No scanned data available.
+          </p>
         )}
 
         {/* Display detected BLE devices */}
