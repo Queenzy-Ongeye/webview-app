@@ -202,7 +202,7 @@ const ScanDataPage = () => {
         dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
   
         // Attempt to find a matching device
-        const matchingDevice = findMatchingDevice(response, scannedBarcode);
+        const matchingDevice = findMatchingDevice(response);
         if (matchingDevice) {
           dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
           console.log("Matching BLE device found:", matchingDevice);
@@ -258,7 +258,7 @@ const ScanDataPage = () => {
     }
   };
 
-const findMatchingDevice = (deviceData, scannedData) => {
+const findMatchingDevice = (deviceData) => {
   if (!Array.isArray(deviceData?.dataList)) {
     console.warn("findMatchingDevice: dataList is undefined or not an array.");
     return null;
@@ -267,7 +267,7 @@ const findMatchingDevice = (deviceData, scannedData) => {
   return deviceData.dataList.find((device) =>
     device.services?.some((service) =>
       Object.values(service.characterMap || {}).some((characteristic) =>
-        recursiveSearch(characteristic, scannedData)
+        recursiveSearch(characteristic, state.scannedData)
       )
     )
   );
@@ -327,7 +327,7 @@ const findMatchingDevice = (deviceData, scannedData) => {
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
-          <p className="text-left mt-2">{state.scannedData}</p>
+          <p className="text-left mt-2">Barcode Number{state.scannedData}</p>
         )}
 
         {/* Display detected BLE devices */}
