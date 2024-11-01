@@ -54,8 +54,8 @@ const ScanDataPage = () => {
         (data) => {
           try {
             const parsedData = JSON.parse(data);
-            const scannedValue = parsedData?.value;
-            const callbackRequestCode = parsedData?.requestCode;
+            const scannedValue = parsedData.respData?.value;
+            const callbackRequestCode = parsedData.respData?.requestCode;
 
             // Validate the request code to ensure it matches the original request
             if (callbackRequestCode === requestCode) {
