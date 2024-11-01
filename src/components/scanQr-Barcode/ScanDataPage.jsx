@@ -155,24 +155,29 @@ const ScanDataPage = () => {
   };
 
   const handleConnectClick = async (e, macAddress) => {
-    // Ensure only one device is connecting at a time
     e.preventDefault();
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setLoading(true);
+    setLoading(true); // Start loading indicator for the connection process
 
     try {
+      // Attempt to connect to the Bluetooth device
       await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device:", macAddress);
+      console.log("Connected to Bluetooth device", macAddress);
+
       // If the connection is successful, set the success state for the current MAC
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
         setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 23000);
     } catch (error) {
+      // If the connection fails, log the error and show an alert
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
+
+      // Ensure that the success state is not set in case of failure
+      setConnectionSuccessMac(null); // Clear any success indicator
     } finally {
       setTimeout(() => {
         setConnectingMacAddress(null);
@@ -180,6 +185,7 @@ const ScanDataPage = () => {
       }, 23000);
     }
   };
+
 
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
