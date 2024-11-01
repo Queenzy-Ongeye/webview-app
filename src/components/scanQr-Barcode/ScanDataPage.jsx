@@ -54,17 +54,16 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(data);
             const scannedValue = parsedData?.value;
-            const requestCode = 999;
             const callbackRequestCode = parsedData?.requestCode;
 
             // Validate the request code to ensure it matches the original request
-            if (callbackRequestCode === requestCode) {
+            if (callbackRequestCode) {
               console.log("Scanned data received:", scannedValue);
               handleScanData(scannedValue); // Process the scanned data
             } else {
               console.error(
                 "Request code mismatch. Expected:",
-                requestCode,
+                callbackRequestCode,
                 "Received:",
                 callbackRequestCode
               );
