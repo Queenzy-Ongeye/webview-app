@@ -190,8 +190,10 @@ const ScanDataPage = () => {
       connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device:", macAddress);
 
-      setConnectionSuccessMac(macAddress);
-      setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 23000);
     } catch (error) {
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
@@ -219,8 +221,10 @@ const ScanDataPage = () => {
         alert("No match found for the scanned barcode.");
       }
 
-      setInitSuccessMac(macAddress);
-      setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 35000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
