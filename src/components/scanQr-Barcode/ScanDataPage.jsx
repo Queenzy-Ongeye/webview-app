@@ -186,20 +186,22 @@ const ScanDataPage = () => {
     }
   };
 
-
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-
+  
     setInitializingMacAddress(macAddress);
     setLoading(true);
-
+  
     try {
       const response = await initBleData(macAddress);
       console.log("Response from initBleData:", response);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-
-      if (response?.dataList) {
+  
+      // Ensure response and dataList exist before dispatching
+      if (response && Array.isArray(response.dataList)) {
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+  
+        // Attempt to find a matching device
         const matchingDevice = findMatchingDevice(response, scannedBarcode);
         if (matchingDevice) {
           dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
@@ -211,11 +213,13 @@ const ScanDataPage = () => {
         console.warn("Initialization data is incomplete or missing.");
         alert("Initialization data is missing. Please try again.");
       }
-      // If initialization is successful, set the success state for the current MAC
+  
+      // Set success state for the current MAC
       setTimeout(() => {
         setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+        setTimeout(() => setInitSuccessMac(null), 10000);
       }, 35000);
+  
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error.message);
       alert("Failed to initialize BLE data. Please try again.");
@@ -226,6 +230,7 @@ const ScanDataPage = () => {
       }, 10000);
     }
   };
+  
 
   const connectToBluetoothDevice = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
@@ -253,15 +258,21 @@ const ScanDataPage = () => {
     }
   };
 
-  const findMatchingDevice = (deviceData, scannedData) => {
-    return deviceData?.dataList?.find((device) =>
-      device.services.some((service) =>
-        Object.values(service.characterMap).some((characteristic) =>
-          recursiveSearch(characteristic, scannedData)
-        )
+const findMatchingDevice = (deviceData, scannedData) => {
+  if (!Array.isArray(deviceData?.dataList)) {
+    console.warn("findMatchingDevice: dataList is undefined or not an array.");
+    return null;
+  }
+
+  return deviceData.dataList.find((device) =>
+    device.services?.some((service) =>
+      Object.values(service.characterMap || {}).some((characteristic) =>
+        recursiveSearch(characteristic, scannedData)
       )
-    );
-  };
+    )
+  );
+};
+
 
   const recursiveSearch = (obj, searchValue) => {
     if (typeof obj === "string" || typeof obj === "number") {
