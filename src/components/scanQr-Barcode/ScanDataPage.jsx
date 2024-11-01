@@ -186,7 +186,7 @@ const ScanDataPage = () => {
 
     try {
       // Assume connectToBluetoothDevice is a function to connect to the BLE device
-      connectToBluetoothDevice(macAddress);
+      await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device:", macAddress);
 
       setTimeout(() => {
@@ -225,7 +225,7 @@ const ScanDataPage = () => {
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 35000);
     } catch (error) {
-      console.error("Error during BLE Data Initialization:", error);
+      console.error("Error during BLE Data Initialization:", error.message);
       alert("Failed to initialize BLE data. Please try again.");
     } finally {
       setInitializingMacAddress(null);
