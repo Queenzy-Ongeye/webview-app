@@ -130,29 +130,46 @@ const ScanDataPage = () => {
       );
     }
   };
-  // Initialize and check BLE data for a barcode match
-  const initBleData = (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "initBleData",
-        macAddress,
-        (responseData) => {
+// Initialize and check BLE data for a barcode match
+const initBleData = (macAddress) => {
+  if (window.WebViewJavascriptBridge) {
+    window.WebViewJavascriptBridge.callHandler(
+      "initBleData",
+      macAddress,
+      (responseData) => {
+        try {
           const parsedData = JSON.parse(responseData);
-          dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-          const matchingDevice = findMatchingDevice(parsedData, scannedBarcode);
 
-          if (matchingDevice) {
-            console.log("Matching BLE device found:", matchingDevice);
-            dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+          // Log the parsed data structure for debugging
+          console.log("Parsed data from initBleData:", parsedData);
+
+          // Check if dataList is defined and is an array
+          if (parsedData && Array.isArray(parsedData.dataList)) {
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            const matchingDevice = findMatchingDevice(parsedData);
+
+            if (matchingDevice) {
+              console.log("Matching BLE device found:", matchingDevice);
+              dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+            } else {
+              alert("No match found. Trying next device...");
+              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Continue with next device
+              connectToNextDevice();
+            }
           } else {
-            alert("No match found. Trying next device...");
-            setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Continue with next device
-            connectToNextDevice();
+            console.warn("Received data does not contain a valid dataList.");
+            alert("Initialization data is incomplete. Please try again.");
           }
+        } catch (error) {
+          console.error("Error processing initBleData response:", error);
+          alert("An error occurred while processing BLE data.");
         }
-      );
-    }
-  };
+      }
+    );
+  } else {
+    console.error("WebViewJavascriptBridge is not initialized.");
+  }
+};
 
   const handleConnectClick = async (e, macAddress) => {
     e.preventDefault();
