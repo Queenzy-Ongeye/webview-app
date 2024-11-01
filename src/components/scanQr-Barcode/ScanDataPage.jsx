@@ -15,7 +15,8 @@ const ScanDataPage = () => {
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+  const requestCode = 999;
+
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
@@ -57,13 +58,13 @@ const ScanDataPage = () => {
             const callbackRequestCode = parsedData?.requestCode;
 
             // Validate the request code to ensure it matches the original request
-            if (callbackRequestCode) {
+            if (callbackRequestCode === requestCode) {
               console.log("Scanned data received:", scannedValue);
               handleScanData(scannedValue); // Process the scanned data
             } else {
               console.error(
                 "Request code mismatch. Expected:",
-                callbackRequestCode,
+                requestCode,
                 "Received:",
                 callbackRequestCode
               );
