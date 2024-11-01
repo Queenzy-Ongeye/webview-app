@@ -338,7 +338,7 @@ const ScanDataPage = () => {
                   </li>
                   <div className="flex justify-between mt-2">
                     <button
-                      onClick={() => handleConnectClick(e, device.macAddress)}
+                      onClick={(e) => handleConnectClick(e, device.macAddress)}
                       className={`w-full px-4 py-2 border rounded-md ${
                         connectingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
@@ -357,7 +357,7 @@ const ScanDataPage = () => {
                         : "Connect"}
                     </button>
                     <button
-                      onClick={() => handleInitBleDataClick(e, device.macAddress)}
+                      onClick={(e) => handleInitBleDataClick(e, device.macAddress)}
                       className={`w-full px-4 py-2 border rounded-md ${
                         initializingMacAddress === device.macAddress
                           ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
