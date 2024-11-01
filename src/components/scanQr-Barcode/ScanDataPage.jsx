@@ -84,7 +84,7 @@ const ScanDataPage = () => {
       console.log("Scanned Value:", scannedValue);
       setScannedBarcode(scannedValue);
       initiateDeviceQueue(); // Start pairing process
-      dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+      dispatch({type: "SET_SCANNED_DATA", payload: scannedValue})
     } else {
       console.error("Invalid scan data received.");
       alert("Invalid scan data. Neither a barcode nor a QR code.");
@@ -298,12 +298,8 @@ const ScanDataPage = () => {
     <div className="scan-data-page flex flex-col h-screen">
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
-        {state.scannedData ? (
+        {state.scannedData && (
           <p className="text-left mt-2">{state.scannedData}</p>
-        ) : (
-          <p className="text-left mt-2 text-gray-500">
-            No scanned data available.
-          </p>
         )}
 
         {/* Display detected BLE devices */}
@@ -329,15 +325,15 @@ const ScanDataPage = () => {
                     <p className="text-gray-700">{device.macAddress}</p>
                     <p className="text-gray-700">{device.rssi}db</p>
                   </li>
-                  <div className="flex justify-between w-full mt-4 space-x-2">
+                  <div className="flex justify-between mt-2">
                     <button
-                      onClick={(e) => handleConnectClick(e, device.macAddress)}
-                      className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
+                      onClick={() => handleConnectClick(device.macAddress)}
+                      className={`w-full px-4 py-2 border rounded-md ${
                         connectingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : connectionSuccessMac === device.macAddress
                           ? "bg-green-500 text-white"
-                          : "bg-cyan-600 text-white hover:bg-cyan-700"
+                          : "bg-blue-500 text-white"
                       }`}
                       disabled={
                         loading || connectingMacAddress === device.macAddress
@@ -350,15 +346,13 @@ const ScanDataPage = () => {
                         : "Connect"}
                     </button>
                     <button
-                      onClick={(e) =>
-                        handleInitBleDataClick(e, device.macAddress)
-                      }
-                      className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
+                      onClick={() => handleInitBleDataClick(device.macAddress)}
+                      className={`w-full px-4 py-2 border rounded-md ${
                         initializingMacAddress === device.macAddress
                           ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
                           : initSuccessMac === device.macAddress
                           ? "bg-green-500 text-white"
-                          : "bg-cyan-700 text-white"
+                          : "bg-yellow-500 text-white"
                       }`}
                       disabled={
                         loading || initializingMacAddress === device.macAddress
