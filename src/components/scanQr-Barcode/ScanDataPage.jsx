@@ -202,13 +202,19 @@ const ScanDataPage = () => {
     }
   };
 
-  // Handler to initialize BLE data and perform matching
-  const handleInitBleDataClick = async (macAddress) => {
-    setInitializingMacAddress(macAddress);
-    setLoading(true);
+// Handler to initialize BLE data and perform matching
+const handleInitBleDataClick = async (macAddress) => {
+  setInitializingMacAddress(macAddress);
+  setLoading(true);
 
-    try {
-      const response = await initBleData(macAddress); // Function to initialize BLE data
+  try {
+    const response = await initBleData(macAddress); // Function to initialize BLE data
+
+    // Debugging: Log the response structure to understand what is being returned
+    console.log("Response from initBleData:", response);
+
+    // Ensure response and dataList exist before proceeding
+    if (response && response.dataList) {
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
 
       // Perform a search in the initialized data to find a match with the scanned barcode
@@ -224,26 +230,35 @@ const ScanDataPage = () => {
         setInitSuccessMac(macAddress);
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 35000);
-    } catch (error) {
-      console.error("Error during BLE Data Initialization:", error.message);
-      alert("Failed to initialize BLE data. Please try again.");
-    } finally {
-      setInitializingMacAddress(null);
-      setLoading(false);
+    } else {
+      console.warn("Response from initBleData does not contain dataList.");
+      alert("Initialization data is missing or incomplete. Please try again.");
     }
-  };
+  } catch (error) {
+    console.error("Error during BLE Data Initialization:", error.message);
+    alert("Failed to initialize BLE data. Please try again.");
+  } finally {
+    setInitializingMacAddress(null);
+    setLoading(false);
+  }
+};
 
-  // Helper function to recursively search for a match in BLE data
-  const findMatchingDevice = (deviceData, scannedData) => {
-    return deviceData.dataList?.find((device) => {
-      return device.services.some((service) => {
-        return Object.keys(service.characterMap).some((charUuid) => {
-          const characteristic = service.characterMap[charUuid];
-          return recursiveSearch(characteristic, scannedData); // Search dynamically in metadata
-        });
+// Updated findMatchingDevice function to safely handle undefined dataList
+const findMatchingDevice = (deviceData, scannedData) => {
+  if (!deviceData?.dataList) {
+    console.warn("findMatchingDevice: dataList is undefined.");
+    return null;
+  }
+
+  return deviceData.dataList.find((device) => {
+    return device.services.some((service) => {
+      return Object.keys(service.characterMap).some((charUuid) => {
+        const characteristic = service.characterMap[charUuid];
+        return recursiveSearch(characteristic, scannedData); // Search dynamically in metadata
       });
     });
-  };
+  });
+};
 
   // Helper function to check each property of an object recursively
   const recursiveSearch = (obj, searchValue) => {
