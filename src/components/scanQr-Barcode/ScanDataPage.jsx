@@ -130,6 +130,8 @@ const ScanDataPage = () => {
       );
     }
   };
+
+
   // Initialize and check BLE data for a barcode match
   const initBleData = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
@@ -139,6 +141,7 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
 
             // Check if dataList exists before proceeding
             if (!parsedData || !parsedData.dataList) {
@@ -168,7 +171,7 @@ const ScanDataPage = () => {
               connectToNextDevice();
             }
           } catch (error) {
-            console.error("Error parsing response data in initBleData:", error);
+            console.error("Error parsing response data in initBleData:", error.message);
             alert("Error initializing BLE data. Please try again.");
           }
         }
