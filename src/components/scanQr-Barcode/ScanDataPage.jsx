@@ -84,6 +84,7 @@ const ScanDataPage = () => {
       console.log("Scanned Value:", scannedValue);
       setScannedBarcode(scannedValue);
       initiateDeviceQueue(); // Start pairing process
+      dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
     } else {
       console.error("Invalid scan data received.");
       alert("Invalid scan data. Neither a barcode nor a QR code.");
