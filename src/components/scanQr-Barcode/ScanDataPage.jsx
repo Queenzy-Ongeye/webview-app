@@ -140,10 +140,8 @@ const initBleData = (macAddress) => {
         try {
           const parsedData = JSON.parse(responseData);
 
-          // Log the parsed data structure for debugging
           console.log("Parsed data from initBleData:", parsedData);
 
-          // Check if dataList is defined and is an array
           if (parsedData && Array.isArray(parsedData.dataList)) {
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
             const matchingDevice = findMatchingDevice(parsedData);
@@ -151,11 +149,24 @@ const initBleData = (macAddress) => {
             if (matchingDevice) {
               console.log("Matching BLE device found:", matchingDevice);
               dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+              setDeviceStatus((prevStatus) => ({
+                ...prevStatus,
+                [macAddress]: "Matching device found!",
+              }));
             } else {
-              alert("No match found. Trying next device...");
-              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Continue with next device
-              connectToNextDevice();
+              setDeviceStatus((prevStatus) => ({
+                ...prevStatus,
+                [macAddress]: "No match found for the scanned barcode.",
+              }));
             }
+
+            // Clear the status message after a few seconds
+            setTimeout(() => {
+              setDeviceStatus((prevStatus) => ({
+                ...prevStatus,
+                [macAddress]: null,
+              }));
+            }, 5000); // Clears message after 5 seconds
           } else {
             console.warn("Received data does not contain a valid dataList.");
             alert("Initialization data is incomplete. Please try again.");
@@ -244,7 +255,7 @@ const initBleData = (macAddress) => {
       setTimeout(() => {
         setInitializingMacAddress(null);
         setLoading(false);
-      }, 10000);
+      }, 20000);
     }
   };
   
@@ -344,10 +355,9 @@ const findMatchingDevice = (deviceData) => {
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
-          <p className="text-left mt-2">Barcode Number{state.scannedData}</p>
+          <p className="text-left mt-2">Barcode Number: {state.scannedData}</p>
         )}
-
-        {/* Display detected BLE devices */}
+  
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-left">
             Detected BLE Devices:
@@ -365,10 +375,10 @@ const findMatchingDevice = (deviceData) => {
                 <React.Fragment key={device.macAddress}>
                   <li className="mt-2 p-2 border rounded-md shadow">
                     <p className="text-gray-700">
-                      {device.name || "Unknown Device"}
+                      Device Name: {device.name || "Unknown Device"}
                     </p>
-                    <p className="text-gray-700">{device.macAddress}</p>
-                    <p className="text-gray-700">{device.rssi}db</p>
+                    <p className="text-gray-700">Mac-Address: {device.macAddress}</p>
+                    <p className="text-gray-700">Signal Strength: {device.rssi}db</p>
                   </li>
                   <div className="flex justify-between mt-2">
                     <button
@@ -410,6 +420,13 @@ const findMatchingDevice = (deviceData) => {
                         : "Init BLE Data"}
                     </button>
                   </div>
+  
+                  {/* Display connection or match status below each device */}
+                  {deviceStatus[device.macAddress] && (
+                    <p className="mt-1 text-sm text-center font-semibold">
+                      {deviceStatus[device.macAddress]}
+                    </p>
+                  )}
                 </React.Fragment>
               ))}
             </ul>
@@ -417,7 +434,7 @@ const findMatchingDevice = (deviceData) => {
             <p className="text-gray-500">No BLE devices detected.</p>
           )}
         </div>
-
+  
         <button
           onClick={startQrCodeScan}
           className="fixed bottom-20 right-3 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
@@ -431,7 +448,7 @@ const findMatchingDevice = (deviceData) => {
         </div>
       )}
     </div>
-  );
+  );  
 };
 
 export default ScanDataPage;
