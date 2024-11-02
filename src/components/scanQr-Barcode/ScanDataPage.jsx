@@ -316,7 +316,7 @@ const ScanDataPage = () => {
               alert("Initialization data is incomplete. Please try again.");
             }
           } catch (error) {
-            console.error("Error processing initBleData response:", error);
+            console.error("Error processing initBleData response:", error.message);
             alert("An error occurred while processing BLE data.");
           }
         }
