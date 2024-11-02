@@ -235,27 +235,61 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-  
-            // Log data to confirm structure if dataList is missing
-            if (!parsedData?.dataList) {
-              console.warn("Received data does not contain a valid dataList.", parsedData);
-              showNotification("Initialization data is incomplete. Please try again.");
+
+            // Check if `dataList` exists and has entries
+            if (!parsedData?.dataList || parsedData.dataList.length === 0) {
+              console.warn(
+                "Received data does not contain a valid dataList:",
+                parsedData
+              );
+              showNotification(
+                "Initialization data is incomplete. Please try again."
+              );
               return;
             }
-  
+
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-            const matchingDevice = findMatchingDevice(parsedData);
-  
-            if (matchingDevice) {
-              console.log("Matching BLE device found:", matchingDevice);
-              dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
-              setMatchedDevices((prevMatched) => [...prevMatched, matchingDevice]);
-              showNotification("Matching device found!");
-            } else {
+
+            let matchFound = false;
+            // Iterate over each item in dataList
+            parsedData.dataList.forEach((item) => {
+              Object.keys(item.characterMap).forEach((uuid) => {
+                const characteristic = item.characterMap[uuid];
+
+                // Check if `realVal` or `desc` contains the scanned data
+                const isMatch =
+                  characteristic.realVal
+                    ?.toString()
+                    .includes(state.scannedData) ||
+                  characteristic.desc?.toString().includes(state.scannedData);
+
+                if (isMatch) {
+                  matchFound = true;
+                  console.log(
+                    "Matching BLE device characteristic found:",
+                    characteristic
+                  );
+                  dispatch({
+                    type: "SET_MATCHING_DEVICE",
+                    payload: { macAddress, characteristic },
+                  });
+                  setMatchedDevices((prevMatched) => [
+                    ...prevMatched,
+                    { macAddress, characteristic },
+                  ]);
+                  showNotification("Matching device found!");
+                }
+              });
+            });
+
+            if (!matchFound) {
               showNotification("No match found for the scanned barcode.");
             }
           } catch (error) {
-            console.error("Error processing initBleData response:", error.message);
+            console.error(
+              "Error processing initBleData response:",
+              error.message
+            );
             showNotification("An error occurred while processing BLE data.");
           }
         }
@@ -269,10 +303,10 @@ const ScanDataPage = () => {
 
   const findMatchingDevice = (deviceData) => {
     const scannedData = state.scannedData;
-  
+
     // Check if scanned data exists
     if (!scannedData) return null;
-  
+
     // Loop through dataList to find a device with a characteristic that contains the scanned data
     return deviceData.dataList?.find((device) =>
       device.services?.some((service) =>
