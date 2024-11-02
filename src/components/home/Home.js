@@ -131,17 +131,7 @@ const Home = () => {
           (data, responseCallback) => {
             try {
               const parsedData = JSON.parse(data);
-              if (
-                parsedData &&
-                parsedData.respData &&
-                parsedData.respData.value
-              ) {
-                const scannedValue = parsedData.respData.value;
-                console.log("Scanned Value:", scannedValue);
-                handleScanData(scannedValue); // Handle the scanned data
-              } else {
-                throw new Error("No valid scan data received.");
-              }
+              dispatch({type: "SET_SCANNED_DATA", payload: parsedData})
               responseCallback(parsedData);
             } catch (error) {
               console.error(
@@ -158,7 +148,6 @@ const Home = () => {
           (data, responseCallback) => {
             try {
               const parsedMessage = JSON.parse(data);
-              console.log("MQTT message received:", parsedMessage);
               dispatch({ type: "SET_MQTT_MESSAGE", payload: parsedMessage }); // Dispatch the MQTT message
               responseCallback(parsedMessage);
             } catch (error) {
@@ -281,79 +270,6 @@ const Home = () => {
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
-  };
-
-  const startQrCode = () => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "startQrCodeScan",
-        999, // Arbitrary request ID
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData.data);
-            if (
-              !parsedData ||
-              !parsedData.respData ||
-              !parsedData.respData.value
-            ) {
-              throw new Error("No valid QR or barcode scan data received");
-            }
-            const scannedValue = parsedData.respData.value; // Extract the scanned value (barcode/QR code)
-            console.log("Scanned Value:", scannedValue);
-            handleScanData(scannedValue);
-          } catch (error) {
-            console.error("Error during QR/Barcode scan:", error.message);
-          }
-        }
-      );
-      dispatch({ type: "SET_QR_SCANNING", payload: true });
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
-  const handleScanData = (data) => {
-    console.log("Scanned data received: ", data);
-    if (isBarcode(data)) {
-      fetchProductDetails(data); // Process barcode to fetch product details
-    } else if (isQrCode(data)) {
-      dispatch({ type: "SET_SCANNED_DATA", payload: data });
-    } else {
-      console.error("Invalid scan data. Neither a barcode nor a QR code.");
-    }
-  };
-
-  const isBarcode = (data) => {
-    const numericPattern = /^[0-9]+$/;
-    const barcodeLengths = [8, 12, 13];
-    return numericPattern.test(data) && barcodeLengths.includes(data.length);
-  };
-
-  const isQrCode = (data) => {
-    const urlPattern = /^(http|https):\/\/[^ "]+$/;
-    const structuredDataPattern =
-      /^[a-zA-Z0-9]+=[a-zA-Z0-9]+(&[a-zA-Z0-9]+=[a-zA-Z0-9]+)*$/;
-    const nonNumericPattern = /[^0-9]/;
-    return (
-      urlPattern.test(data) ||
-      structuredDataPattern.test(data) ||
-      (data.length > 20 && nonNumericPattern.test(data))
-    );
-  };
-
-  const fetchProductDetails = (barcode) => {
-    getDataByBarcode(barcode)
-      .then((product) => {
-        if (product) {
-          dispatch({ type: "SET_SCANNED_DATA", payload: product });
-          navigate("/scan-data", { state: { scannedData: product } });
-        } else {
-          console.error("Product not found for barcode:", barcode);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching product details: ", error);
-      });
   };
 
   return (
