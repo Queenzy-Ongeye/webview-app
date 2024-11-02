@@ -15,6 +15,12 @@ const ScanDataPage = () => {
   const requestCode = 999;
   const [matchedDevices, setMatchedDevices] = useState([]); // New state for matched devices
   const [deviceStatus, setDeviceStatus] = useState({}); // Holds status messages for each device by macAddress
+  const [notificationMessage, setNotificationMessage] = useState(null); // State for notification message
+
+  // Function to show notification
+  const showNotification = (message) => {
+    setNotificationMessage(message);
+  };
 
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
@@ -239,15 +245,9 @@ const ScanDataPage = () => {
                   ...prevMatched,
                   matchingDevice,
                 ]); // Update matched devices
-                setDeviceStatus((prevStatus) => ({
-                  ...prevStatus,
-                  [macAddress]: "Matching device found!",
-                }));
+                showNotification("Matching BLE device found!");
               } else {
-                setDeviceStatus((prevStatus) => ({
-                  ...prevStatus,
-                  [macAddress]: "No match found for the scanned barcode.",
-                }));
+                showNotification("No match found for the scanned barcode.");
               }
 
               // Clear the status message after a few seconds
@@ -277,18 +277,27 @@ const ScanDataPage = () => {
 
   // Refactored to match the scanned data with nested device characteristics
   const findMatchingDevice = (deviceData) => {
+    const scannedData = state.scannedData?.toString();
+
+    if (!scannedData) {
+      console.warn("No scanned data available to match.");
+      return null;
+    }
+
+    // Check each device's characteristics for any match with the scanned data
     return deviceData.dataList?.find((device) =>
       device.services?.some((service) =>
         Object.values(service.characterMap || {}).some((characteristic) =>
-          characteristicContainsScannedData(characteristic)
+          checkCharacteristicForMatch(characteristic, scannedData)
         )
       )
     );
   };
 
-  const characteristicContainsScannedData = (characteristic) => {
-    const scannedData = state.scannedData?.toString();
-    const propertiesToCheck = ["realVal", "desc"];
+  // Helper function to check if a characteristic contains the scanned data
+  const checkCharacteristicForMatch = (characteristic, scannedData) => {
+    const propertiesToCheck = ["realVal", "desc", "name", "uuid"];
+
     return propertiesToCheck.some((property) =>
       characteristic[property]?.toString().includes(scannedData)
     );
@@ -344,6 +353,11 @@ const ScanDataPage = () => {
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
+      {/* Notification Component */}
+      <Notification
+        message={notificationMessage}
+        onClose={() => setNotificationMessage(null)}
+      />
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
@@ -469,13 +483,6 @@ const ScanDataPage = () => {
                         : "Init BLE Data"}
                     </button>
                   </div>
-
-                  {/* Display connection or match status below each device */}
-                  {deviceStatus[device.macAddress] && (
-                    <p className="mt-1 text-sm text-center font-semibold">
-                      {deviceStatus[device.macAddress]}
-                    </p>
-                  )}
                 </React.Fragment>
               ))}
             </ul>
