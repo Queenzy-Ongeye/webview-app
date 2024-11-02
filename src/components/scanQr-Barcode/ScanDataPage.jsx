@@ -360,13 +360,13 @@ const ScanDataPage = () => {
         )}
 
         {/* Display Matched Devices */}
-        {matchedDevices.length > 0 && (
+        {state.matchingDevice && state.matchingDevice.length > 0 && (
           <div className="mt-6">
             <h3 className="text-lg font-semibold text-left">
               Matched Devices:
             </h3>
             <ul className="text-left">
-              {matchedDevices.map((device, index) => (
+              {state.matchingDevice.map((device, index) => (
                 <li
                   key={index}
                   className="mt-2 p-2 border rounded-md shadow bg-green-100"
