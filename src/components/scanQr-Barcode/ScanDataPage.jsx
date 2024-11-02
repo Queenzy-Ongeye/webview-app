@@ -240,13 +240,13 @@ const ScanDataPage = () => {
 
             // Check if `dataList` exists inside `parsedData` and is an array
             if (
-              !parsedData.dataList ||
-              !Array.isArray(parsedData.dataList) ||
+              !parsedData.data ||
+              !Array.isArray(parsedData.data) ||
               parsedData.dataList.length === 0
             ) {
               console.warn(
                 "Received data does not contain a valid dataList:",
-                parsedData.dataList
+                parsedData.data
               );
               showNotification(
                 "Initialization data is incomplete. Please try again."
@@ -257,7 +257,7 @@ const ScanDataPage = () => {
             let matchFound = false;
             const startTime = Date.now(); // Track start time
             // Iterate over each item in dataList
-            parsedData?.dataList.forEach((item) => {
+            parsedData?.data.forEach((item) => {
               Object.keys(item.characterMap).forEach((uuid) => {
                 const characteristic = item.characterMap[uuid];
 
