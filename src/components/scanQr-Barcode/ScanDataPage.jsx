@@ -10,7 +10,6 @@ const ScanDataPage = () => {
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
-  const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
   const requestCode = 999;
   const [deviceStatus, setDeviceStatus] = useState({}); // Holds status messages for each device by macAddress
@@ -414,7 +413,7 @@ const ScanDataPage = () => {
                       className={`w-full px-4 py-2 border rounded-md ${
                         initializingMacAddress === device.macAddress
                           ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                          : initSuccessMac === device.macAddress
+                          : initializingMacAddress === device.macAddress
                           ? "bg-green-500 text-white"
                           : "bg-yellow-500 text-white"
                       }`}
@@ -424,7 +423,7 @@ const ScanDataPage = () => {
                     >
                       {initializingMacAddress === device.macAddress
                         ? "Initializing..."
-                        : initSuccessMac === device.macAddress
+                        : initializingMacAddress === device.macAddress
                         ? "Initialized"
                         : "Init BLE Data"}
                     </button>
