@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import Notification from "../notification/Notification";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
