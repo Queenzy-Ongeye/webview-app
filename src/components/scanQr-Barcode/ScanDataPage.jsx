@@ -165,23 +165,23 @@ const ScanDataPage = () => {
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-
+  
     setInitializingMacAddress(macAddress);
     setLoading(true);
-
+  
     try {
       const response = await initBleData(macAddress);
       console.log("Response from initBleData:", response);
       const parsedData = JSON.parse(response);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: parsedData });
-
+  
       if (parsedData) {
-        // Attempt to find a matching device
+        // Attempt to find a matching device using the updated function
         const matchingDevice = findMatchingDevice(parsedData);
         if (matchingDevice) {
           dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
           console.log("Matching BLE device found:", matchingDevice);
-
+  
           // Update UI status to show matching result
           setDeviceStatus((prevStatus) => ({
             ...prevStatus,
@@ -193,7 +193,7 @@ const ScanDataPage = () => {
             [macAddress]: "No match found for the scanned barcode.",
           }));
         }
-
+  
         // Clear the status message after a few seconds
         setTimeout(() => {
           setDeviceStatus((prevStatus) => ({
@@ -205,6 +205,7 @@ const ScanDataPage = () => {
         console.warn("Initialization data is incomplete or missing.");
         alert("Initialization data is missing. Please try again.");
       }
+  
       // Set success state for the current MAC
       setTimeout(() => {
         setInitSuccessMac(macAddress);
@@ -220,6 +221,7 @@ const ScanDataPage = () => {
       }, 20000);
     }
   };
+  
 
   const connectToBluetoothDevice = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
