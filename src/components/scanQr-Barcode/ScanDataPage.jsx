@@ -237,7 +237,7 @@ const ScanDataPage = () => {
             const parsedData = JSON.parse(responseData);
 
             // Check if `dataList` exists and has entries
-            if (!parsedData?.dataList || parsedData.dataList.length === 0) {
+            if (!parsedData || parsedData.length === 0) {
               console.warn(
                 "Received data does not contain a valid dataList:",
                 parsedData
@@ -252,7 +252,7 @@ const ScanDataPage = () => {
 
             let matchFound = false;
             // Iterate over each item in dataList
-            parsedData.dataList.forEach((item) => {
+            parsedData.forEach((item) => {
               Object.keys(item.characterMap).forEach((uuid) => {
                 const characteristic = item.characterMap[uuid];
 
