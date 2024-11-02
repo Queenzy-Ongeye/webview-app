@@ -16,6 +16,8 @@ const ScanDataPage = () => {
   const requestCode = 999;
   const [matchedDevices, setMatchedDevices] = useState([]); // New state for matched devices
   const [notificationMessage, setNotificationMessage] = useState(null); // State for notification message
+  const [parsedData, setParsedData] = useState(null); // New state for displaying parsedData
+
 
   // Function to show notification
   const showNotification = (message) => {
@@ -238,10 +240,11 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(responseData);
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            setParsedData(parsedData)
 
             let matchFound = false;
             // Iterate over each item in dataList
-            parsedData?.data.forEach((item) => {
+            parsedData.forEach((item) => {
               Object.keys(item.characterMap).forEach((uuid) => {
                 const characteristic = item.characterMap[uuid];
 
@@ -515,6 +518,17 @@ const ScanDataPage = () => {
             </ul>
           ) : (
             <p className="text-gray-500">No BLE devices detected.</p>
+          )}
+          {/* Display parsedData for debugging */}
+          {parsedData && (
+            <div className="mt-6 p-4 border rounded-md bg-gray-100">
+              <h3 className="text-lg font-semibold">
+                Parsed Data (Debugging):
+              </h3>
+              <pre className="overflow-auto mt-2 bg-white p-2 rounded-md shadow-inner max-h-96">
+                {JSON.stringify(parsedData, null, 2)}
+              </pre>
+            </div>
           )}
         </div>
 
