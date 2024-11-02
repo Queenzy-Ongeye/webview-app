@@ -162,7 +162,6 @@ const ScanDataPage = () => {
     }
   };
 
-  // Updated handleInitBleDataClick to check for matching device and update UI
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
@@ -171,7 +170,7 @@ const ScanDataPage = () => {
     setLoading(true);
 
     try {
-      const response = initBleData(macAddress);
+      const response = await initBleData(macAddress);
       console.log("Response from initBleData:", response);
       const parsedData = JSON.parse(response);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: parsedData });
@@ -194,18 +193,18 @@ const ScanDataPage = () => {
             [macAddress]: "No match found for the scanned barcode.",
           }));
         }
+
         // Clear the status message after a few seconds
         setTimeout(() => {
           setDeviceStatus((prevStatus) => ({
             ...prevStatus,
             [macAddress]: null,
           }));
-        }, 15000); // Clears message after 5 seconds
+        }, 15000); // Clears message after 15 seconds
       } else {
         console.warn("Initialization data is incomplete or missing.");
         alert("Initialization data is missing. Please try again.");
       }
-
       // Set success state for the current MAC
       setTimeout(() => {
         setInitSuccessMac(macAddress);
@@ -250,29 +249,16 @@ const ScanDataPage = () => {
 
   // Enhanced logging for findMatchingDevice
   const findMatchingDevice = (deviceData) => {
-    const parsedData = JSON.parse(deviceData);
-    if (!Array.isArray(parsedData?.dataList)) {
-      console.warn(
-        "findMatchingDevice: dataList is undefined or not an array."
-      );
-      return null;
-    }
-
-    // Log scanned data for comparison
-    console.log("Scanned Data:", state.scannedData);
-
-    return parsedData.dataList.find((device) => {
-      const hasMatch = device.services?.some((service) =>
+    // Iterate over each device in dataList to find a match
+    return deviceData.dataList.find((device) =>
+      device.services?.some((service) =>
         Object.values(service.characterMap || {}).some((characteristic) =>
-          recursiveSearch(characteristic, state.scannedData)
+          characteristicContainsScannedData(characteristic, state.scannedData)
         )
-      );
-      if (hasMatch) {
-        console.log("Match found in device:", device);
-      }
-      return hasMatch;
-    });
+      )
+    );
   };
+  
 
   // UI handling for matching status
   const initBleData = (macAddress) => {
@@ -316,7 +302,10 @@ const ScanDataPage = () => {
               alert("Initialization data is incomplete. Please try again.");
             }
           } catch (error) {
-            console.error("Error processing initBleData response:", error.message);
+            console.error(
+              "Error processing initBleData response:",
+              error.message
+            );
             alert("An error occurred while processing BLE data.");
           }
         }
