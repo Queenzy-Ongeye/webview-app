@@ -162,66 +162,47 @@ const ScanDataPage = () => {
     }
   };
 
+  // Initiate device pairing process
   const handleInitBleDataClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-  
+
     setInitializingMacAddress(macAddress);
-    setLoading(true);
-  
+
     try {
       const response = await initBleData(macAddress);
-      console.log("Response from initBleData:", response);
       const parsedData = JSON.parse(response);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: parsedData });
-  
-      if (parsedData) {
-        // Attempt to find a matching device using the updated function
+
+      // Match device logic
+      if (parsedData && parsedData.dataList) {
         const matchingDevice = findMatchingDevice(parsedData);
         if (matchingDevice) {
           dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
-          console.log("Matching BLE device found:", matchingDevice);
-  
-          // Update UI status to show matching result
-          setDeviceStatus((prevStatus) => ({
-            ...prevStatus,
+          setDeviceStatus((prev) => ({
+            ...prev,
             [macAddress]: "Matching device found!",
           }));
         } else {
-          setDeviceStatus((prevStatus) => ({
-            ...prevStatus,
+          setDeviceStatus((prev) => ({
+            ...prev,
             [macAddress]: "No match found for the scanned barcode.",
           }));
         }
-  
-        // Clear the status message after a few seconds
+        // Clear status after a delay
         setTimeout(() => {
-          setDeviceStatus((prevStatus) => ({
-            ...prevStatus,
-            [macAddress]: null,
-          }));
-        }, 15000); // Clears message after 15 seconds
+          setDeviceStatus((prev) => ({ ...prev, [macAddress]: null }));
+        }, 5000);
       } else {
-        console.warn("Initialization data is incomplete or missing.");
         alert("Initialization data is missing. Please try again.");
       }
-  
-      // Set success state for the current MAC
-      setTimeout(() => {
-        setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000);
-      }, 38000);
     } catch (error) {
-      console.error("Error during BLE Data Initialization:", error.message);
+      console.error("Error initializing BLE data:", error.message);
       alert("Failed to initialize BLE data. Please try again.");
     } finally {
-      setTimeout(() => {
-        setInitializingMacAddress(null);
-        setLoading(false);
-      }, 20000);
+      setInitializingMacAddress(null);
     }
   };
-  
 
   const connectToBluetoothDevice = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
@@ -258,7 +239,7 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-            if (parsedData) {
+            if (parsedData && parsedData.dataList) {
               dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
               const matchingDevice = findMatchingDevice(parsedData);
 
@@ -304,27 +285,25 @@ const ScanDataPage = () => {
     }
   };
 
+
+  // Refactored to match the scanned data with nested device characteristics
   const findMatchingDevice = (deviceData) => {
-    // Iterate over each device in dataList to find a match
-    return deviceData.dataList.find((device) =>
+    return deviceData.dataList?.find((device) =>
       device.services?.some((service) =>
         Object.values(service.characterMap || {}).some((characteristic) =>
-          characteristicContainsScannedData(characteristic, state.scannedData)
+          characteristicContainsScannedData(characteristic)
         )
       )
     );
   };
-  
-  // Helper function to check if a characteristic contains the scanned barcode data
-  const characteristicContainsScannedData = (characteristic, scannedData) => {
-    // List the specific properties where you expect to find the scanned data
+
+  const characteristicContainsScannedData = (characteristic) => {
+    const scannedData = state.scannedData?.toString();
     const propertiesToCheck = ["realVal", "desc"];
-  
     return propertiesToCheck.some((property) =>
-      characteristic[property]?.toString().includes(scannedData.toString())
+      characteristic[property]?.toString().includes(scannedData)
     );
   };
-  
 
   const recursiveSearch = (obj, searchValue) => {
     if (typeof obj === "string" || typeof obj === "number") {
