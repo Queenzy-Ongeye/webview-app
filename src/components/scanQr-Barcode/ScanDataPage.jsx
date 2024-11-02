@@ -175,18 +175,22 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setInitializingMacAddress(macAddress);
+    setLoading(true);
 
     try {
-      const response = initBleData(macAddress);
-      const parsedData = JSON.parse(response);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: parsedData });
+      const response = await initBleData(macAddress);
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+
+      // If initialization is successful, set the success state for the current MAC
       setTimeout(() => {
         setInitSuccessMac(macAddress);
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 35000);
     } catch (error) {
-      console.error("Error initializing BLE data:", error.message);
+      console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
+
+      // Ensure that the success state is not set in case of failure
       setInitSuccessMac(null);
     } finally {
       setTimeout(() => {
