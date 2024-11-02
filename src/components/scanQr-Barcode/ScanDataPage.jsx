@@ -10,6 +10,7 @@ const ScanDataPage = () => {
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
+  const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
   const requestCode = 999;
   const [deviceStatus, setDeviceStatus] = useState({}); // Holds status messages for each device by macAddress
@@ -195,11 +196,19 @@ const ScanDataPage = () => {
       } else {
         alert("Initialization data is missing. Please try again.");
       }
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 35000);
     } catch (error) {
       console.error("Error initializing BLE data:", error.message);
       alert("Failed to initialize BLE data. Please try again.");
+      setInitSuccessMac(null);
     } finally {
-      setInitializingMacAddress(null);
+      setTimeout(() => {
+        setInitializingMacAddress(null);
+        setLoading(false);
+      }, 35000);
     }
   };
 
@@ -358,7 +367,6 @@ const ScanDataPage = () => {
         {state.scannedData && (
           <p className="text-left mt-2">Barcode Number: {state.scannedData}</p>
         )}
-
         {/* Display Matched Devices */}
         {state.matchingDevice && state.matchingDevice.length > 0 && (
           <div className="mt-6">
@@ -385,7 +393,6 @@ const ScanDataPage = () => {
             </ul>
           </div>
         )}
-
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-left">
             Detected BLE Devices:
@@ -439,7 +446,7 @@ const ScanDataPage = () => {
                       className={`w-full px-4 py-2 border rounded-md ${
                         initializingMacAddress === device.macAddress
                           ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                          : initializingMacAddress === device.macAddress
+                          : initSuccessMac === device.macAddress
                           ? "bg-green-500 text-white"
                           : "bg-yellow-500 text-white"
                       }`}
@@ -449,7 +456,7 @@ const ScanDataPage = () => {
                     >
                       {initializingMacAddress === device.macAddress
                         ? "Initializing..."
-                        : initializingMacAddress === device.macAddress
+                        : initSuccessMac === device.macAddress
                         ? "Initialized"
                         : "Init BLE Data"}
                     </button>
