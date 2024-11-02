@@ -258,7 +258,16 @@ const ScanDataPage = () => {
       )
     );
   };
-  
+
+  // Helper function to check if a characteristic contains the scanned barcode data
+  const characteristicContainsScannedData = (characteristic, scannedData) => {
+    // List the specific properties where you expect to find the scanned data
+    const propertiesToCheck = ["realVal", "desc"];
+
+    return propertiesToCheck.some((property) =>
+      characteristic[property]?.toString().includes(scannedData.toString())
+    );
+  };
 
   // UI handling for matching status
   const initBleData = (macAddress) => {
