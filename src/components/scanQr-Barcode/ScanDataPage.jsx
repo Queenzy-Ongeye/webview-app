@@ -13,6 +13,7 @@ const ScanDataPage = () => {
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
   const requestCode = 999;
+  const [matchedDevices, setMatchedDevices] = useState([]); // New state for matched devices
   const [deviceStatus, setDeviceStatus] = useState({}); // Holds status messages for each device by macAddress
 
   // Function to initiate the QR/barcode scan
@@ -118,7 +119,7 @@ const ScanDataPage = () => {
         nextDeviceMac,
         (responseData) => {
           const parsedData = JSON.parse(responseData);
-          if (parsedData.respCode === "200") {
+          if (parsedData.respCode === 200) {
             initBleData(nextDeviceMac);
           } else {
             alert("Connection failed. Trying next device...");
@@ -139,7 +140,7 @@ const ScanDataPage = () => {
 
     try {
       // Attempt to connect to the Bluetooth device
-      await connectToBluetoothDevice(macAddress);
+      connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
       // If the connection is successful, set the success state for the current MAC
@@ -170,32 +171,9 @@ const ScanDataPage = () => {
     setInitializingMacAddress(macAddress);
 
     try {
-      const response = await initBleData(macAddress);
+      const response = initBleData(macAddress);
       const parsedData = JSON.parse(response);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: parsedData });
-
-      // Match device logic
-      if (parsedData && parsedData.dataList) {
-        const matchingDevice = findMatchingDevice(parsedData);
-        if (matchingDevice) {
-          dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
-          setDeviceStatus((prev) => ({
-            ...prev,
-            [macAddress]: "Matching device found!",
-          }));
-        } else {
-          setDeviceStatus((prev) => ({
-            ...prev,
-            [macAddress]: "No match found for the scanned barcode.",
-          }));
-        }
-        // Clear status after a delay
-        setTimeout(() => {
-          setDeviceStatus((prev) => ({ ...prev, [macAddress]: null }));
-        }, 5000);
-      } else {
-        alert("Initialization data is missing. Please try again.");
-      }
       setTimeout(() => {
         setInitSuccessMac(macAddress);
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
@@ -257,6 +235,10 @@ const ScanDataPage = () => {
                   type: "SET_MATCHING_DEVICE",
                   payload: matchingDevice,
                 });
+                setMatchedDevices((prevMatched) => [
+                  ...prevMatched,
+                  matchingDevice,
+                ]); // Update matched devices
                 setDeviceStatus((prevStatus) => ({
                   ...prevStatus,
                   [macAddress]: "Matching device found!",
@@ -368,13 +350,13 @@ const ScanDataPage = () => {
           <p className="text-left mt-2">Barcode Number: {state.scannedData}</p>
         )}
         {/* Display Matched Devices */}
-        {state.matchingDevice && state.matchingDevice.length > 0 && (
+        {matchedDevices.length > 0 && (
           <div className="mt-6">
             <h3 className="text-lg font-semibold text-left">
               Matched Devices:
             </h3>
             <ul className="text-left">
-              {state.matchingDevice.map((device, index) => (
+              {matchedDevices.map((device, index) => (
                 <li
                   key={index}
                   className="mt-2 p-2 border rounded-md shadow bg-green-100"
@@ -393,6 +375,32 @@ const ScanDataPage = () => {
             </ul>
           </div>
         )}
+        {matchedDevices.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-left">
+              Matched Devices:
+            </h3>
+            <ul className="text-left">
+              {matchedDevices.map((device, index) => (
+                <li
+                  key={index}
+                  className="mt-2 p-2 border rounded-md shadow bg-green-100"
+                >
+                  <p className="text-gray-700">
+                    Device Name: {device.name || "Unknown Device"}
+                  </p>
+                  <p className="text-gray-700">
+                    Mac-Address: {device.macAddress}
+                  </p>
+                  <p className="text-gray-700">
+                    Signal Strength: {device.rssi}db
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-left">
             Detected BLE Devices:
