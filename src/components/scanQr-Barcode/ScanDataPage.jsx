@@ -18,7 +18,6 @@ const ScanDataPage = () => {
   const [notificationMessage, setNotificationMessage] = useState(null); // State for notification message
   const [parsedData, setParsedData] = useState(null); // New state for displaying parsedData
 
-
   // Function to show notification
   const showNotification = (message) => {
     setNotificationMessage(message);
@@ -232,7 +231,7 @@ const ScanDataPage = () => {
   const initBleData = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
       showNotification("Searching for match...");
-      const startTime = Date.now(); // Track start time
+
       window.WebViewJavascriptBridge.callHandler(
         "initBleData",
         macAddress,
@@ -240,59 +239,13 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(responseData);
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-            setParsedData(parsedData)
-
-            let matchFound = false;
-            // Iterate over each item in dataList
-            parsedData.forEach((item) => {
-              Object.keys(item.characterMap).forEach((uuid) => {
-                const characteristic = item.characterMap[uuid];
-
-                // Check if `realVal` or `desc` contains the scanned data
-                const isMatch =
-                  characteristic.realVal
-                    ?.toString()
-                    .includes(state.scannedData) ||
-                  characteristic.desc?.toString().includes(state.scannedData);
-
-                if (isMatch) {
-                  matchFound = true;
-                  console.log(
-                    "Matching BLE device characteristic found:",
-                    characteristic
-                  );
-                  dispatch({
-                    type: "SET_MATCHING_DEVICE",
-                    payload: { macAddress, characteristic },
-                  });
-                  setMatchedDevices((prevMatched) => [
-                    ...prevMatched,
-                    { macAddress, characteristic },
-                  ]);
-                  showNotification("Matching device found!");
-                }
-              });
-            });
-
-            const endTime = Date.now(); // Track end time
-            const duration = (endTime - startTime) / 1000; // Duration in seconds
-            console.log(`Search completed in ${duration} seconds`);
-
-            // If no match was found, notify the user
-            if (!matchFound) {
-              showNotification("No match found for the scanned barcode.");
-            } else {
-              // Also, notify how long the search took if a match was found
-              showNotification(
-                `Match found! Search took ${duration.toFixed(2)} seconds.`
-              );
-            }
+            searchForMatch();
           } catch (error) {
             console.error(
               "Error processing initBleData response:",
               error.message
             );
-            showNotification("Loading...");
+            showNotification("Failed to load data");
           }
         }
       );
@@ -301,49 +254,35 @@ const ScanDataPage = () => {
     }
   };
 
-  // Refactored to match the scanned data with nested device characteristics
+  // Search for a match in the BLE data once initialized
+  const searchForMatch = () => {
+    const { initBleData, scannedData } = state;
 
-  const findMatchingDevice = (deviceData) => {
-    const scannedData = state.scannedData;
-
-    // Check if scanned data exists
-    if (!scannedData) return null;
-
-    // Loop through dataList to find a device with a characteristic that contains the scanned data
-    return deviceData.dataList?.find((device) =>
-      device.services?.some((service) =>
-        Object.keys(service.characterMap || {}).some((uuid) => {
-          const characteristic = service.characterMap[uuid];
-          // Check if realVal or desc contains the scanned data
-          return (
-            characteristic.realVal.includes(scannedData) ||
-            characteristic.desc.includes(scannedData)
-          );
-        })
-      )
-    );
-  };
-
-  // Helper function to check if a characteristic contains the scanned data
-  const checkCharacteristicForMatch = (characteristic, scannedData) => {
-    const propertiesToCheck = ["realVal", "desc", "name", "uuid"];
-
-    return propertiesToCheck.some((property) =>
-      characteristic[property]?.toString().includes(scannedData)
-    );
-  };
-
-  const recursiveSearch = (obj, searchValue) => {
-    if (typeof obj === "string" || typeof obj === "number") {
-      return obj.toString() === searchValue.toString();
-    } else if (Array.isArray(obj)) {
-      return obj.some((item) => recursiveSearch(item, searchValue));
-    } else if (typeof obj === "object" && obj !== null) {
-      return Object.values(obj).some((value) =>
-        recursiveSearch(value, searchValue)
-      );
+    if (!initBleData || !scannedData) {
+      showNotification("No data available to search.");
+      return;
     }
-    return false;
+
+    let matchFound = false;
+    for (const item of initBleData.dataList || []) {
+      for (const characteristic of Object.values(item.characterMap || {})) {
+        const { realVal, desc } = characteristic;
+        if (
+          (realVal && realVal.toString().includes(scannedData)) ||
+          (desc && desc.includes(scannedData))
+        ) {
+          matchFound = true;
+          showNotification("Matching device found!");
+          console.log("Match:", characteristic);
+          break;
+        }
+      }
+      if (matchFound) break;
+    }
+
+    if (!matchFound) {
+      showNotification("No matching device found.");
+    }
   };
 
   // Start scanning for BLE devices
