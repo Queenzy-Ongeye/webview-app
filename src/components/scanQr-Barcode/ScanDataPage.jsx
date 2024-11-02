@@ -229,6 +229,7 @@ const ScanDataPage = () => {
   // UI handling for matching status
   const initBleData = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
+      showNotification("Searching for match...");
       window.WebViewJavascriptBridge.callHandler(
         "initBleData",
         macAddress,
@@ -245,7 +246,7 @@ const ScanDataPage = () => {
             ) {
               console.warn(
                 "Received data does not contain a valid dataList:",
-                parsedData
+                parsedData.dataList
               );
               showNotification(
                 "Initialization data is incomplete. Please try again."
@@ -254,6 +255,7 @@ const ScanDataPage = () => {
             }
 
             let matchFound = false;
+            const startTime = Date.now(); // Track start time
             // Iterate over each item in dataList
             parsedData?.dataList.forEach((item) => {
               Object.keys(item.characterMap).forEach((uuid) => {
@@ -285,8 +287,18 @@ const ScanDataPage = () => {
               });
             });
 
+            const endTime = Date.now(); // Track end time
+            const duration = (endTime - startTime) / 1000; // Duration in seconds
+            console.log(`Search completed in ${duration} seconds`);
+
+            // If no match was found, notify the user
             if (!matchFound) {
               showNotification("No match found for the scanned barcode.");
+            } else {
+              // Also, notify how long the search took if a match was found
+              showNotification(
+                `Match found! Search took ${duration.toFixed(2)} seconds.`
+              );
             }
           } catch (error) {
             console.error(
