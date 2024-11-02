@@ -284,7 +284,6 @@ const ScanDataPage = () => {
     }
   };
 
-
   // Refactored to match the scanned data with nested device characteristics
   const findMatchingDevice = (deviceData) => {
     return deviceData.dataList?.find((device) =>
@@ -358,6 +357,33 @@ const ScanDataPage = () => {
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
           <p className="text-left mt-2">Barcode Number: {state.scannedData}</p>
+        )}
+
+        {/* Display Matched Devices */}
+        {matchedDevices.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-left">
+              Matched Devices:
+            </h3>
+            <ul className="text-left">
+              {matchedDevices.map((device, index) => (
+                <li
+                  key={index}
+                  className="mt-2 p-2 border rounded-md shadow bg-green-100"
+                >
+                  <p className="text-gray-700">
+                    Device Name: {device.name || "Unknown Device"}
+                  </p>
+                  <p className="text-gray-700">
+                    Mac-Address: {device.macAddress}
+                  </p>
+                  <p className="text-gray-700">
+                    Signal Strength: {device.rssi}db
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <div className="mt-6">
