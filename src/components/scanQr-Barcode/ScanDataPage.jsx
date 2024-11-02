@@ -15,7 +15,6 @@ const ScanDataPage = () => {
   const [loading, setLoading] = useState(false);
   const requestCode = 999;
   const [matchedDevices, setMatchedDevices] = useState([]); // New state for matched devices
-  const [deviceStatus, setDeviceStatus] = useState({}); // Holds status messages for each device by macAddress
   const [notificationMessage, setNotificationMessage] = useState(null); // State for notification message
 
   // Function to show notification
@@ -250,14 +249,6 @@ const ScanDataPage = () => {
               } else {
                 showNotification("No match found for the scanned barcode.");
               }
-
-              // Clear the status message after a few seconds
-              setTimeout(() => {
-                setDeviceStatus((prevStatus) => ({
-                  ...prevStatus,
-                  [macAddress]: null,
-                }));
-              }, 5000); // Clears message after 5 seconds
             } else {
               console.warn("Received data does not contain a valid dataList.");
               alert("Initialization data is incomplete. Please try again.");
