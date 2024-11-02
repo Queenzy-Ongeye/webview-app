@@ -235,9 +235,14 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
 
-            // Check if `dataList` exists and has entries
-            if (!parsedData || parsedData.length === 0) {
+            // Check if `dataList` exists inside `parsedData` and is an array
+            if (
+              !parsedData.dataList ||
+              !Array.isArray(parsedData.dataList) ||
+              parsedData.dataList.length === 0
+            ) {
               console.warn(
                 "Received data does not contain a valid dataList:",
                 parsedData
@@ -248,12 +253,10 @@ const ScanDataPage = () => {
               return;
             }
 
-            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-
             let matchFound = false;
             // Iterate over each item in dataList
-            parsedData.forEach((item) => {
-              Object.keys(item.characterMap).map((uuid) => {
+            parsedData?.dataList.forEach((item) => {
+              Object.keys(item.characterMap).forEach((uuid) => {
                 const characteristic = item.characterMap[uuid];
 
                 // Check if `realVal` or `desc` contains the scanned data
@@ -290,7 +293,7 @@ const ScanDataPage = () => {
               "Error processing initBleData response:",
               error.message
             );
-            showNotification("An error occurred while processing BLE data.");
+            showNotification("Loading...");
           }
         }
       );
