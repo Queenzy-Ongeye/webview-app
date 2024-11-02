@@ -253,7 +253,7 @@ const ScanDataPage = () => {
             let matchFound = false;
             // Iterate over each item in dataList
             parsedData.forEach((item) => {
-              Object.keys(item.characterMap).forEach((uuid) => {
+              Object.keys(item.characterMap).map((uuid) => {
                 const characteristic = item.characterMap[uuid];
 
                 // Check if `realVal` or `desc` contains the scanned data
