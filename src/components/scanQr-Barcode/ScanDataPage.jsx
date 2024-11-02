@@ -235,34 +235,28 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-            if (parsedData && parsedData.dataList) {
-              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-              const matchingDevice = findMatchingDevice(parsedData);
-
-              if (matchingDevice) {
-                console.log("Matching BLE device found:", matchingDevice);
-                dispatch({
-                  type: "SET_MATCHING_DEVICE",
-                  payload: matchingDevice,
-                });
-                setMatchedDevices((prevMatched) => [
-                  ...prevMatched,
-                  matchingDevice,
-                ]); // Update matched devices
-                showNotification("Matching BLE device found!");
-              } else {
-                showNotification("No match found for the scanned barcode.");
-              }
+  
+            // Log data to confirm structure if dataList is missing
+            if (!parsedData?.dataList) {
+              console.warn("Received data does not contain a valid dataList.", parsedData);
+              showNotification("Initialization data is incomplete. Please try again.");
+              return;
+            }
+  
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            const matchingDevice = findMatchingDevice(parsedData);
+  
+            if (matchingDevice) {
+              console.log("Matching BLE device found:", matchingDevice);
+              dispatch({ type: "SET_MATCHING_DEVICE", payload: matchingDevice });
+              setMatchedDevices((prevMatched) => [...prevMatched, matchingDevice]);
+              showNotification("Matching device found!");
             } else {
-              console.warn("Received data does not contain a valid dataList.");
-              alert("Initialization data is incomplete. Please try again.");
+              showNotification("No match found for the scanned barcode.");
             }
           } catch (error) {
-            console.error(
-              "Error processing initBleData response:",
-              error.message
-            );
-            alert("An error occurred while processing BLE data.");
+            console.error("Error processing initBleData response:", error.message);
+            showNotification("An error occurred while processing BLE data.");
           }
         }
       );
@@ -272,20 +266,24 @@ const ScanDataPage = () => {
   };
 
   // Refactored to match the scanned data with nested device characteristics
+
   const findMatchingDevice = (deviceData) => {
-    const scannedData = state.scannedData?.toString();
-
-    if (!scannedData) {
-      console.warn("No scanned data available to match.");
-      return null;
-    }
-
-    // Check each device's characteristics for any match with the scanned data
+    const scannedData = state.scannedData;
+  
+    // Check if scanned data exists
+    if (!scannedData) return null;
+  
+    // Loop through dataList to find a device with a characteristic that contains the scanned data
     return deviceData.dataList?.find((device) =>
       device.services?.some((service) =>
-        Object.values(service.characterMap || {}).some((characteristic) =>
-          checkCharacteristicForMatch(characteristic, scannedData)
-        )
+        Object.keys(service.characterMap || {}).some((uuid) => {
+          const characteristic = service.characterMap[uuid];
+          // Check if realVal or desc contains the scanned data
+          return (
+            characteristic.realVal.includes(scannedData) ||
+            characteristic.desc.includes(scannedData)
+          );
+        })
       )
     );
   };
