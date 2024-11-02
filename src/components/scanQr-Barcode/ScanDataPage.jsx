@@ -247,28 +247,6 @@ const ScanDataPage = () => {
     }
   };
 
-  // Enhanced logging for findMatchingDevice
-  const findMatchingDevice = (deviceData) => {
-    // Iterate over each device in dataList to find a match
-    return deviceData.dataList.find((device) =>
-      device.services?.some((service) =>
-        Object.values(service.characterMap || {}).some((characteristic) =>
-          characteristicContainsScannedData(characteristic, state.scannedData)
-        )
-      )
-    );
-  };
-
-  // Helper function to check if a characteristic contains the scanned barcode data
-  const characteristicContainsScannedData = (characteristic, scannedData) => {
-    // List the specific properties where you expect to find the scanned data
-    const propertiesToCheck = ["realVal", "desc"];
-
-    return propertiesToCheck.some((property) =>
-      characteristic[property]?.toString().includes(scannedData.toString())
-    );
-  };
-
   // UI handling for matching status
   const initBleData = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
@@ -323,6 +301,28 @@ const ScanDataPage = () => {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
+
+  const findMatchingDevice = (deviceData) => {
+    // Iterate over each device in dataList to find a match
+    return deviceData.dataList.find((device) =>
+      device.services?.some((service) =>
+        Object.values(service.characterMap || {}).some((characteristic) =>
+          characteristicContainsScannedData(characteristic, state.scannedData)
+        )
+      )
+    );
+  };
+  
+  // Helper function to check if a characteristic contains the scanned barcode data
+  const characteristicContainsScannedData = (characteristic, scannedData) => {
+    // List the specific properties where you expect to find the scanned data
+    const propertiesToCheck = ["realVal", "desc"];
+  
+    return propertiesToCheck.some((property) =>
+      characteristic[property]?.toString().includes(scannedData.toString())
+    );
+  };
+  
 
   const recursiveSearch = (obj, searchValue) => {
     if (typeof obj === "string" || typeof obj === "number") {
