@@ -14,9 +14,7 @@ const ScanDataPage = () => {
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
   const requestCode = 999;
-  const [matchedDevices, setMatchedDevices] = useState([]); // New state for matched devices
   const [notificationMessage, setNotificationMessage] = useState(null); // State for notification message
-  const [parsedData, setParsedData] = useState(null); // New state for displaying parsedData
 
   // Function to show notification
   const showNotification = (message) => {
@@ -230,8 +228,6 @@ const ScanDataPage = () => {
   // UI handling for matching status
   const initBleData = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
-      showNotification("Searching for match...");
-
       window.WebViewJavascriptBridge.callHandler(
         "initBleData",
         macAddress,
@@ -239,7 +235,6 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(responseData);
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-            searchForMatch();
           } catch (error) {
             console.error(
               "Error processing initBleData response:",
@@ -277,14 +272,24 @@ const ScanDataPage = () => {
           break;
         }
       }
-      if (matchFound) break;
+      if (matchFound) {
+        setTimeout(() => {
+          showNotification("DeviceFound");
+        }, 15000);
+      }
     }
 
     if (!matchFound) {
       showNotification("No matching device found.");
     }
   };
-
+  // useEffect hook to monitor initBleData and scannedData changes
+  useEffect(() => {
+    if (state.initBleData && state.scannedData) {
+      // Run the search only when both initBleData and scannedData are available
+      searchForMatch();
+    }
+  }, [state.initBleData, state.scannedData]);
   // Start scanning for BLE devices
   const scanBleDevices = () => {
     setIsScanning(true);
@@ -331,57 +336,6 @@ const ScanDataPage = () => {
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
           <p className="text-left mt-2">Barcode Number: {state.scannedData}</p>
-        )}
-        {/* Display Matched Devices */}
-        {matchedDevices.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold text-left">
-              Matched Devices:
-            </h3>
-            <ul className="text-left">
-              {matchedDevices.map((device, index) => (
-                <li
-                  key={index}
-                  className="mt-2 p-2 border rounded-md shadow bg-green-100"
-                >
-                  <p className="text-gray-700">
-                    Device Name: {device.name || "Unknown Device"}
-                  </p>
-                  <p className="text-gray-700">
-                    Mac-Address: {device.macAddress}
-                  </p>
-                  <p className="text-gray-700">
-                    Signal Strength: {device.rssi}db
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {matchedDevices.length > 0 && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold text-left">
-              Matched Devices:
-            </h3>
-            <ul className="text-left">
-              {matchedDevices.map((device, index) => (
-                <li
-                  key={index}
-                  className="mt-2 p-2 border rounded-md shadow bg-green-100"
-                >
-                  <p className="text-gray-700">
-                    Device Name: {device.name || "Unknown Device"}
-                  </p>
-                  <p className="text-gray-700">
-                    Mac-Address: {device.macAddress}
-                  </p>
-                  <p className="text-gray-700">
-                    Signal Strength: {device.rssi}db
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </div>
         )}
 
         <div className="mt-6">
@@ -457,17 +411,6 @@ const ScanDataPage = () => {
             </ul>
           ) : (
             <p className="text-gray-500">No BLE devices detected.</p>
-          )}
-          {/* Display parsedData for debugging */}
-          {parsedData && (
-            <div className="mt-6 p-4 border rounded-md bg-gray-100">
-              <h3 className="text-lg font-semibold">
-                Parsed Data (Debugging):
-              </h3>
-              <pre className="overflow-auto mt-2 bg-white p-2 rounded-md shadow-inner max-h-96">
-                {JSON.stringify(parsedData, null, 2)}
-              </pre>
-            </div>
           )}
         </div>
 
