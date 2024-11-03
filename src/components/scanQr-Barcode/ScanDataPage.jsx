@@ -18,7 +18,6 @@ const ScanDataPage = () => {
   const requestCode = 999;
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
-  const [isFirstSearchCompleted, setIsFirstSearchCompleted] = useState(false); // New state to track the first search
   const navigate = useNavigate();
   const [matchedDeviceData, setMatchedDeviceData] = useState(null); // Store matched device data
 
@@ -26,7 +25,7 @@ const ScanDataPage = () => {
     setMatchFound(found);
     setMatchedDeviceData(deviceData);
     setPopupVisible(true);
-    setIsFirstSearchCompleted(true); // Mark first search as completed
+    setIsFirstSearchCompleted(false); // Mark first search as completed
   };
 
   // Function to handle "View Device Data" button click when match is found
@@ -268,11 +267,8 @@ const ScanDataPage = () => {
   const searchForMatch = () => {
     const { initBleData, scannedData } = state;
 
-    if (!initBleData || !scannedData || isFirstSearchCompleted) {
-      // Only perform the search if data is initialized and it's the first search
-      if (!initBleData || !scannedData) {
-        handleMatchResult(false); // Show "No data available" on first attempt if data isn't ready
-      }
+    if (!initBleData || !scannedData) {
+      handleMatchResult(false);
       return;
     }
 
@@ -299,7 +295,7 @@ const ScanDataPage = () => {
 
   // useEffect hook to monitor initBleData and scannedData changes
   useEffect(() => {
-    if (state.initBleData && state.scannedData && !isFirstSearchCompleted) {
+    if (state.initBleData && state.scannedData && !isPopupVisible) {
       // Run the search only when both initBleData and scannedData are available
       searchForMatch();
     }
