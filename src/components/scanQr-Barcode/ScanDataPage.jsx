@@ -197,8 +197,9 @@ const ScanDataPage = () => {
       // If initialization is successful, set the success state for the current MAC
       setTimeout(() => {
         setInitSuccessMac(macAddress);
+        searchForMatch();
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 35000);
+      }, 38000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
@@ -294,7 +295,7 @@ const ScanDataPage = () => {
 
   // useEffect hook to monitor initBleData and scannedData changes
   useEffect(() => {
-    if (state.initBleData && state.scannedData && !isPopupVisible) {
+    if (state.initBleData && state.scannedData && isPopupVisible) {
       // Run the search only when both initBleData and scannedData are available
       searchForMatch();
     }
