@@ -3,6 +3,7 @@ import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Notification from "../notification/Notification";
+import PopupNotification from "../notification/PopUp";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -14,11 +15,13 @@ const ScanDataPage = () => {
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loading, setLoading] = useState(false);
   const requestCode = 999;
-  const [notificationMessage, setNotificationMessage] = useState(null); // State for notification message
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [matchFound, setMatchFound] = useState(null);
 
   // Function to show notification
-  const showNotification = (message) => {
-    setNotificationMessage(message);
+  const handleMatchResult = (found) => {
+    setMatchFound(found);
+    setPopupVisible(true);
   };
 
   // Function to initiate the QR/barcode scan
@@ -254,11 +257,11 @@ const ScanDataPage = () => {
     const { initBleData, scannedData } = state;
 
     if (!initBleData || !scannedData) {
-      showNotification("No data available to search.");
+      handleMatchResult(false);
       return;
     }
 
-    let matchFound = false;
+    let match = false;
     for (const item of initBleData.dataList || []) {
       for (const characteristic of Object.values(item.characterMap || {})) {
         const { realVal, desc } = characteristic;
@@ -266,22 +269,15 @@ const ScanDataPage = () => {
           (realVal && realVal.toString().includes(scannedData)) ||
           (desc && desc.includes(scannedData))
         ) {
-          matchFound = true;
-          showNotification("Matching device found!");
+          match = true;
           console.log("Match:", characteristic);
           break;
         }
       }
-      if (matchFound) {
-        setTimeout(() => {
-          showNotification("DeviceFound");
-        }, 15000);
-      }
+      if (match) break;
     }
 
-    if (!matchFound) {
-      showNotification("No matching device found.");
-    }
+    handleMatchResult(match);
   };
   // useEffect hook to monitor initBleData and scannedData changes
   useEffect(() => {
@@ -327,11 +323,6 @@ const ScanDataPage = () => {
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
-      {/* Notification Component */}
-      <Notification
-        message={notificationMessage}
-        onClose={() => setNotificationMessage(null)}
-      />
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
@@ -425,6 +416,12 @@ const ScanDataPage = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
+      )}
+      {isPopupVisible && (
+        <PopupNotification
+          matchFound={matchFound}
+          onClose={() => setPopupVisible(false)}
+        />
       )}
     </div>
   );
