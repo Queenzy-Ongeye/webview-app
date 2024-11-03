@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 
 const DeviceDataPage = () => {
   const location = useLocation();
-  const {deviceData} = location.state || {};
+  const {deviceData} = location.state.initBleData || {};
 
   // State for active tab
   const [activeTab, setActiveTab] = useState("ATT");
