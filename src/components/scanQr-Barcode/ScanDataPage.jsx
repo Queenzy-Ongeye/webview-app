@@ -4,6 +4,7 @@ import { IoQrCodeOutline } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Notification from "../notification/Notification";
 import PopupNotification from "../notification/PopUp";
+import { useNavigate } from "react-router-dom";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -18,9 +19,14 @@ const ScanDataPage = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
   const [isFirstSearchCompleted, setIsFirstSearchCompleted] = useState(false); // New state to track the first search
+  const navigate = useNavigate();
+  const [matchedDeviceData, setMatchedDeviceData] = useState(null); // Store matched device data
+
+
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
+    setMatchedDeviceData(deviceData);
     setPopupVisible(true);
     setIsFirstSearchCompleted(true); // Mark first search as completed
   };
