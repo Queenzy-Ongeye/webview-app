@@ -243,7 +243,6 @@ const ScanDataPage = () => {
               "Error processing initBleData response:",
               error.message
             );
-            showNotification("Failed to load data");
           }
         }
       );
