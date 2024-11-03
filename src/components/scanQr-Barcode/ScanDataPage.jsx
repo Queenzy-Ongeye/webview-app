@@ -17,11 +17,12 @@ const ScanDataPage = () => {
   const requestCode = 999;
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
+  const [isFirstSearchCompleted, setIsFirstSearchCompleted] = useState(false); // New state to track the first search
 
-  // Function to show notification
   const handleMatchResult = (found) => {
     setMatchFound(found);
     setPopupVisible(true);
+    setIsFirstSearchCompleted(true); // Mark first search as completed
   };
 
   // Function to initiate the QR/barcode scan
@@ -255,8 +256,11 @@ const ScanDataPage = () => {
   const searchForMatch = () => {
     const { initBleData, scannedData } = state;
 
-    if (!initBleData || !scannedData) {
-      handleMatchResult(false);
+    if (!initBleData || !scannedData || isFirstSearchCompleted) {
+      // Only perform the search if data is initialized and it's the first search
+      if (!initBleData || !scannedData) {
+        handleMatchResult(false); // Show "No data available" on first attempt if data isn't ready
+      }
       return;
     }
 
@@ -278,9 +282,10 @@ const ScanDataPage = () => {
 
     handleMatchResult(match);
   };
+
   // useEffect hook to monitor initBleData and scannedData changes
   useEffect(() => {
-    if (state.initBleData && state.scannedData) {
+    if (state.initBleData && state.scannedData && !isFirstSearchCompleted) {
       // Run the search only when both initBleData and scannedData are available
       searchForMatch();
     }
