@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
 
-const PopupNotification = ({ matchFound, onClose }) => {
+const PopupNotification = ({ matchFound, onClose, onContinue }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white w-11/12 sm:w-80 p-6 rounded-lg shadow-lg text-center">
@@ -14,6 +14,12 @@ const PopupNotification = ({ matchFound, onClose }) => {
             <p className="text-sm text-oves-blue mt-2">
               Successfully found a matching device.
             </p>
+            <button
+              onClick={onContinue} // Trigger navigation to the device data page
+              className="w-full mt-6 py-2 rounded-lg text-white font-medium bg-oves-blue transition"
+            >
+              View Device Data
+            </button>
           </>
         ) : (
           <>
@@ -24,18 +30,14 @@ const PopupNotification = ({ matchFound, onClose }) => {
             <p className="text-sm text-gray-600 mt-2">
               Please try connecting to another device.
             </p>
+            <button
+              onClick={onClose}
+              className={`w-full mt-6 py-2 rounded-lg text-white font-medium transition bg-oves-blue`}
+            >
+              Retry
+            </button>
           </>
         )}
-        <button
-          onClick={onClose}
-          className={`w-full mt-6 py-2 rounded-lg text-white font-medium transition ${
-            matchFound
-              ? "bg-oves-blue"
-              : "bg-yellow-500 hover:bg-yellow-600"
-          }`}
-        >
-          {matchFound ? "Continue" : "Retry"}
-        </button>
       </div>
     </div>
   );

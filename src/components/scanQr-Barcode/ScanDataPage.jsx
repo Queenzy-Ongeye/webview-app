@@ -265,6 +265,7 @@ const ScanDataPage = () => {
     }
 
     let match = false;
+    let foundDeviceData = null;
     for (const item of initBleData.dataList || []) {
       for (const characteristic of Object.values(item.characterMap || {})) {
         const { realVal, desc } = characteristic;
@@ -273,6 +274,7 @@ const ScanDataPage = () => {
           (desc && desc.includes(scannedData))
         ) {
           match = true;
+          foundDeviceData = item; // Store matched device data
           console.log("Match:", characteristic);
           break;
         }
@@ -280,7 +282,16 @@ const ScanDataPage = () => {
       if (match) break;
     }
 
-    handleMatchResult(match);
+    handleMatchResult(match, foundDeviceData);
+  };
+
+
+  // Function to handle "View Device Data" button click when match is found
+  const handleContinue = () => {
+    if (matchFound && matchedDeviceData) {
+      navigate("/device-data", { state: { deviceData: matchedDeviceData } }); // Pass data to new page
+    }
+    setPopupVisible(false); // Close the popup
   };
 
   // useEffect hook to monitor initBleData and scannedData changes
@@ -425,6 +436,7 @@ const ScanDataPage = () => {
         <PopupNotification
           matchFound={matchFound}
           onClose={() => setPopupVisible(false)}
+          onContinue={handleContinue}
         />
       )}
     </div>
