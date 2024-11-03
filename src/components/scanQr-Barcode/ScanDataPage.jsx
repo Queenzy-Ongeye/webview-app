@@ -22,13 +22,19 @@ const ScanDataPage = () => {
   const navigate = useNavigate();
   const [matchedDeviceData, setMatchedDeviceData] = useState(null); // Store matched device data
 
-
-
-  const handleMatchResult = (found) => {
+  const handleMatchResult = (found, deviceData = null) => {
     setMatchFound(found);
     setMatchedDeviceData(deviceData);
     setPopupVisible(true);
     setIsFirstSearchCompleted(true); // Mark first search as completed
+  };
+
+  // Function to handle "View Device Data" button click when match is found
+  const handleContinue = () => {
+    if (matchFound && matchedDeviceData) {
+      navigate("/device-data", { state: { deviceData: matchedDeviceData } }); // Pass data to new page
+    }
+    setPopupVisible(false); // Close the popup
   };
 
   // Function to initiate the QR/barcode scan
@@ -289,15 +295,6 @@ const ScanDataPage = () => {
     }
 
     handleMatchResult(match, foundDeviceData);
-  };
-
-
-  // Function to handle "View Device Data" button click when match is found
-  const handleContinue = () => {
-    if (matchFound && matchedDeviceData) {
-      navigate("/device-data", { state: { deviceData: matchedDeviceData } }); // Pass data to new page
-    }
-    setPopupVisible(false); // Close the popup
   };
 
   // useEffect hook to monitor initBleData and scannedData changes
