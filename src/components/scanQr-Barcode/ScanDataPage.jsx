@@ -19,10 +19,16 @@ const ScanDataPage = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
   const navigate = useNavigate();
+  const [deviceMatchStatus, setDeviceMatchStatus] = useState({}); // New state for device match status
 
-  const handleMatchResult = (found) => {
+
+  const handleMatchResult = (found, macAddress) => {
     setMatchFound(found);
     setPopupVisible(true);
+    setDeviceMatchStatus((prevStatus) => ({
+      ...prevStatus,
+      [macAddress]: found ? "Matched" : "Not Matched",
+    }));
   };
 
   // Function to handle "View Device Data" button click when match is found
@@ -291,13 +297,13 @@ const ScanDataPage = () => {
     handleMatchResult(match, macAddress);
   };
 
-  // useEffect hook to monitor initBleData and scannedData changes
-  useEffect(() => {
-    if (state.initBleData && state.scannedData && isPopupVisible) {
-      // Run the search only when both initBleData and scannedData are available
-      searchForMatch(macAddress);
-    }
-  }, [state.initBleData, state.scannedData]);
+  // // useEffect hook to monitor initBleData and scannedData changes
+  // useEffect(() => {
+  //   if (state.initBleData && state.scannedData && isPopupVisible) {
+  //     // Run the search only when both initBleData and scannedData are available
+  //     searchForMatch(macAddress);
+  //   }
+  // }, [state.initBleData, state.scannedData]);
   // Start scanning for BLE devices
   const scanBleDevices = () => {
     setIsScanning(true);
