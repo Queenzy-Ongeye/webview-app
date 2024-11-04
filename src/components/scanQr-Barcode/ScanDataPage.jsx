@@ -19,18 +19,16 @@ const ScanDataPage = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
   const navigate = useNavigate();
-  const [matchedDeviceData, setMatchedDeviceData] = useState(null); // Store matched device data
 
-  const handleMatchResult = (found, deviceData = null) => {
+  const handleMatchResult = (found) => {
     setMatchFound(found);
-    setMatchedDeviceData(deviceData);
     setPopupVisible(true);
   };
 
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
-    if (matchFound && matchedDeviceData) {
-      navigate("/device-data", { state: { deviceData: matchedDeviceData } }); // Pass data to new page
+    if (matchFound && initBleData) {
+      navigate("/device-data", { state: { deviceData: initBleData } }); // Pass data to new page
     }
     setPopupVisible(false); // Close the popup
   };
@@ -264,11 +262,11 @@ const ScanDataPage = () => {
   };
 
   // Search for a match in the BLE data once initialized
-  const searchForMatch = () => {
+  const searchForMatch = (macAddress) => {
     const { initBleData, scannedData } = state;
 
     if (!initBleData || !scannedData) {
-      handleMatchResult(false);
+      handleMatchResult(false, macAddress);
       return;
     }
 
@@ -290,14 +288,14 @@ const ScanDataPage = () => {
       if (match) break;
     }
 
-    handleMatchResult(match, foundDeviceData);
+    handleMatchResult(match, macAddress);
   };
 
   // useEffect hook to monitor initBleData and scannedData changes
   useEffect(() => {
     if (state.initBleData && state.scannedData && isPopupVisible) {
       // Run the search only when both initBleData and scannedData are available
-      searchForMatch();
+      searchForMatch(macAddress);
     }
   }, [state.initBleData, state.scannedData]);
   // Start scanning for BLE devices
@@ -367,6 +365,10 @@ const ScanDataPage = () => {
                     </p>
                     <p className="text-gray-700">
                       Signal Strength: {device.rssi}db
+                    </p>
+                    <p className="text-gray-700 font-semibold">
+                      Status:{" "}
+                      {deviceMatchStatus[device.macAddress] || "Unknown"}
                     </p>
                   </li>
                   <div className="flex justify-between mt-2">
