@@ -184,7 +184,7 @@ const ScanDataPage = () => {
       setTimeout(() => {
         setActivemacAddress(null);
         setLoading(false);
-      }, 30000);
+      }, 60000);
     }
   };
 
