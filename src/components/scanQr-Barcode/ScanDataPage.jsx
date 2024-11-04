@@ -350,10 +350,10 @@ const ScanDataPage = () => {
             <ul className="text-left">
               {Array.from(
                 new Map(
-                  state.detectedDevices.map((device) => [
-                    device.macAddress,
-                    device,
-                  ])
+                  // Sort devices by RSSI (signal strength) from highest to lowest before mapping them
+                  state.detectedDevices
+                    .sort((a, b) => b.rssi - a.rssi)
+                    .map((device) => [device.macAddress, device])
                 ).values()
               ).map((device, index) => (
                 <React.Fragment key={device.macAddress}>
