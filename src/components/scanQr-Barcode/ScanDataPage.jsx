@@ -328,6 +328,16 @@ const ScanDataPage = () => {
     }
   };
 
+  // Create a Map to ensure uniqueness based on MAC Address
+  const uniqueDevicesMap = new Map();
+  state.detectedDevices.forEach((device) => {
+    uniqueDevicesMap.set(device.macAddress, device);
+  });
+
+  // Convert the Map to an array and sort by signal strength (RSSI)
+  const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
+    (a, b) => b.rssi - a.rssi
+  );
   useEffect(() => {
     if (!state.detectedDevices || state.detectedDevices.length === 0) {
       scanBleDevices(); // Start BLE scan if no devices are detected
@@ -346,16 +356,9 @@ const ScanDataPage = () => {
           <h3 className="text-lg font-semibold text-left">
             Detected BLE Devices:
           </h3>
-          {state.detectedDevices && state.detectedDevices.length > 0 ? (
+          {uniqueDevice.length > 0 ? (
             <ul className="text-left">
-              {Array.from(
-                new Map(
-                  // Sort devices by RSSI (signal strength) from highest to lowest before mapping them
-                  state.detectedDevices
-                    .sort((a, b) => b.rssi - a.rssi)
-                    .map((device) => [device.macAddress, device])
-                ).values()
-              ).map((device, index) => (
+             {uniqueDevice.map((device, index) => (
                 <React.Fragment key={device.macAddress}>
                   <li className="mt-2 p-2 border rounded-md shadow">
                     <p className="text-gray-700">
