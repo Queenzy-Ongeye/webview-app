@@ -198,7 +198,7 @@ const ScanDataPage = () => {
         setInitSuccessMac(macAddress);
         searchForMatch();
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 38000);
+      }, 40000);
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
