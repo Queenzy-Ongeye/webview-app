@@ -173,8 +173,8 @@ const ScanDataPage = () => {
             payload: initSuccessResponse,
           });
           // If initialization is successful, set the success state for the current MAC
-            setSuccessMac(macAddress);
-            searchForMatch();
+          setSuccessMac(macAddress);
+          searchForMatch();
         }
       }
     } catch (error) {
@@ -332,28 +332,28 @@ const ScanDataPage = () => {
                 ).values()
               ).map((device, index) => (
                 <React.Fragment key={device.macAddress}>
-                  <li className="mt-2 p-2 border rounded-md shadow">
-                    <p className="text-gray-700">
-                      Device Name: {device.name || "Unknown Device"}
-                    </p>
-                    <p className="text-gray-700">
-                      Mac-Address: {device.macAddress}
-                    </p>
-                    <p className="text-gray-700">
-                      Signal Strength: {device.rssi}db
-                    </p>
-                  </li>
-                  <li>
+                  <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-700">
+                        Device Name: {device.name || "Unknown Device"}
+                      </p>
+                      <p className="text-gray-700">
+                        Mac-Address: {device.macAddress}
+                      </p>
+                      <p className="text-gray-700">
+                        Signal Strength: {device.rssi}db
+                      </p>
+                    </div>
                     <button
                       onClick={(e) =>
                         handleConnectAndInitClick(e, device.macAddress)
                       }
-                      className={`w-full px-4 py-2 border rounded-md mt-2 ${
+                      className={`px-4 py-2 border rounded-md ml-4 ${
                         activeMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : successMac === device.macAddress
                           ? "bg-green-500 text-white"
-                          : "bg-blue-500 text-white"
+                          : "bg-oves-blue text-white"
                       }`}
                       disabled={
                         loading || activeMacAddress === device.macAddress
@@ -362,10 +362,11 @@ const ScanDataPage = () => {
                       {activeMacAddress === device.macAddress
                         ? "Connecting..."
                         : successMac === device.macAddress
-                        ? "Connected & Initialized"
-                        : "Connect & Init BLE Data"}
+                        ? "Connected"
+                        : "Connect"}
                     </button>
                   </li>
+
                   {/* <div className="flex justify-between mt-2">
                     <button
                       onClick={(e) => handleConnectClick(e, device.macAddress)}
