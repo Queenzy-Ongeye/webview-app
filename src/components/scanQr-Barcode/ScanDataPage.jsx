@@ -173,11 +173,8 @@ const ScanDataPage = () => {
             payload: initSuccessResponse,
           });
           // If initialization is successful, set the success state for the current MAC
-          setTimeout(() => {
             setSuccessMac(macAddress);
             searchForMatch();
-            setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-          }, 38000);
         }
       }
     } catch (error) {
