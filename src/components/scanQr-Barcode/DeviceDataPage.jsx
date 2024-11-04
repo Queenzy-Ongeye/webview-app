@@ -4,7 +4,6 @@ import { useLocation } from "react-router-dom";
 const DeviceDataPage = () => {
   const location = useLocation();
   const { deviceData } = location.state || {};
-
   // State for active tab
   const [activeTab, setActiveTab] = useState("ATT");
 
@@ -17,15 +16,23 @@ const DeviceDataPage = () => {
     { id: "DIA", name: "DIA_SERVICE_NAME" },
   ];
 
-  // Filter characteristics based on the active service tab
-  const getServiceCharacteristics = (serviceName) => {
-    return Object.entries(deviceData.characterMap || {}).filter(
-      ([, characteristic]) => characteristic.serviceUuid === serviceName
+  const getServiceCharacteristics = (serviceNameEnum) => {
+    return (
+      deviceData?.dataList?.filter(
+        (item) => item.serviceNameEnum === serviceNameEnum
+      ) || []
     );
   };
 
+  // // Filter characteristics based on the active service tab
+  // const getServiceCharacteristics = (serviceName) => {
+  //   return Object.entries(deviceData.characterMap || {}).filter(
+  //     ([, characteristic]) => characteristic.serviceUuid === serviceName
+  //   );
+  // };
+
   return (
-    <div className="p-4">
+    <div className="p-2">
       <h2 className="text-2xl font-bold text-center mb-4">Device Data</h2>
 
       {/* Tab Navigation */}
@@ -36,7 +43,7 @@ const DeviceDataPage = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 font-semibold ${
               activeTab === tab.id
-                ? "text-oves-blue border-b-2 border-oves-blue"
+                ? "text-oves-blue border-2 bg-blue-300 border-oves-blue"
                 : "text-gray-500"
             }`}
           >
@@ -46,18 +53,75 @@ const DeviceDataPage = () => {
       </div>
 
       {/* Display data for active tab */}
-      <div className="bg-white shadow-lg rounded-lg p-4">
-        {getServiceCharacteristics(serviceTabs.find(tab => tab.id === activeTab)?.name).length > 0 ? (
-          getServiceCharacteristics(serviceTabs.find(tab => tab.id === activeTab)?.name).map(([uuid, characteristic]) => (
-            <div key={uuid} className="p-4 border-b last:border-b-0">
-              <p className="text-lg font-medium text-gray-700">{characteristic.name}</p>
-              <p className="text-sm text-gray-500 mt-1">VALUE: {characteristic.realVal || "N/A"}</p>
-              <p className="text-xs text-gray-400 mt-1">{characteristic.desc || "No description available"}</p>
-              <button className="text-blue-500 text-sm mt-2">READ</button>
+      <div className="bg-white shadow-lg rounded-md p-2">
+        {getServiceCharacteristics(
+          serviceTabs.find((tab) => tab.id === activeTab)?.name
+        ).length > 0 ? (
+          getServiceCharacteristics(
+            serviceTabs.find((tab) => tab.id === activeTab)?.name
+          ).map((item, index) => (
+            <div key={index} className="mb-6 p-6 bg-white shadow-lg rounded-lg">
+              {Object.keys(item.characterMap).map((uuid) => (
+                <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    {item.characterMap[uuid].desc || "No Description"}
+                  </h3>
+
+                  <table className="w-full text-left mt-4 border border-gray-300 rounded-lg overflow-hidden">
+                    <tbody>
+                      <tr className="border-b bg-gray-50">
+                        <td className="p-3 font-semibold text-gray-600">
+                          Name
+                        </td>
+                        <td className="p-3">
+                          {item.characterMap[uuid].name || "N/A"}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-3 font-semibold text-gray-600">
+                          UUID
+                        </td>
+                        <td className="p-3">{uuid}</td>
+                      </tr>
+                      <tr className="border-b bg-gray-50">
+                        <td className="p-3 font-semibold text-gray-600">
+                          Real Value
+                        </td>
+                        <td className="p-3">
+                          {item.characterMap[uuid].realVal || "N/A"}
+                        </td>
+                      </tr>
+                      <tr className="border-b">
+                        <td className="p-3 font-semibold text-gray-600">
+                          Properties
+                        </td>
+                        <td className="p-3">
+                          {item.characterMap[uuid].properties || "N/A"}
+                        </td>
+                      </tr>
+                      {item.characterMap[uuid].descMap &&
+                        Object.entries(item.characterMap[uuid].descMap).map(
+                          ([key, value]) => (
+                            <tr key={key} className="border-b">
+                              <td className="p-3 font-semibold text-gray-600">
+                                {key}
+                              </td>
+                              <td className="p-3">
+                                {value.desc || "No description"}
+                              </td>
+                            </tr>
+                          )
+                        )}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
             </div>
           ))
         ) : (
-          <p className="text-gray-500 text-center">No data available for this category.</p>
+          <p className="text-gray-500 text-center">
+            No data available for this category.
+          </p>
         )}
       </div>
     </div>
