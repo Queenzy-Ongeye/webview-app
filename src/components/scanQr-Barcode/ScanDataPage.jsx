@@ -22,7 +22,7 @@ const ScanDataPage = () => {
   const navigate = useNavigate();
   const [activeMacAddress, setActiveMacAddress] = useState(null); // Track active MAC address
   const [failedMacAddress, setFailedMacAddress] = useState(null); // Track failed connections
-  const [connectionStatus, setConnectionStatus] = useState({});
+  const [searchingMatch, setSearchingMatch] = useState(false);
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -156,44 +156,22 @@ const ScanDataPage = () => {
   const handleConnectAndInitClick = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-
     setActiveMacAddress(macAddress);
     setFailedMacAddress(null);
-    setConnectionStatus((prev) => ({
-      ...prev,
-      [macAddress]: { phase: "connecting", progress: true },
-    }));
+    setLoading(true);
 
     try {
-      // Step 1: Connection Phase
       const connectionSuccess = await connectToBluetoothDevice(macAddress);
-      console.log("Connection attempt response:", connectionSuccess);
-
       if (connectionSuccess) {
-        console.log("Connected to Bluetooth device:", macAddress);
         setConnectionSuccessMac(macAddress);
-
-        // Update status to initializing after successful connection
-        setConnectionStatus((prev) => ({
-          ...prev,
-          [macAddress]: { phase: "initializing", progress: true },
-        }));
-
-        // Step 2: Initialization Phase
         const initResponse = await initBleData(macAddress);
-        console.log("Initialization response:", initResponse);
-
         if (initResponse) {
           setInitSuccessMac(macAddress);
-          setConnectionStatus((prev) => ({
-            ...prev,
-            [macAddress]: { phase: "success", progress: false },
-          }));
           dispatch({
             type: "SET_INIT_BLE_DATA",
-            payload: initResponse
+            payload: initResponse,
           });
-          searchForMatch();
+          await searchForMatch(); // Only search after successful data load
         } else {
           throw new Error("Initialization failed");
         }
@@ -201,12 +179,10 @@ const ScanDataPage = () => {
         throw new Error("Connection failed");
       }
     } catch (error) {
-      console.error("Error in connect/init process:", error);
       setFailedMacAddress(macAddress);
-      setConnectionStatus((prev) => ({
-        ...prev,
-        [macAddress]: { phase: "failed", progress: false },
-      }));
+      console.error("Error in connect/init process:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -271,11 +247,10 @@ const ScanDataPage = () => {
 
   // Search for a match in the BLE data once initialized
   const searchForMatch = async () => {
-    setLoading(true);
+    setSearchingMatch(true);
     const { initBleData, scannedData } = state;
-
     if (!initBleData || !scannedData) {
-      setLoading(false);
+      setSearchingMatch(false);
       handleMatchResult(false);
       return;
     }
@@ -290,14 +265,13 @@ const ScanDataPage = () => {
           (desc && desc.includes(scannedData))
         ) {
           match = true;
-          foundDeviceData = item; // Store matched device data
-          console.log("Match:", characteristic);
+          foundDeviceData = item;
           break;
         }
       }
       if (match) break;
     }
-    setLoading(false);
+    setSearchingMatch(false);
     handleMatchResult(match, foundDeviceData);
   };
 
@@ -362,15 +336,15 @@ const ScanDataPage = () => {
       return "bg-gray-600 text-white cursor-not-allowed animate-pulse";
     }
     if (connectionSuccessMac === macAddress && !initSuccessMac) {
-      return "bg-yellow-500 text-white"; // Connected but not initialized
+      return "bg-yellow-500 text-white";
     }
     if (initSuccessMac === macAddress) {
-      return "bg-green-500 text-white hover:bg-green-600"; // Fully connected and initialized
+      return "bg-green-500 text-white hover:bg-green-600";
     }
     if (failedMacAddress === macAddress) {
-      return "bg-red-500 text-white hover:bg-red-600"; // Connection/initialization failed
+      return "bg-red-500 text-white hover:bg-red-600";
     }
-    return "bg-oves-blue text-white hover:bg-blue-600"; // Default state
+    return "bg-oves-blue text-white hover:bg-blue-600";
   };
 
   const getButtonText = (macAddress) => {
@@ -432,10 +406,9 @@ const ScanDataPage = () => {
                       onClick={(e) =>
                         handleConnectAndInitClick(e, device.macAddress)
                       }
-                      className={`
-        px-4 py-2 border rounded-md ml-4 transition-all duration-200
-        ${getButtonStyle(device.macAddress)}
-      `}
+                      className={`px-4 py-2 border rounded-md ml-4 ${getButtonStyle(
+                        device.macAddress
+                      )}`}
                       disabled={
                         loading || activeMacAddress === device.macAddress
                       }
