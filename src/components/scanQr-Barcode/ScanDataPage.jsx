@@ -166,21 +166,27 @@ const ScanDataPage = () => {
       if (connectionSuccess) {
         console.log("Connected to Bluetooth device:", macAddress);
         setSuccessMac(macAddress);
-
-        // Initializing BLE Data
-        const initSuccessResponse = await initBleData(macAddress);
-        console.log("Initialization response:", initSuccessResponse);
-
-        if (initSuccessResponse) {
-          setSuccessMac(macAddress);
-          dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: initSuccessResponse });
-          searchForMatch();
-        } else {
-          console.warn("initSuccessResponse did not include dataList:", initSuccessResponse);
-          alert("Initialization successful but returned incomplete data.");
-        }        
       } else {
         console.warn("Connection to Bluetooth device failed.");
+      }
+
+      // Initializing BLE Data
+      const initSuccessResponse = await initBleData(macAddress);
+      console.log("Initialization response:", initSuccessResponse);
+
+      if (initSuccessResponse) {
+        setSuccessMac(macAddress);
+        dispatch({
+          type: "SET_INIT_BLE_DATA_RESPONSE",
+          payload: initSuccessResponse,
+        });
+        searchForMatch();
+      } else {
+        console.warn(
+          "initSuccessResponse did not include dataList:",
+          initSuccessResponse
+        );
+        alert("Initialization successful but returned incomplete data.");
       }
     } catch (error) {
       console.error("Error connecting/initializing Bluetooth device:", error);
@@ -208,7 +214,6 @@ const ScanDataPage = () => {
               }
               dispatch({ type: "SET_BLE_DATA", payload: parsedData });
               resolve(parsedData.respCode === "200"); // Resolve true if successful
-              setLoading(false);
             } catch (error) {
               console.error(
                 "Error parsing JSON data from 'connBleByMacAddress' response:",
@@ -235,7 +240,6 @@ const ScanDataPage = () => {
             try {
               setLoading(true); // Start loading indicator for the connection process
               const parsedData = JSON.parse(responseData);
-              setLoading(false);
               if (parsedData && parsedData.dataList) {
                 dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
                 resolve(parsedData); // Ensure full parsedData is returned
