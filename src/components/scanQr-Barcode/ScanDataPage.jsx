@@ -183,25 +183,17 @@ const ScanDataPage = () => {
         const initResponse = await initBleData(macAddress);
         console.log("Initialization response:", initResponse);
 
-        if (initResponse && initResponse.respCode === "200") {
+        if (initResponse) {
           setInitSuccessMac(macAddress);
           setConnectionStatus((prev) => ({
             ...prev,
             [macAddress]: { phase: "success", progress: false },
           }));
-
-          if (initResponse.respData && initResponse.respData.dataList) {
-            dispatch({
-              type: "SET_INIT_BLE_DATA",
-              payload: initResponse.respData,
-            });
-
-            if (state.scannedData) {
-              searchForMatch();
-            }
-          } else {
-            throw new Error("No data received after initialization");
-          }
+          dispatch({
+            type: "SET_INIT_BLE_DATA",
+            payload: initResponse
+          });
+          searchForMatch();
         } else {
           throw new Error("Initialization failed");
         }
@@ -365,63 +357,46 @@ const ScanDataPage = () => {
   {
     /* Helper functions for button states */
   }
-  // Updated Button component with dynamic status handling
-  const DeviceButton = ({ device, onConnect }) => {
-    const status = connectionStatus[device.macAddress] || {
-      phase: "idle",
-      progress: false,
-    };
+  const getButtonStyle = (macAddress) => {
+    if (activeMacAddress === macAddress) {
+      return "bg-gray-600 text-white cursor-not-allowed animate-pulse";
+    }
+    if (connectionSuccessMac === macAddress && !initSuccessMac) {
+      return "bg-yellow-500 text-white"; // Connected but not initialized
+    }
+    if (initSuccessMac === macAddress) {
+      return "bg-green-500 text-white hover:bg-green-600"; // Fully connected and initialized
+    }
+    if (failedMacAddress === macAddress) {
+      return "bg-red-500 text-white hover:bg-red-600"; // Connection/initialization failed
+    }
+    return "bg-oves-blue text-white hover:bg-blue-600"; // Default state
+  };
 
-    const getButtonStyle = () => {
-      switch (status.phase) {
-        case "connecting":
-          return "bg-yellow-500 text-white";
-        case "initializing":
-          return "bg-orange-500 text-white";
-        case "success":
-          return "bg-green-500 text-white";
-        case "failed":
-          return "bg-red-500 text-white";
-        default:
-          return "bg-oves-blue text-white";
-      }
-    };
-
-    const getButtonText = () => {
-      switch (status.phase) {
-        case "connecting":
-          return "Connecting...";
-        case "initializing":
-          return "Initializing...";
-        case "success":
-          return "Connected ✓";
-        case "failed":
-          return "Failed - Retry";
-        default:
-          return "Connect";
-      }
-    };
-
-    return (
-      <button
-        onClick={(e) => onConnect(e, device.macAddress)}
-        disabled={status.progress}
-        className={`
-        px-4 py-2 border rounded-md ml-4 transition-all duration-200
-        ${getButtonStyle()}
-        ${status.progress ? "cursor-not-allowed" : "hover:opacity-90"}
-        ${status.progress ? "animate-pulse" : ""}
-      `}
-      >
-        <div className="flex items-center justify-center">
-          {status.progress && (
-            <AiOutlineLoading3Quarters className="animate-spin mr-2" />
-          )}
-          {getButtonText()}
-        </div>
-        {status.progress && <div className="text-xs mt-1">Please wait...</div>}
-      </button>
-    );
+  const getButtonText = (macAddress) => {
+    if (activeMacAddress === macAddress) {
+      return (
+        <span className="flex items-center">
+          <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+          Connecting...
+        </span>
+      );
+    }
+    if (connectionSuccessMac === macAddress && !initSuccessMac) {
+      return "Initializing...";
+    }
+    if (initSuccessMac === macAddress) {
+      return (
+        <span className="flex items-center">
+          <span className="mr-2">✓</span>
+          Connected
+        </span>
+      );
+    }
+    if (failedMacAddress === macAddress) {
+      return "Retry Connection";
+    }
+    return "Connect";
   };
 
   return (
@@ -453,10 +428,20 @@ const ScanDataPage = () => {
                       </p>
                     </div>
                     {/* Enhanced button with better state handling */}
-                    <DeviceButton
-                      device={device}
-                      onConnect={handleConnectAndInitClick}
-                    />
+                    <button
+                      onClick={(e) =>
+                        handleConnectAndInitClick(e, device.macAddress)
+                      }
+                      className={`
+        px-4 py-2 border rounded-md ml-4 transition-all duration-200
+        ${getButtonStyle(device.macAddress)}
+      `}
+                      disabled={
+                        loading || activeMacAddress === device.macAddress
+                      }
+                    >
+                      {getButtonText(device.macAddress)}
+                    </button>
                   </li>
                 </React.Fragment>
               ))}
