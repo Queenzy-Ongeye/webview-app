@@ -22,6 +22,7 @@ const ScanDataPage = () => {
   const navigate = useNavigate();
   const [activeMacAddress, setActiveMacAddress] = useState(null); // Track active MAC address
   const [failedMacAddress, setFailedMacAddress] = useState(null); // Track failed connections
+  const [connectionStatus, setConnectionStatus] = useState({});
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -158,61 +159,94 @@ const ScanDataPage = () => {
 
     setActiveMacAddress(macAddress);
     setFailedMacAddress(null);
-    setLoading(true);
+    setConnectionStatus((prev) => ({
+      ...prev,
+      [macAddress]: { phase: "connecting", progress: true },
+    }));
 
     try {
-      // Step 1: Connect to the Bluetooth device
+      // Step 1: Connection Phase
       const connectionSuccess = await connectToBluetoothDevice(macAddress);
       console.log("Connection attempt response:", connectionSuccess);
 
       if (connectionSuccess) {
         console.log("Connected to Bluetooth device:", macAddress);
-        setConnectionSuccessMac(macAddress); // Track successful connection
+        setConnectionSuccessMac(macAddress);
 
-        // Step 2: Initialize BLE Data after successful connection
+        // Update status to initializing after successful connection
+        setConnectionStatus((prev) => ({
+          ...prev,
+          [macAddress]: { phase: "initializing", progress: true },
+        }));
+
+        // Step 2: Initialization Phase
         const initResponse = await initBleData(macAddress);
         console.log("Initialization response:", initResponse);
 
         if (initResponse && initResponse.respCode === "200") {
-          setInitSuccessMac(macAddress); // Track successful initialization
+          setInitSuccessMac(macAddress);
+          setConnectionStatus((prev) => ({
+            ...prev,
+            [macAddress]: { phase: "success", progress: false },
+          }));
 
-          // Store the initialized data in state
           if (initResponse.respData && initResponse.respData.dataList) {
             dispatch({
               type: "SET_INIT_BLE_DATA",
               payload: initResponse.respData,
             });
 
-            // If there's scanned data available, proceed with matching
             if (state.scannedData) {
               searchForMatch();
             }
           } else {
-            console.warn("Initialization successful but no data received");
-            setFailedMacAddress(macAddress);
-            alert("Device connected but no data available");
+            throw new Error("No data received after initialization");
           }
         } else {
-          console.warn("Initialization failed:", initResponse);
-          setFailedMacAddress(macAddress);
-          alert("Failed to initialize device data");
+          throw new Error("Initialization failed");
         }
       } else {
-        console.warn("Connection to Bluetooth device failed");
-        setFailedMacAddress(macAddress);
-        alert("Failed to connect to device");
+        throw new Error("Connection failed");
       }
     } catch (error) {
       console.error("Error in connect/init process:", error);
       setFailedMacAddress(macAddress);
-      alert("Error during device connection/initialization");
-    } finally {
-      setLoading(false);
-      setActiveMacAddress(null);
+      setConnectionStatus((prev) => ({
+        ...prev,
+        [macAddress]: { phase: "failed", progress: false },
+      }));
     }
   };
 
-  // Updated initBleData function with proper error handling and response parsing
+  const connectToBluetoothDevice = async (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (!window.WebViewJavascriptBridge) {
+        reject(new Error("WebViewJavascriptBridge not initialized"));
+        return;
+      }
+
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            console.log("Connection response:", parsedData);
+
+            if (parsedData.respCode === "200") {
+              resolve(true);
+            } else {
+              resolve(false);
+            }
+          } catch (error) {
+            console.error("Error parsing connection response:", error);
+            reject(error);
+          }
+        }
+      );
+    });
+  };
+
   const initBleData = async (macAddress) => {
     return new Promise((resolve, reject) => {
       if (!window.WebViewJavascriptBridge) {
@@ -236,36 +270,6 @@ const ScanDataPage = () => {
             resolve(parsedData);
           } catch (error) {
             console.error("Error parsing initBleData response:", error);
-            reject(error);
-          }
-        }
-      );
-    });
-  };
-
-  // Updated connectToBluetoothDevice function with better error handling
-  const connectToBluetoothDevice = async (macAddress) => {
-    return new Promise((resolve, reject) => {
-      if (!window.WebViewJavascriptBridge) {
-        reject(new Error("WebViewJavascriptBridge not initialized"));
-        return;
-      }
-
-      window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            console.log("Connection response:", parsedData);
-
-            if (parsedData.respCode === "200") {
-              resolve(true);
-            } else {
-              resolve(false);
-            }
-          } catch (error) {
-            console.error("Error parsing connection response:", error);
             reject(error);
           }
         }
@@ -361,46 +365,63 @@ const ScanDataPage = () => {
   {
     /* Helper functions for button states */
   }
-  const getButtonStyle = (macAddress) => {
-    if (activeMacAddress === macAddress) {
-      return "bg-gray-600 text-white cursor-not-allowed animate-pulse";
-    }
-    if (connectionSuccessMac === macAddress && !initSuccessMac) {
-      return "bg-yellow-500 text-white"; // Connected but not initialized
-    }
-    if (initSuccessMac === macAddress) {
-      return "bg-green-500 text-white hover:bg-green-600"; // Fully connected and initialized
-    }
-    if (failedMacAddress === macAddress) {
-      return "bg-red-500 text-white hover:bg-red-600"; // Connection/initialization failed
-    }
-    return "bg-oves-blue text-white hover:bg-blue-600"; // Default state
-  };
+  // Updated Button component with dynamic status handling
+  const DeviceButton = ({ device, onConnect }) => {
+    const status = connectionStatus[device.macAddress] || {
+      phase: "idle",
+      progress: false,
+    };
 
-  const getButtonText = (macAddress) => {
-    if (activeMacAddress === macAddress) {
-      return (
-        <span className="flex items-center">
-          <AiOutlineLoading3Quarters className="animate-spin mr-2" />
-          Connecting...
-        </span>
-      );
-    }
-    if (connectionSuccessMac === macAddress && !initSuccessMac) {
-      return "Initializing...";
-    }
-    if (initSuccessMac === macAddress) {
-      return (
-        <span className="flex items-center">
-          <span className="mr-2">✓</span>
-          Connected
-        </span>
-      );
-    }
-    if (failedMacAddress === macAddress) {
-      return "Retry Connection";
-    }
-    return "Connect";
+    const getButtonStyle = () => {
+      switch (status.phase) {
+        case "connecting":
+          return "bg-yellow-500 text-white";
+        case "initializing":
+          return "bg-orange-500 text-white";
+        case "success":
+          return "bg-green-500 text-white";
+        case "failed":
+          return "bg-red-500 text-white";
+        default:
+          return "bg-oves-blue text-white";
+      }
+    };
+
+    const getButtonText = () => {
+      switch (status.phase) {
+        case "connecting":
+          return "Connecting...";
+        case "initializing":
+          return "Initializing...";
+        case "success":
+          return "Connected ✓";
+        case "failed":
+          return "Failed - Retry";
+        default:
+          return "Connect";
+      }
+    };
+
+    return (
+      <button
+        onClick={(e) => onConnect(e, device.macAddress)}
+        disabled={status.progress}
+        className={`
+        px-4 py-2 border rounded-md ml-4 transition-all duration-200
+        ${getButtonStyle()}
+        ${status.progress ? "cursor-not-allowed" : "hover:opacity-90"}
+        ${status.progress ? "animate-pulse" : ""}
+      `}
+      >
+        <div className="flex items-center justify-center">
+          {status.progress && (
+            <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+          )}
+          {getButtonText()}
+        </div>
+        {status.progress && <div className="text-xs mt-1">Please wait...</div>}
+      </button>
+    );
   };
 
   return (
@@ -432,64 +453,11 @@ const ScanDataPage = () => {
                       </p>
                     </div>
                     {/* Enhanced button with better state handling */}
-                    <button
-                      onClick={(e) =>
-                        handleConnectAndInitClick(e, device.macAddress)
-                      }
-                      className={`
-        px-4 py-2 border rounded-md ml-4 transition-all duration-200
-        ${getButtonStyle(device.macAddress)}
-      `}
-                      disabled={
-                        loading || activeMacAddress === device.macAddress
-                      }
-                    >
-                      {getButtonText(device.macAddress)}
-                    </button>
+                    <DeviceButton
+                      device={device}
+                      onConnect={handleConnectAndInitClick}
+                    />
                   </li>
-
-                  {/* <div className="flex justify-between mt-2">
-                    <button
-                      onClick={(e) => handleConnectClick(e, device.macAddress)}
-                      className={`w-full px-4 py-2 border rounded-md ${
-                        connectingMacAddress === device.macAddress
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : connectionSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : "bg-blue-500 text-white"
-                      }`}
-                      disabled={
-                        loading || connectingMacAddress === device.macAddress
-                      }
-                    >
-                      {connectingMacAddress === device.macAddress
-                        ? "Connecting..."
-                        : connectionSuccessMac === device.macAddress
-                        ? "Connected"
-                        : "Connect"}
-                    </button>
-                    <button
-                      onClick={(e) =>
-                        handleInitBleDataClick(e, device.macAddress)
-                      }
-                      className={`w-full px-4 py-2 border rounded-md ${
-                        initializingMacAddress === device.macAddress
-                          ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                          : initSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : "bg-yellow-500 text-white"
-                      }`}
-                      disabled={
-                        loading || initializingMacAddress === device.macAddress
-                      }
-                    >
-                      {initializingMacAddress === device.macAddress
-                        ? "Initializing..."
-                        : initSuccessMac === device.macAddress
-                        ? "Initialized"
-                        : "Init BLE Data"}
-                    </button>
-                  </div> */}
                 </React.Fragment>
               ))}
             </ul>
