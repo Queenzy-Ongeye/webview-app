@@ -431,30 +431,20 @@ const ScanDataPage = () => {
                         Signal Strength: {device.rssi}db
                       </p>
                     </div>
+                    {/* Enhanced button with better state handling */}
                     <button
                       onClick={(e) =>
                         handleConnectAndInitClick(e, device.macAddress)
                       }
-                      className={`px-4 py-2 border rounded-md ml-4 ${
-                        activeMacAddress === device.macAddress
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : successMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : failedMacAddress === device.macAddress
-                          ? "bg-red-500 text-white"
-                          : "bg-oves-blue text-white"
-                      }`}
+                      className={`
+        px-4 py-2 border rounded-md ml-4 transition-all duration-200
+        ${getButtonStyle(device.macAddress)}
+      `}
                       disabled={
                         loading || activeMacAddress === device.macAddress
                       }
                     >
-                      {activeMacAddress === device.macAddress
-                        ? "Connecting..."
-                        : successMac === device.macAddress
-                        ? "Connected"
-                        : failedMacAddress === device.macAddress
-                        ? "Failed to Connect"
-                        : "Connect"}
+                      {getButtonText(device.macAddress)}
                     </button>
                   </li>
 
