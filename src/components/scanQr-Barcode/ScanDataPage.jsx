@@ -358,6 +358,51 @@ const ScanDataPage = () => {
     }
   }, [state.detectedDevices]);
 
+  {
+    /* Helper functions for button states */
+  }
+  const getButtonStyle = (macAddress) => {
+    if (activeMacAddress === macAddress) {
+      return "bg-gray-600 text-white cursor-not-allowed animate-pulse";
+    }
+    if (connectionSuccessMac === macAddress && !initSuccessMac) {
+      return "bg-yellow-500 text-white"; // Connected but not initialized
+    }
+    if (initSuccessMac === macAddress) {
+      return "bg-green-500 text-white hover:bg-green-600"; // Fully connected and initialized
+    }
+    if (failedMacAddress === macAddress) {
+      return "bg-red-500 text-white hover:bg-red-600"; // Connection/initialization failed
+    }
+    return "bg-oves-blue text-white hover:bg-blue-600"; // Default state
+  };
+
+  const getButtonText = (macAddress) => {
+    if (activeMacAddress === macAddress) {
+      return (
+        <span className="flex items-center">
+          <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+          Connecting...
+        </span>
+      );
+    }
+    if (connectionSuccessMac === macAddress && !initSuccessMac) {
+      return "Initializing...";
+    }
+    if (initSuccessMac === macAddress) {
+      return (
+        <span className="flex items-center">
+          <span className="mr-2">✓</span>
+          Connected
+        </span>
+      );
+    }
+    if (failedMacAddress === macAddress) {
+      return "Retry Connection";
+    }
+    return "Connect";
+  };
+
   return (
     <div className="scan-data-page flex flex-col h-screen">
       <div className="mt-10">
