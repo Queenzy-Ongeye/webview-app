@@ -26,8 +26,8 @@ const ScanDataPage = () => {
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
+    setSearchingMatch(false);
     setPopupVisible(true);
-    setLoading(false);
   };
 
   // Function to handle "View Device Data" button click when match is found
@@ -431,7 +431,7 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
-      {loading && (
+      {(loading && searchingMatch) (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
