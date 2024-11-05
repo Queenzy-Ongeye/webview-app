@@ -154,7 +154,6 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setLoading(true); // Start loading indicator for the connection process
 
     try {
       setLoading(true);
@@ -184,9 +183,9 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setInitializingMacAddress(macAddress);
-    setLoading(true);
 
     try {
+      setLoading(true); // Start loading indicator for the connection process
       const initSuccessResponse = await initBleData(macAddress);
       if (initSuccessResponse) {
         setInitSuccessMac(macAddress);
@@ -217,8 +216,8 @@ const ScanDataPage = () => {
           "connBleByMacAddress",
           macAddress,
           (responseData) => {
-            setLoading(true);
             try {
+              setLoading(true); // Start loading indicator for the connection process
               const parsedData = JSON.parse(responseData);
               if (parsedData.respCode === "200") {
                 initBleData(macAddress);
@@ -249,8 +248,8 @@ const ScanDataPage = () => {
           "initBleData",
           macAddress,
           (responseData) => {
-            setLoading(true);
             try {
+              setLoading(true); // Start loading indicator for the connection process
               const parsedData = JSON.parse(responseData);
               dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
               setLoading(false);
@@ -260,6 +259,7 @@ const ScanDataPage = () => {
                 "Error processing initBleData response:",
                 error.message
               );
+              setLoading(false)
             }
           }
         );
