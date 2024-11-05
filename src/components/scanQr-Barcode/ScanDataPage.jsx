@@ -22,6 +22,7 @@ const ScanDataPage = () => {
   const navigate = useNavigate();
   const [activeMacAddress, setActiveMacAddress] = useState(null); // Track active MAC address
   const [checkingMatch, setCheckingMatch] = useState(false);
+  const [failedMacAddress, setFailedMacAddress] = useState(null); // Track failed connections
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -156,6 +157,7 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setActiveMacAddress(macAddress);
+    setFailedMacAddress(null); // Reset failure on new attempt
     setLoading(true);
 
     try {
@@ -186,6 +188,7 @@ const ScanDataPage = () => {
         }
       } else {
         console.warn("Connection to Bluetooth device failed.");
+        setFailedMacAddress(macAddress);
       }
     } catch (error) {
       console.error("Error connecting/initializing Bluetooth device:", error);
@@ -210,9 +213,13 @@ const ScanDataPage = () => {
               const parsedData = JSON.parse(responseData);
               if (parsedData.respCode === "200") {
                 initBleData(macAddress);
+                dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+                resolve(true);
+              } else {
+                setFailedMacAddress(macAddress);
+                resolve(false);
               }
-              dispatch({ type: "SET_BLE_DATA", payload: parsedData });
-              resolve(parsedData.respCode === "200"); // Resolve true if successful
+              // Resolve true if successful
             } catch (error) {
               console.error(
                 "Error parsing JSON data from 'connBleByMacAddress' response:",
@@ -383,6 +390,8 @@ const ScanDataPage = () => {
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : successMac === device.macAddress
                           ? "bg-green-500 text-white"
+                          : failedMacAddress === device.macAddress
+                          ? "bg-red-500 text-white"
                           : "bg-oves-blue text-white"
                       }`}
                       disabled={
@@ -393,6 +402,8 @@ const ScanDataPage = () => {
                         ? "Connecting..."
                         : successMac === device.macAddress
                         ? "Connected"
+                        : failedMacAddress === device.macAddress
+                        ? "Failed to Connect"
                         : "Connect"}
                     </button>
                   </li>
