@@ -21,7 +21,6 @@ const ScanDataPage = () => {
   const [matchFound, setMatchFound] = useState(null);
   const navigate = useNavigate();
   const [activeMacAddress, setActiveMacAddress] = useState(null); // Track active MAC address
-  const [checkingMatch, setCheckingMatch] = useState(false);
   const [failedMacAddress, setFailedMacAddress] = useState(null); // Track failed connections
 
   const handleMatchResult = (found) => {
@@ -272,7 +271,6 @@ const ScanDataPage = () => {
 
   // Search for a match in the BLE data once initialized
   const searchForMatch = async () => {
-    setCheckingMatch(true);
     setLoading(true);
     const { initBleData, scannedData } = state;
 
@@ -300,7 +298,6 @@ const ScanDataPage = () => {
       if (match) break;
     }
     setLoading(false);
-    setCheckingMatch(false);
     handleMatchResult(match, foundDeviceData);
   };
 
@@ -479,7 +476,6 @@ const ScanDataPage = () => {
           matchFound={matchFound}
           onClose={() => setPopupVisible(false)}
           onContinue={handleContinue}
-          checkingMatch={checkingMatch}
         />
       )}
     </div>
