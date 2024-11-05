@@ -157,115 +157,119 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setActiveMacAddress(macAddress);
-    setFailedMacAddress(null); // Reset failure on new attempt
+    setFailedMacAddress(null);
     setLoading(true);
 
     try {
-      // Attempting to connect to the Bluetooth device
+      // Step 1: Connect to the Bluetooth device
       const connectionSuccess = await connectToBluetoothDevice(macAddress);
       console.log("Connection attempt response:", connectionSuccess);
 
       if (connectionSuccess) {
         console.log("Connected to Bluetooth device:", macAddress);
-        setSuccessMac(macAddress);
-        // Initializing BLE Data
-        const initSuccessResponse = await initBleData(macAddress);
-        console.log("Initialization response:", initSuccessResponse);
+        setConnectionSuccessMac(macAddress); // Track successful connection
 
-        if (initSuccessResponse) {
-          setSuccessMac(macAddress);
-          dispatch({
-            type: "SET_INIT_BLE_DATA_RESPONSE",
-            payload: initSuccessResponse,
-          });
-          searchForMatch();
+        // Step 2: Initialize BLE Data after successful connection
+        const initResponse = await initBleData(macAddress);
+        console.log("Initialization response:", initResponse);
+
+        if (initResponse && initResponse.respCode === "200") {
+          setInitSuccessMac(macAddress); // Track successful initialization
+
+          // Store the initialized data in state
+          if (initResponse.respData && initResponse.respData.dataList) {
+            dispatch({
+              type: "SET_INIT_BLE_DATA",
+              payload: initResponse.respData,
+            });
+
+            // If there's scanned data available, proceed with matching
+            if (state.scannedData) {
+              searchForMatch();
+            }
+          } else {
+            console.warn("Initialization successful but no data received");
+            setFailedMacAddress(macAddress);
+            alert("Device connected but no data available");
+          }
         } else {
-          console.warn(
-            "initSuccessResponse did not include dataList:",
-            initSuccessResponse
-          );
-          alert("Initialization successful but returned incomplete data.");
+          console.warn("Initialization failed:", initResponse);
+          setFailedMacAddress(macAddress);
+          alert("Failed to initialize device data");
         }
       } else {
-        console.warn("Connection to Bluetooth device failed.");
+        console.warn("Connection to Bluetooth device failed");
         setFailedMacAddress(macAddress);
+        alert("Failed to connect to device");
       }
     } catch (error) {
-      console.error("Error connecting/initializing Bluetooth device:", error);
-      alert("Failed to connect/initialize BLE data. Please try again.");
+      console.error("Error in connect/init process:", error);
+      setFailedMacAddress(macAddress);
+      alert("Error during device connection/initialization");
     } finally {
-      setTimeout(() => {
-        setActiveMacAddress(null);
-        setLoading(false);
-      }, 60000);
+      setLoading(false);
+      setActiveMacAddress(null);
     }
   };
 
-  const connectToBluetoothDevice = async (macAddress) => {
-    return new Promise((resolve) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "connBleByMacAddress",
-          macAddress,
-          (responseData) => {
-            try {
-              setLoading(true); // Start loading indicator for the connection process
-              const parsedData = JSON.parse(responseData);
-              if (parsedData.respCode === "200") {
-                initBleData(macAddress);
-                dispatch({ type: "SET_BLE_DATA", payload: parsedData });
-                resolve(true);
-              } else {
-                setFailedMacAddress(macAddress);
-                resolve(false);
-              }
-              // Resolve true if successful
-            } catch (error) {
-              console.error(
-                "Error parsing JSON data from 'connBleByMacAddress' response:",
-                error
-              );
-              setLoading(false);
-            }
-          }
-        );
-      } else {
-        console.error("WebViewJavascriptBridge is not initialized.");
+  // Updated initBleData function with proper error handling and response parsing
+  const initBleData = async (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (!window.WebViewJavascriptBridge) {
+        reject(new Error("WebViewJavascriptBridge not initialized"));
+        return;
       }
+
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            console.log("InitBleData response:", parsedData);
+
+            if (!parsedData) {
+              reject(new Error("No data received from initialization"));
+              return;
+            }
+
+            resolve(parsedData);
+          } catch (error) {
+            console.error("Error parsing initBleData response:", error);
+            reject(error);
+          }
+        }
+      );
     });
   };
 
-  // UI handling for matching status
-  const initBleData = async (macAddress) => {
-    return new Promise((resolve) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "initBleData",
-          macAddress,
-          (responseData) => {
-            try {
-              setLoading(true); // Start loading indicator for the connection process
-              const parsedData = JSON.parse(responseData);
-              if (parsedData) {
-                dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-                resolve(parsedData); // Ensure full parsedData is returned
-              } else {
-                console.warn("No dataList found in initBleData response.");
-                resolve(null); // Explicitly return null on failure
-              }
-              resolve(parsedData || null); // Resolve with data if successful
-            } catch (error) {
-              console.error(
-                "Error processing initBleData response:",
-                error.message
-              );
-              setLoading(false);
-            }
-          }
-        );
-      } else {
-        console.error("WebViewJavascriptBridge is not initialized.");
+  // Updated connectToBluetoothDevice function with better error handling
+  const connectToBluetoothDevice = async (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (!window.WebViewJavascriptBridge) {
+        reject(new Error("WebViewJavascriptBridge not initialized"));
+        return;
       }
+
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            console.log("Connection response:", parsedData);
+
+            if (parsedData.respCode === "200") {
+              resolve(true);
+            } else {
+              resolve(false);
+            }
+          } catch (error) {
+            console.error("Error parsing connection response:", error);
+            reject(error);
+          }
+        }
+      );
     });
   };
 
