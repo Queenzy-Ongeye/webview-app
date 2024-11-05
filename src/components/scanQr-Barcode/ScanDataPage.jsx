@@ -171,21 +171,14 @@ const ScanDataPage = () => {
         const initSuccessResponse = await initBleData(macAddress);
         console.log("Initialization response:", initSuccessResponse);
 
-        if (initSuccessResponse && initSuccessResponse.dataList) {
-          console.log(
-            "BLE data initialized for:",
-            macAddress,
-            initSuccessResponse
-          );
-          dispatch({
-            type: "SET_INIT_BLE_DATA_RESPONSE",
-            payload: initSuccessResponse,
-          });
+        if (initSuccessResponse) {
           setSuccessMac(macAddress);
+          dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: initSuccessResponse });
           searchForMatch();
         } else {
-          console.warn("BLE data initialization failed or returned no data.");
-        }
+          console.warn("initSuccessResponse did not include dataList:", initSuccessResponse);
+          alert("Initialization successful but returned incomplete data.");
+        }        
       } else {
         console.warn("Connection to Bluetooth device failed.");
       }
@@ -200,63 +193,80 @@ const ScanDataPage = () => {
     }
   };
 
-  const connectToBluetoothDevice = (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData.respCode === "200") {
-              initBleData(macAddress);
+  const connectToBluetoothDevice = async (macAddress) => {
+    return new Promise((resolve) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "connBleByMacAddress",
+          macAddress,
+          (responseData) => {
+            try {
+              setLoading(true); // Start loading indicator for the connection process
+              const parsedData = JSON.parse(responseData);
+              if (parsedData.respCode === "200") {
+                initBleData(macAddress);
+              }
+              dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+              resolve(parsedData.respCode === "200"); // Resolve true if successful
+              setLoading(false);
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'connBleByMacAddress' response:",
+                error
+              );
+              setLoading(false);
             }
-            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
-            console.log("BLE Device Data:", parsedData);
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'connBleByMacAddress' response:",
-              error
-            );
           }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+      }
+    });
   };
 
   // UI handling for matching status
-  const initBleData = (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "initBleData",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-          } catch (error) {
-            console.error(
-              "Error processing initBleData response:",
-              error.message
-            );
+  const initBleData = async (macAddress) => {
+    return new Promise((resolve) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "initBleData",
+          macAddress,
+          (responseData) => {
+            try {
+              setLoading(true); // Start loading indicator for the connection process
+              const parsedData = JSON.parse(responseData);
+              setLoading(false);
+              if (parsedData && parsedData.dataList) {
+                dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+                resolve(parsedData); // Ensure full parsedData is returned
+              } else {
+                console.warn("No dataList found in initBleData response.");
+                resolve(null); // Explicitly return null on failure
+              }
+              resolve(parsedData || null); // Resolve with data if successful
+            } catch (error) {
+              console.error(
+                "Error processing initBleData response:",
+                error.message
+              );
+              setLoading(false);
+            }
           }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+      }
+    });
   };
 
   // Search for a match in the BLE data once initialized
   const searchForMatch = async () => {
-    setCheckingMatch(true)
+    setCheckingMatch(true);
     const { initBleData, scannedData } = state;
 
     if (!initBleData || !scannedData) {
       handleMatchResult(false);
-      setCheckingMatch(false)
+      setCheckingMatch(false);
       return;
     }
 
@@ -277,7 +287,7 @@ const ScanDataPage = () => {
       }
       if (match) break;
     }
-    setCheckingMatch(false)
+    setCheckingMatch(false);
     handleMatchResult(match, foundDeviceData);
   };
 
@@ -317,16 +327,16 @@ const ScanDataPage = () => {
     }
   };
 
-    // Create a Map to ensure uniqueness based on MAC Address
-    const uniqueDevicesMap = new Map();
-    state.detectedDevices.forEach((device) => {
-      uniqueDevicesMap.set(device.macAddress, device);
-    });
-  
-    // Convert the Map to an array and sort by signal strength (RSSI)
-    const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
-      (a, b) => b.rssi - a.rssi
-    );
+  // Create a Map to ensure uniqueness based on MAC Address
+  const uniqueDevicesMap = new Map();
+  state.detectedDevices.forEach((device) => {
+    uniqueDevicesMap.set(device.macAddress, device);
+  });
+
+  // Convert the Map to an array and sort by signal strength (RSSI)
+  const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
+    (a, b) => b.rssi - a.rssi
+  );
 
   useEffect(() => {
     if (!state.detectedDevices || state.detectedDevices.length === 0) {
@@ -353,7 +363,7 @@ const ScanDataPage = () => {
                   <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
                     <div>
                       <p className="text-gray-700">
-                        Device Name: {device.name || "Unknown Device"}
+                        {device.name || "Unknown Device"}
                       </p>
                       <p className="text-gray-700">
                         Mac-Address: {device.macAddress}
