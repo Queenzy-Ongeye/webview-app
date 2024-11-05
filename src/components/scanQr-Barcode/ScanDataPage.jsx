@@ -240,7 +240,7 @@ const ScanDataPage = () => {
             try {
               setLoading(true); // Start loading indicator for the connection process
               const parsedData = JSON.parse(responseData);
-              if (parsedData && parsedData.dataList) {
+              if (parsedData) {
                 dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
                 resolve(parsedData); // Ensure full parsedData is returned
               } else {
