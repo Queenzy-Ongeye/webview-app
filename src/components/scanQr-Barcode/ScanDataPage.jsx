@@ -27,6 +27,7 @@ const ScanDataPage = () => {
   const handleMatchResult = (found) => {
     setMatchFound(found);
     setPopupVisible(true);
+    setLoading(false);
   };
 
   // Function to handle "View Device Data" button click when match is found
@@ -272,9 +273,11 @@ const ScanDataPage = () => {
   // Search for a match in the BLE data once initialized
   const searchForMatch = async () => {
     setCheckingMatch(true);
+    setLoading(true);
     const { initBleData, scannedData } = state;
 
     if (!initBleData || !scannedData) {
+      setLoading(false);
       handleMatchResult(false);
       return;
     }
@@ -296,6 +299,7 @@ const ScanDataPage = () => {
       }
       if (match) break;
     }
+    setLoading(false);
     setCheckingMatch(false);
     handleMatchResult(match, foundDeviceData);
   };
