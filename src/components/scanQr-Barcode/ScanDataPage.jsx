@@ -168,7 +168,7 @@ const ScanDataPage = () => {
         if (initResponse) {
           setInitSuccessMac(macAddress);
           dispatch({
-            type: "SET_INIT_BLE_DATA",
+            type: "SET_INIT_BLE_DATA_RESPONSE",
             payload: initResponse,
           });
           await searchForMatch(); // Only search after successful data load
@@ -275,13 +275,6 @@ const ScanDataPage = () => {
     handleMatchResult(match, foundDeviceData);
   };
 
-  // useEffect hook to monitor initBleData and scannedData changes
-  useEffect(() => {
-    if (state.initBleData && state.scannedData && isPopupVisible) {
-      // Run the search only when both initBleData and scannedData are available
-      searchForMatch();
-    }
-  }, [state.initBleData, state.scannedData]);
   // Start scanning for BLE devices
   const scanBleDevices = () => {
     setIsScanning(true);
