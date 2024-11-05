@@ -269,7 +269,6 @@ const ScanDataPage = () => {
 
     if (!initBleData || !scannedData) {
       handleMatchResult(false);
-      setCheckingMatch(false);
       return;
     }
 
