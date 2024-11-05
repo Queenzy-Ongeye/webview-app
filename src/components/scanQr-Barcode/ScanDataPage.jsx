@@ -157,6 +157,7 @@ const ScanDataPage = () => {
     setLoading(true); // Start loading indicator for the connection process
 
     try {
+      setLoading(true);
       // Attempt to connect to the Bluetooth device
       const connectionSuccess = await connectToBluetoothDevice(macAddress);
       if (connectionSuccess) {
@@ -216,6 +217,7 @@ const ScanDataPage = () => {
           "connBleByMacAddress",
           macAddress,
           (responseData) => {
+            setLoading(true);
             try {
               const parsedData = JSON.parse(responseData);
               if (parsedData.respCode === "200") {
@@ -223,7 +225,7 @@ const ScanDataPage = () => {
               }
               dispatch({ type: "SET_BLE_DATA", payload: parsedData });
               resolve(parsedData.respCode === "200"); // Resolve true if successful
-              setLoading(true);
+              setLoading(false);
             } catch (error) {
               console.error(
                 "Error parsing JSON data from 'connBleByMacAddress' response:",
@@ -247,10 +249,11 @@ const ScanDataPage = () => {
           "initBleData",
           macAddress,
           (responseData) => {
+            setLoading(true);
             try {
               const parsedData = JSON.parse(responseData);
               dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-              setLoading(true);
+              setLoading(false);
               resolve(parsedData || null); // Resolve with data if successful
             } catch (error) {
               console.error(
