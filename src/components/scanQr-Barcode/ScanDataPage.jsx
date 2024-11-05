@@ -169,11 +169,11 @@ const ScanDataPage = () => {
       // If the connection fails, log the error and show an alert
       console.error("Error connecting to Bluetooth device:", error);
       alert("Failed to connect to Bluetooth device. Please try again.");
-
       // Ensure that the success state is not set in case of failure
       setConnectionSuccessMac(null); // Clear any success indicator
     } finally {
       setConnectingMacAddress(null);
+      setLoading(false);
     }
   };
 
@@ -201,11 +201,11 @@ const ScanDataPage = () => {
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
-
       // Ensure that the success state is not set in case of failure
       setInitSuccessMac(null);
     } finally {
       setInitializingMacAddress(null);
+      setLoading(false);
     }
   };
 
