@@ -166,27 +166,26 @@ const ScanDataPage = () => {
       if (connectionSuccess) {
         console.log("Connected to Bluetooth device:", macAddress);
         setSuccessMac(macAddress);
+        // Initializing BLE Data
+        const initSuccessResponse = await initBleData(macAddress);
+        console.log("Initialization response:", initSuccessResponse);
+
+        if (initSuccessResponse) {
+          setSuccessMac(macAddress);
+          dispatch({
+            type: "SET_INIT_BLE_DATA_RESPONSE",
+            payload: initSuccessResponse,
+          });
+          searchForMatch();
+        } else {
+          console.warn(
+            "initSuccessResponse did not include dataList:",
+            initSuccessResponse
+          );
+          alert("Initialization successful but returned incomplete data.");
+        }
       } else {
         console.warn("Connection to Bluetooth device failed.");
-      }
-
-      // Initializing BLE Data
-      const initSuccessResponse = await initBleData(macAddress);
-      console.log("Initialization response:", initSuccessResponse);
-
-      if (initSuccessResponse) {
-        setSuccessMac(macAddress);
-        dispatch({
-          type: "SET_INIT_BLE_DATA_RESPONSE",
-          payload: initSuccessResponse,
-        });
-        searchForMatch();
-      } else {
-        console.warn(
-          "initSuccessResponse did not include dataList:",
-          initSuccessResponse
-        );
-        alert("Initialization successful but returned incomplete data.");
       }
     } catch (error) {
       console.error("Error connecting/initializing Bluetooth device:", error);
