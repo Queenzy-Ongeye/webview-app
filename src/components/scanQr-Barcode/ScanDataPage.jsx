@@ -426,7 +426,7 @@ const ScanDataPage = () => {
 
         <button
           onClick={startQrCodeScan}
-          className="fixed bottom-20 right-3 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
+          className="fixed bottom-20 right-3 w-16 h-16 bg-blue-600 rounded-full shadow-lg flex items-center justify-center"
         >
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
