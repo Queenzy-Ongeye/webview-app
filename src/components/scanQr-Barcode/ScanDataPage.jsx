@@ -223,11 +223,13 @@ const ScanDataPage = () => {
               }
               dispatch({ type: "SET_BLE_DATA", payload: parsedData });
               resolve(parsedData.respCode === "200"); // Resolve true if successful
+              setLoading(true);
             } catch (error) {
               console.error(
                 "Error parsing JSON data from 'connBleByMacAddress' response:",
                 error
               );
+              setLoading(false);
             }
           }
         );
@@ -248,6 +250,7 @@ const ScanDataPage = () => {
             try {
               const parsedData = JSON.parse(responseData);
               dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+              setLoading(true);
               resolve(parsedData || null); // Resolve with data if successful
             } catch (error) {
               console.error(
