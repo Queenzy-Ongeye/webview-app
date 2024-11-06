@@ -164,7 +164,6 @@ const ScanDataPage = () => {
 
     setConnectingMacAddress(macAddress);
     setLoading(true);
-    setProgress(0); // Reset progress on each call
 
     try {
       // Phase 1: Connection
@@ -179,16 +178,6 @@ const ScanDataPage = () => {
         setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success after 10 seconds
       }, 23000);
       // Phase 2: Initialization with progress simulation
-      let progressInterval = setInterval(() => {
-        setProgress((prevProgress) => {
-          if (prevProgress >= 100) {
-            clearInterval(progressInterval);
-            return 100;
-          }
-          return prevProgress + 5;
-        });
-      }, 1500);
-
       const initResult = await initBleData(macAddress);
       if (!initResult) {
         throw new Error("Failed to initialize BLE data");
@@ -211,7 +200,6 @@ const ScanDataPage = () => {
       setConnectingMacAddress(null);
       setInitializingMacAddress(null);
       setLoading(false);
-      setProgress(0); // Reset progress after completion
     }
   };
 
