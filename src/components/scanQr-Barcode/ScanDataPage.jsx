@@ -26,14 +26,13 @@ const ScanDataPage = () => {
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
-    setSearchingMatch(false);
     setPopupVisible(true);
   };
 
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
-    if (matchFound && initBleData) {
-      navigate("/device-data", { state: { deviceData: initBleData } }); // Pass data to new page
+    if (matchFound && state.initBleData) {
+      navigate("/device-data", { state: { deviceData: state.initBleData } }); // Pass data to new page
     }
     setPopupVisible(false); // Close the popup
   };
@@ -153,34 +152,22 @@ const ScanDataPage = () => {
     }
   };
 
-  const handleConnectAndInitClick = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setActiveMacAddress(macAddress);
-    setFailedMacAddress(null);
+  const handleConnectAndInit = async (macAddress) => {
     setLoading(true);
-
     try {
-      const connectionSuccess = await connectToBluetoothDevice(macAddress);
-      if (connectionSuccess) {
-        setConnectionSuccessMac(macAddress);
-        const initResponse = await initBleData(macAddress);
-        if (initResponse) {
-          setInitSuccessMac(macAddress);
+      const connected = await connectToBluetoothDevice(macAddress);
+      if (connected) {
+        const initializedData = await initBleData(macAddress);
+        if (initializedData) {
           dispatch({
             type: "SET_INIT_BLE_DATA_RESPONSE",
-            payload: initResponse,
+            payload: initializedData,
           });
-          await searchForMatch(); // Only search after successful data load
-        } else {
-          throw new Error("Initialization failed");
+          searchForMatch();
         }
-      } else {
-        throw new Error("Connection failed");
       }
     } catch (error) {
-      setFailedMacAddress(macAddress);
-      console.error("Error in connect/init process:", error);
+      console.error("Error during connection/init:", error);
     } finally {
       setLoading(false);
     }
@@ -236,7 +223,7 @@ const ScanDataPage = () => {
                 "Error processing initBleData response:",
                 error.message
               );
-              setLoading(false)
+              setLoading(false);
             }
           }
         );
@@ -245,7 +232,6 @@ const ScanDataPage = () => {
       }
     });
   };
-
 
   // Search for a match in the BLE data once initialized
   const searchForMatch = async () => {
@@ -405,17 +391,15 @@ const ScanDataPage = () => {
                     </div>
                     {/* Enhanced button with better state handling */}
                     <button
-                      onClick={(e) =>
-                        handleConnectAndInitClick(e, device.macAddress)
-                      }
-                      className={`px-4 py-2 border rounded-md ml-4 ${getButtonStyle(
-                        device.macAddress
-                      )}`}
-                      disabled={
-                        loading || activeMacAddress === device.macAddress
-                      }
+                      onClick={() => handleConnectAndInit(device.macAddress)}
+                      className={`px-4 py-2 border rounded-md ml-4 ${
+                        loading
+                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                          : "bg-oves-blue text-white"
+                      }`}
+                      disabled={loading}
                     >
-                      {getButtonText(device.macAddress)}
+                      {loading ? "Processing..." : "Connect"}
                     </button>
                   </li>
                 </React.Fragment>
