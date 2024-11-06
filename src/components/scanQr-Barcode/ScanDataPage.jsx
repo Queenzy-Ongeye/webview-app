@@ -5,6 +5,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Notification from "../notification/Notification";
 import PopupNotification from "../notification/PopUp";
 import { useNavigate } from "react-router-dom";
+import BluetoothButton from "../BleButtons/BluetoothButtons";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -28,8 +29,8 @@ const ScanDataPage = () => {
 
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
-    if (matchFound && initBleData) {
-      navigate("/device-data", { state: { deviceData: initBleData } }); // Pass data to new page
+    if (matchFound && state.initBleData) {
+      navigate("/device-data", { state: { deviceData: state.initBleData } }); // Pass data to new page
     }
     setPopupVisible(false); // Close the popup
   };
@@ -146,66 +147,6 @@ const ScanDataPage = () => {
           }
         }
       );
-    }
-  };
-
-  const handleConnectClick = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    setConnectingMacAddress(macAddress);
-
-    try {
-      setLoading(true);
-      // Attempt to connect to the Bluetooth device
-      const connectionSuccess = await connectToBluetoothDevice(macAddress);
-      if (connectionSuccess) {
-        setConnectionSuccessMac(macAddress);
-        setLoading(false); // Stop loading once connected
-      } else {
-        console.error("Connection failed.");
-      }
-    } catch (error) {
-      // If the connection fails, log the error and show an alert
-      console.error("Error connecting to Bluetooth device:", error);
-      alert("Failed to connect to Bluetooth device. Please try again.");
-      // Ensure that the success state is not set in case of failure
-      setConnectionSuccessMac(null); // Clear any success indicator
-    } finally {
-      setConnectingMacAddress(null);
-      setLoading(false);
-    }
-  };
-
-  // Initiate device pairing process
-  const handleInitBleDataClick = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    setInitializingMacAddress(macAddress);
-
-    try {
-      setLoading(true); // Start loading indicator for the connection process
-      const initSuccessResponse = await initBleData(macAddress);
-      if (initSuccessResponse) {
-        setInitSuccessMac(macAddress);
-        dispatch({
-          type: "SET_INIT_BLE_DATA_RESPONSE",
-          payload: initSuccessResponse,
-        });
-        searchForMatch(); // Trigger search after initialization
-        setLoading(false); // Stop loading after initialization
-      } else {
-        console.error("Initialization failed.");
-      }
-    } catch (error) {
-      console.error("Error during BLE Data Initialization:", error);
-      alert("Failed to initialize BLE data. Please try again.");
-      // Ensure that the success state is not set in case of failure
-      setInitSuccessMac(null);
-    } finally {
-      setInitializingMacAddress(null);
-      setLoading(false);
     }
   };
 
@@ -378,48 +319,12 @@ const ScanDataPage = () => {
                       Signal Strength: {device.rssi}db
                     </p>
                   </li>
-                  <div className="flex justify-between mt-2">
-                    <button
-                      onClick={(e) => handleConnectClick(e, device.macAddress)}
-                      className={`w-full px-4 py-2 border rounded-md ${
-                        connectingMacAddress === device.macAddress
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : connectionSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : "bg-blue-500 text-white"
-                      }`}
-                      disabled={
-                        loading || connectingMacAddress === device.macAddress
-                      }
-                    >
-                      {connectingMacAddress === device.macAddress
-                        ? "Connecting..."
-                        : connectionSuccessMac === device.macAddress
-                        ? "Connected"
-                        : "Connect"}
-                    </button>
-                    <button
-                      onClick={(e) =>
-                        handleInitBleDataClick(e, device.macAddress)
-                      }
-                      className={`w-full px-4 py-2 border rounded-md ${
-                        initializingMacAddress === device.macAddress
-                          ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                          : initSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : "bg-yellow-500 text-white"
-                      }`}
-                      disabled={
-                        loading || initializingMacAddress === device.macAddress
-                      }
-                    >
-                      {initializingMacAddress === device.macAddress
-                        ? "Initializing..."
-                        : initSuccessMac === device.macAddress
-                        ? "Initialized"
-                        : "Init BLE Data"}
-                    </button>
-                  </div>
+                  <BluetoothButton
+                    macAddress={device.macAddress}
+                    connectToBluetoothDevice={connectToBluetoothDevice}
+                    initBleData={state.initBleData}
+                    searchForMatch={searchForMatch}
+                  />
                 </React.Fragment>
               ))}
             </ul>
