@@ -24,9 +24,13 @@ const ScanDataPage = () => {
   const [failedMacAddress, setFailedMacAddress] = useState(null); // Track failed connections
   const [searchingMatch, setSearchingMatch] = useState(false);
 
-  const handleMatchResult = (found) => {
+  // Handle search result
+  const handleMatchResult = (found, deviceData=null) => {
     setMatchFound(found);
-    setPopupVisible(true);
+    if (found) {
+      setPopupVisible(true);
+      dispatch({ type: "SET_MATCHING_DEVICE", payload: deviceData });
+    }
   };
 
   // Function to handle "View Device Data" button click when match is found
@@ -234,7 +238,7 @@ const ScanDataPage = () => {
   };
 
   // Search for a match in the BLE data once initialized
-  const searchForMatch = async () => {
+  const searchForMatch = () => {
     const { initBleData, scannedData } = state;
     if (!initBleData || !scannedData) {
       handleMatchResult(false);
@@ -312,7 +316,6 @@ const ScanDataPage = () => {
       scanBleDevices(); // Start BLE scan if no devices are detected
     }
   }, [state.detectedDevices]);
-
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
