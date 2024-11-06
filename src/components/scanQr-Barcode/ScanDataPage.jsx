@@ -401,7 +401,7 @@ const ScanDataPage = () => {
           <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
             <div
               className="bg-oves-blue h-2.5 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${progressBar}%` }}
             ></div>
           </div>
         )}
