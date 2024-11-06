@@ -174,9 +174,10 @@ const ScanDataPage = () => {
       }
       console.log("Connected to Bluetooth device:", macAddress);
 
-      setConnectionSuccessMac(macAddress);
-      setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success after 10 seconds
-
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success after 10 seconds
+      }, 23000);
       // Phase 2: Initialization with progress simulation
       let progressInterval = setInterval(() => {
         setProgress((prevProgress) => {
@@ -194,8 +195,10 @@ const ScanDataPage = () => {
       }
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: initResult });
 
-      setInitSuccessMac(macAddress);
-      setTimeout(() => setInitSuccessMac(null), 10000); // Clear success after 10 seconds
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success after 10 seconds
+      }, 35000);
 
       // Proceed to search for a match only after initialization
       searchForMatch();
