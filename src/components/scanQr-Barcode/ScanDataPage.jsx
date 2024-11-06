@@ -153,35 +153,45 @@ const ScanDataPage = () => {
     }
   };
 
-  const handleConnectAndInitClick = async (e, macAddress) => {
+  // Define a function that handles both connection and initialization
+  const handleConnectAndInit = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
-    setActiveMacAddress(macAddress);
-    setFailedMacAddress(null);
-    setLoading(true);
+
+    setConnectingMacAddress(macAddress);
+    setInitializingMacAddress(macAddress);
+    setFailedMacAddress(null)
 
     try {
+      setLoading(true);
+      // Attempt to connect to the Bluetooth device
       const connectionSuccess = await connectToBluetoothDevice(macAddress);
       if (connectionSuccess) {
         setConnectionSuccessMac(macAddress);
-        const initResponse = await initBleData(macAddress);
-        if (initResponse) {
+
+        // If connection is successful, attempt initialization
+        const initSuccessResponse = await initBleData(macAddress);
+        if (initSuccessResponse) {
           setInitSuccessMac(macAddress);
           dispatch({
             type: "SET_INIT_BLE_DATA_RESPONSE",
-            payload: initResponse,
+            payload: initSuccessResponse,
           });
-          await searchForMatch(); // Only search after successful data load
+          searchForMatch(); // Trigger search after initialization
         } else {
-          throw new Error("Initialization failed");
+          console.error("Initialization failed.");
         }
       } else {
-        throw new Error("Connection failed");
+        setFailedMacAddress(macAddress)
+        console.error("Connection failed.");
       }
     } catch (error) {
-      setFailedMacAddress(macAddress);
-      console.error("Error in connect/init process:", error);
+      setFailedMacAddress(macAddress); // Set the failed state on error
+      console.error("Error connecting to Bluetooth device:", error);
+      alert("Failed to connect to Bluetooth device. Please try again.");
     } finally {
+      setConnectingMacAddress(null);
+      setInitializingMacAddress(null);
       setLoading(false);
     }
   };
@@ -236,7 +246,7 @@ const ScanDataPage = () => {
                 "Error processing initBleData response:",
                 error.message
               );
-              setLoading(false)
+              setLoading(false);
             }
           }
         );
@@ -246,13 +256,11 @@ const ScanDataPage = () => {
     });
   };
 
-
   // Search for a match in the BLE data once initialized
-  const searchForMatch = async () => {
-    setSearchingMatch(true);
+  const searchForMatch = () => {
     const { initBleData, scannedData } = state;
+
     if (!initBleData || !scannedData) {
-      setSearchingMatch(false);
       handleMatchResult(false);
       return;
     }
@@ -267,13 +275,14 @@ const ScanDataPage = () => {
           (desc && desc.includes(scannedData))
         ) {
           match = true;
-          foundDeviceData = item;
+          foundDeviceData = item; // Store matched device data
+          console.log("Match:", characteristic);
           break;
         }
       }
       if (match) break;
     }
-    setSearchingMatch(false);
+
     handleMatchResult(match, foundDeviceData);
   };
 
@@ -406,7 +415,7 @@ const ScanDataPage = () => {
                     {/* Enhanced button with better state handling */}
                     <button
                       onClick={(e) =>
-                        handleConnectAndInitClick(e, device.macAddress)
+                        handleConnectAndInit(e, device.macAddress)
                       }
                       className={`px-4 py-2 border rounded-md ml-4 ${getButtonStyle(
                         device.macAddress
