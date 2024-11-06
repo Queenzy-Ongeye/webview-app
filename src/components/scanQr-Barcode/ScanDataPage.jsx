@@ -235,10 +235,8 @@ const ScanDataPage = () => {
 
   // Search for a match in the BLE data once initialized
   const searchForMatch = async () => {
-    setSearchingMatch(true);
     const { initBleData, scannedData } = state;
     if (!initBleData || !scannedData) {
-      setSearchingMatch(false);
       handleMatchResult(false);
       return;
     }
@@ -259,17 +257,16 @@ const ScanDataPage = () => {
       }
       if (match) break;
     }
-    setSearchingMatch(false);
     handleMatchResult(match, foundDeviceData);
   };
 
   // useEffect hook to monitor initBleData and scannedData changes
-  useEffect(() => {
-    if (state.initBleData && state.scannedData && !isPopupVisible) {
-      // Run the search only when both initBleData and scannedData are available
-      searchForMatch();
-    }
-  }, [state.initBleData, state.scannedData]);
+  // useEffect(() => {
+  //   if (state.initBleData && state.scannedData && !isPopupVisible) {
+  //     // Run the search only when both initBleData and scannedData are available
+  //     searchForMatch();
+  //   }
+  // }, [state.initBleData, state.scannedData]);
   // Start scanning for BLE devices
   const scanBleDevices = () => {
     setIsScanning(true);
@@ -316,50 +313,6 @@ const ScanDataPage = () => {
     }
   }, [state.detectedDevices]);
 
-  {
-    /* Helper functions for button states */
-  }
-  const getButtonStyle = (macAddress) => {
-    if (activeMacAddress === macAddress) {
-      return "bg-gray-600 text-white cursor-not-allowed animate-pulse";
-    }
-    if (connectionSuccessMac === macAddress && !initSuccessMac) {
-      return "bg-yellow-500 text-white";
-    }
-    if (initSuccessMac === macAddress) {
-      return "bg-green-500 text-white hover:bg-green-600";
-    }
-    if (failedMacAddress === macAddress) {
-      return "bg-red-500 text-white hover:bg-red-600";
-    }
-    return "bg-oves-blue text-white hover:bg-blue-600";
-  };
-
-  const getButtonText = (macAddress) => {
-    if (activeMacAddress === macAddress) {
-      return (
-        <span className="flex items-center">
-          <AiOutlineLoading3Quarters className="animate-spin mr-2" />
-          Connecting...
-        </span>
-      );
-    }
-    if (connectionSuccessMac === macAddress && !initSuccessMac) {
-      return "Initializing...";
-    }
-    if (initSuccessMac === macAddress) {
-      return (
-        <span className="flex items-center">
-          <span className="mr-2">✓</span>
-          Connected
-        </span>
-      );
-    }
-    if (failedMacAddress === macAddress) {
-      return "Retry Connection";
-    }
-    return "Connect";
-  };
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
@@ -392,7 +345,7 @@ const ScanDataPage = () => {
                     {/* Enhanced button with better state handling */}
                     <button
                       onClick={() => handleConnectAndInit(device.macAddress)}
-                      className={`px-4 py-2 border rounded-md ml-4 ${
+                      className={`px-4 py-2 border rounded-md ${
                         loading
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : "bg-oves-blue text-white"
@@ -417,7 +370,7 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
-      {(loading || searchingMatch) && (
+      {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
