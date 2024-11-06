@@ -388,7 +388,7 @@ const ScanDataPage = () => {
                       onClick={(e) =>
                         handleConnectAndInit(e, device.macAddress)
                       }
-                      className={`w-full px-4 py-2 border rounded-md ${
+                      className={`px-4 py-2 border rounded-md ml-4 ${
                         connectingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : connectionSuccessMac === device.macAddress
