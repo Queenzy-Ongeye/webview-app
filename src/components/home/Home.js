@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import BleButtons from "../BleButtons/BleButtons";
 import { useStore } from "../../service/store";
-import BottomActionBar from "../BleButtons/BottomActionBar";
-import { getAllData, getDataByBarcode } from "../../utility/indexedDB";
+import { getAllData} from "../../utility/indexedDB";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
@@ -282,16 +281,6 @@ const Home = () => {
           initBleDataResponse={state.initBleData}
           isLoading={state.isLoading}
         />
-      </div>
-
-      {/* Fixed action bar at the bottom */}
-      <div className="fixed bottom-0 left-0 w-full z-10 row-start-auto">
-        {/* <BottomActionBar
-          onStartScan={startBleScan}
-          onStopScan={stopBleScan}
-          onScanData={startQrCode}
-          isScanning={state.isScanning}
-        /> */}
       </div>
     </div>
   );
