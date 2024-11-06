@@ -428,16 +428,9 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
-      {/* Progress Bar for Initialization */}
-      {progress > 0 && progress < 100 && (
+      {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="w-3/4 bg-gray-200 rounded-full h-4">
-            <div
-              className="bg-blue-600 h-4 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-          <p className="text-white mt-4">{`Initializing: ${progress}%`}</p>
+          <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
       )}
       {isPopupVisible && (
