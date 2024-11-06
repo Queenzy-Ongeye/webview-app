@@ -23,9 +23,10 @@ const ScanDataPage = () => {
   const [activeMacAddress, setActiveMacAddress] = useState(null); // Track active MAC address
   const [failedMacAddress, setFailedMacAddress] = useState(null); // Track failed connections
   const [searchingMatch, setSearchingMatch] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   // Handle search result
-  const handleMatchResult = (found, deviceData=null) => {
+  const handleMatchResult = (found, deviceData = null) => {
     setMatchFound(found);
     if (found) {
       setPopupVisible(true);
@@ -158,22 +159,36 @@ const ScanDataPage = () => {
 
   const handleConnectAndInit = async (macAddress) => {
     setLoading(true);
+    setProgress(0);
     try {
       const connected = await connectToBluetoothDevice(macAddress);
+      console.log("MacAddress is here: ", connected);
+
       if (connected) {
+        // Simulate loading progress for initialization phase (30-40 seconds)
+        let progressInterval = setInterval(() => {
+          setProgress((prevProgress) => {
+            if (prevProgress >= 100) {
+              clearInterval(progressInterval);
+              return 100;
+            }
+            return prevProgress + 5; // Increment by 5 every interval
+          });
+        }, 1500); // Update progress every 1.5 seconds
+
+        // 2. Initialization Phase
         const initializedData = await initBleData(macAddress);
         if (initializedData) {
-          dispatch({
-            type: "SET_INIT_BLE_DATA_RESPONSE",
-            payload: initializedData,
-          });
-          searchForMatch();
+          clearInterval(progressInterval); // Ensure progress stops at completion
+          setProgress(100); // Set progress to full
+          searchForMatch(); // Trigger match search after initialization
         }
       }
     } catch (error) {
       console.error("Error during connection/init:", error);
     } finally {
       setLoading(false);
+      setProgress(0);
     }
   };
 
@@ -348,14 +363,14 @@ const ScanDataPage = () => {
                     {/* Enhanced button with better state handling */}
                     <button
                       onClick={() => handleConnectAndInit(device.macAddress)}
-                      className={`px-4 py-2 border rounded-md ${
+                      className={`w-full px-4 py-2 border rounded-md ${
                         loading
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : "bg-oves-blue text-white"
                       }`}
                       disabled={loading}
                     >
-                      {loading ? "Processing..." : "Connect"}
+                      {loading ? "Processing..." : "Connect & Init"}
                     </button>
                   </li>
                 </React.Fragment>
