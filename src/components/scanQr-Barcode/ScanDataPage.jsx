@@ -157,42 +157,61 @@ const ScanDataPage = () => {
     }
   };
 
-  const handleConnectAndInit = async (macAddress) => {
+  const handleConnectAndInit = async (e, macAddress) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setConnectingMacAddress(macAddress);
     setLoading(true);
-    setProgress(0);
+    setProgress(0); // Reset progress on each call
+
     try {
-      const connected = await connectToBluetoothDevice(macAddress);
-      console.log("MacAddress is here: ", connected);
+      // Phase 1: Connection
+      await connectToBluetoothDevice(macAddress);
+      console.log("Connected to Bluetooth device:", macAddress);
 
-      if (connected) {
-        // Simulate loading progress for initialization phase (30-40 seconds)
-        let progressInterval = setInterval(() => {
-          setProgress((prevProgress) => {
-            if (prevProgress >= 100) {
-              clearInterval(progressInterval);
-              return 100;
-            }
-            return prevProgress + 5; // Increment by 5 every interval
-          });
-        }, 1500); // Update progress every 1.5 seconds
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success after 10 seconds
+      }, 23000); // Connection duration
 
-        // 2. Initialization Phase
-        const initializedData = await initBleData(macAddress);
-        if (initializedData) {
-          clearInterval(progressInterval); // Ensure progress stops at completion
-          setProgress(100); // Set progress to full
-          searchForMatch(); // Trigger match search after initialization
-        }
-      }
+      // Phase 2: Initialization
+      let progressInterval = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress >= 100) {
+            clearInterval(progressInterval);
+            return 100;
+          }
+          return prevProgress + 5;
+        });
+      }, 1500); // Progress updates every 1.5 seconds
+
+      const response = await initBleData(macAddress);
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success after 10 seconds
+      }, 35000); // Initialization duration
+
+      // Only after initialization, proceed to search for a match
+      searchForMatch();
     } catch (error) {
-      console.error("Error during connection/init:", error);
+      console.error("Error in connection or initialization:", error);
+      alert("An error occurred. Please try again.");
+      setConnectionSuccessMac(null);
+      setInitSuccessMac(null);
     } finally {
-      setLoading(false);
-      setProgress(0);
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        setInitializingMacAddress(null);
+        setLoading(false);
+        setProgress(0); // Reset progress after completion
+      }, 35000); // End of total operation time
     }
   };
 
-  const connectToBluetoothDevice = (macAddress) => {
+  const connectToBluetoothDevice = async (macAddress) => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
@@ -218,7 +237,7 @@ const ScanDataPage = () => {
     }
   };
 
-  const initBleData = (macAddress) => {
+  const initBleData = async (macAddress) => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "initBleData",
@@ -351,15 +370,35 @@ const ScanDataPage = () => {
                     </div>
                     {/* Enhanced button with better state handling */}
                     <button
-                      onClick={() => handleConnectAndInit(device.macAddress)}
+                      onClick={(e) =>
+                        handleConnectAndInit(e, device.macAddress)
+                      }
                       className={`w-full px-4 py-2 border rounded-md ${
-                        loading
+                        connectingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                          : connectionSuccessMac === device.macAddress
+                          ? "bg-green-500 text-white"
+                          : initializingMacAddress === device.macAddress
+                          ? "bg-yellow-500 text-white cursor-not-allowed animate-pulse"
+                          : initSuccessMac === device.macAddress
+                          ? "bg-green-500 text-white"
                           : "bg-oves-blue text-white"
                       }`}
-                      disabled={loading}
+                      disabled={
+                        loading ||
+                        connectingMacAddress === device.macAddress ||
+                        initializingMacAddress === device.macAddress
+                      }
                     >
-                      {loading ? "Processing..." : "Connect & Init"}
+                      {connectingMacAddress === device.macAddress
+                        ? "Connecting..."
+                        : connectionSuccessMac === device.macAddress
+                        ? "Connected"
+                        : initializingMacAddress === device.macAddress
+                        ? "Initializing..."
+                        : initSuccessMac === device.macAddress
+                        ? "Initialized"
+                        : "Connect"}
                     </button>
                   </li>
                 </React.Fragment>
@@ -377,9 +416,16 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+      {/* Progress Bar for Initialization */}
+      {progress > 0 && progress < 100 && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50">
+          <div className="w-3/4 bg-gray-200 rounded-full h-4">
+            <div
+              className="bg-blue-600 h-4 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <p className="text-white mt-4">{`Initializing: ${progress}%`}</p>
         </div>
       )}
       {isPopupVisible && (
