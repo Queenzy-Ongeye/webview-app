@@ -237,31 +237,32 @@ const ScanDataPage = () => {
   };
 
   const initBleData = async (macAddress) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (window.WebViewJavascriptBridge) {
         window.WebViewJavascriptBridge.callHandler(
           "initBleData",
           macAddress,
           (responseData) => {
             try {
+              setLoading(true); // Start loading indicator for the connection process
               const parsedData = JSON.parse(responseData);
-              if (parsedData) {
-                resolve(parsedData);
-              } else {
-                reject(new Error("Initialization response data is invalid"));
-              }
+              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+              resolve(parsedData || null); // Resolve with data if successful
             } catch (error) {
-              console.error("Error parsing initialization response:", error);
-              reject(error);
+              console.error(
+                "Error processing initBleData response:",
+                error.message
+              );
+              setLoading(false)
             }
           }
         );
       } else {
         console.error("WebViewJavascriptBridge is not initialized.");
-        reject(new Error("WebViewJavascriptBridge is not initialized"));
       }
     });
   };
+
 
   // Search for a match in the BLE data once initialized
   const searchForMatch = () => {
