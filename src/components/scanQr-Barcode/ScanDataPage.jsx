@@ -5,6 +5,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Notification from "../notification/Notification";
 import PopupNotification from "../notification/PopUp";
 import { useNavigate } from "react-router-dom";
+import { connectToBluetoothDevice, initBleData } from "../../service/javascriptBridge";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -95,7 +96,7 @@ const ScanDataPage = () => {
         }
       );
     }
-  }, []);
+  }, [state.bridgeInitialized, dispatch]);
 
   // Function to handle the scanned data after receiving it
   const handleScanData = (scannedValue) => {
@@ -146,53 +147,6 @@ const ScanDataPage = () => {
           }
         }
       );
-    }
-  };
-
-  // Connecting to a single Ble Device using the macAddress
-  const connectToBluetoothDevice = async (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
-            console.log("BLE Device Data:", parsedData);
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'connBleByMacAddress' response:",
-              error
-            );
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
-  // Initializing BLE Data using the macAddress retrieved from connectToBluetoothDevice()
-  const initBleData = async (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "initBleData",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-          } catch (error) {
-            console.error(
-              "Error processing initBleData response:",
-              error.message
-            );
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
 
