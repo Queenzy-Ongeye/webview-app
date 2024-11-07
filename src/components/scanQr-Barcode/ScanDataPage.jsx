@@ -206,13 +206,16 @@ const ScanDataPage = () => {
 
     try {
       const responseSuccess = await connectToBluetoothDevice(macAddress);
+      console.log("Connection response:", responseSuccess);
       setConnectionSuccessMac(macAddress);
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 23000);
+
       if (responseSuccess) {
         const initSuccessResponse = await initBleData(macAddress);
+        console.log("initBleData response:", initSuccessResponse);
+
         if (initSuccessResponse) {
           setInitSuccessMac(macAddress);
           dispatch({
@@ -221,8 +224,8 @@ const ScanDataPage = () => {
           });
           setTimeout(() => {
             setInitSuccessMac(macAddress);
+            console.log("Calling searchForMatch");
             searchForMatch();
-            setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
           }, 38000);
         } else {
           console.error("Initialization failed.");
@@ -351,13 +354,13 @@ const ScanDataPage = () => {
                       onClick={(e) =>
                         handleConnectAndInit(e, device.macAddress)
                       }
-                      className={`w-full mt-2 px-4 py-2 border rounded-md ${
+                      className={`mt-2 px-4 py-2 border rounded-md ${
                         activeMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : connectionSuccessMac === device.macAddress &&
                             initSuccessMac === device.macAddress
                           ? "bg-green-500 text-white"
-                          : "bg-blue-500 text-white"
+                          : "bg-oves-blue text-white"
                       }`}
                       disabled={
                         loading || activeMacAddress === device.macAddress
