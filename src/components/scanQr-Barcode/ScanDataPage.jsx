@@ -213,23 +213,20 @@ const ScanDataPage = () => {
     setLoading(true);
 
     try {
-      // Attempting to connect to the Bluetooth device
+      // Attempt to connect to the Bluetooth device
       const connectionSuccess = await connectToBluetoothDevice(macAddress);
       console.log("Connection attempt response:", connectionSuccess);
 
       if (connectionSuccess) {
-        console.log("Connected to Bluetooth device:", macAddress);
+        console.log("Successfully connected to Bluetooth device:", macAddress);
+        // Delay to ensure stable connection before initializing
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
-        setTimeout(() => {
-          setActiveMacAddress(macAddress);
-          setTimeout(() => setSuccessMac(null), 10000); // Clear success state after 10 seconds
-        }, 23000);
-
-        // Initializing BLE Data
+        // Now attempt to initialize BLE Data
         const initSuccessResponse = await initBleData(macAddress);
         console.log("Initialization response:", initSuccessResponse);
 
-        if (initSuccessResponse) {
+        if (initSuccessResponse && initSuccessResponse.dataList) {
           console.log(
             "BLE data initialized for:",
             macAddress,
@@ -239,25 +236,19 @@ const ScanDataPage = () => {
             type: "SET_INIT_BLE_DATA_RESPONSE",
             payload: initSuccessResponse,
           });
-          setTimeout(() => {
-            setActiveMacAddress(macAddress);
-            searchForMatch();
-            setTimeout(() => setSuccessMac(null), 10000); // Clear success state after 10 seconds
-          }, 38000);
+          searchForMatch(); // Trigger search after initialization
         } else {
           console.warn("BLE data initialization failed or returned no data.");
         }
       } else {
-        console.warn("Connection to Bluetooth device failed.");
+        console.warn("Failed to connect to Bluetooth device.");
       }
     } catch (error) {
       console.error("Error connecting/initializing Bluetooth device:", error);
       alert("Failed to connect/initialize BLE data. Please try again.");
     } finally {
-      setTimeout(() => {
-        setActiveMacAddress(null);
-        setLoading(false);
-      }, 60000);
+      setLoading(false);
+      setActiveMacAddress(null);
     }
   };
 
