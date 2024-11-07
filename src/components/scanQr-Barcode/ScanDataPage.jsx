@@ -219,6 +219,10 @@ const ScanDataPage = () => {
 
       if (connectionSuccess) {
         console.log("Successfully connected to Bluetooth device:", macAddress);
+        setTimeout(() => {
+          setActiveMacAddress(macAddress);
+          setTimeout(() => setSuccessMac(null), 10000); // Clear success state after 10 seconds
+        }, 23000);
         // Delay to ensure stable connection before initializing
         await new Promise((resolve) => setTimeout(resolve, 5000));
 
@@ -236,7 +240,11 @@ const ScanDataPage = () => {
             type: "SET_INIT_BLE_DATA_RESPONSE",
             payload: initSuccessResponse,
           });
-          searchForMatch(); // Trigger search after initialization
+          setTimeout(() => {
+            setActiveMacAddress(macAddress);
+            searchForMatch();
+            setTimeout(() => setSuccessMac(null), 10000); // Clear success state after 10 seconds
+          }, 38000); // Trigger search after initialization
         } else {
           console.warn("BLE data initialization failed or returned no data.");
         }
