@@ -1,6 +1,10 @@
 // Function for starting BLE Scan
 
 import { ToastContainer, toast, Bounce } from "react-toastify";
+import { useStore } from "./store";
+
+
+const {dispatch} = useStore();
 
 // Starting Ble scan
 export const startBleScan = () => {
