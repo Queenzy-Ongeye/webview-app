@@ -205,26 +205,28 @@ const ScanDataPage = () => {
     setLoading(true);
 
     try {
-      await connectToBluetoothDevice(macAddress);
+      const responseSuccess = await connectToBluetoothDevice(macAddress);
       setConnectionSuccessMac(macAddress);
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
         setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 23000);
-      const initSuccessResponse = await initBleData(macAddress);
-      if (initSuccessResponse) {
-        setInitSuccessMac(macAddress);
-        dispatch({
-          type: "SET_INIT_BLE_DATA_RESPONSE",
-          payload: initSuccessResponse,
-        });
-        setTimeout(() => {
+      if (responseSuccess) {
+        const initSuccessResponse = await initBleData(macAddress);
+        if (initSuccessResponse) {
           setInitSuccessMac(macAddress);
-          searchForMatch();
-          setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-        }, 38000);
-      } else {
-        console.error("Initialization failed.");
+          dispatch({
+            type: "SET_INIT_BLE_DATA_RESPONSE",
+            payload: initSuccessResponse,
+          });
+          setTimeout(() => {
+            setInitSuccessMac(macAddress);
+            searchForMatch();
+            setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+          }, 38000);
+        } else {
+          console.error("Initialization failed.");
+        }
       }
     } catch (error) {
       console.error("Error connecting or initializing BLE data:", error);
