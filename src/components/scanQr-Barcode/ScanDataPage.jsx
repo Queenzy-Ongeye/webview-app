@@ -28,8 +28,8 @@ const ScanDataPage = () => {
 
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
-    if (matchFound && initBleData) {
-      navigate("/device-data", { state: { deviceData: initBleData } }); // Pass data to new page
+    if (matchFound && state.initBleData) {
+      navigate("/device-data", { state: { deviceData: state.initBleData } }); // Pass data to new page
     }
     setPopupVisible(false); // Close the popup
   };
