@@ -201,41 +201,43 @@ const ScanDataPage = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    setActiveMacAddress(macAddress);
+    setConnectingMacAddress(macAddress);
+    setInitializingMacAddress(macAddress);
     setLoading(true);
 
     try {
-      const responseSuccess = await connectToBluetoothDevice(macAddress);
-      console.log("Connection response:", responseSuccess);
-      setConnectionSuccessMac(macAddress);
+      const connectionSuccess = await connectToBluetoothDevice(macAddress);
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 5000); // Clear success state after 10 seconds
       }, 23000);
-
-      if (responseSuccess) {
+      if (connectionSuccess) {
+        setConnectionSuccessMac(macAddress);
         const initSuccessResponse = await initBleData(macAddress);
-        console.log("initBleData response:", initSuccessResponse);
-
         if (initSuccessResponse) {
           setInitSuccessMac(macAddress);
           dispatch({
             type: "SET_INIT_BLE_DATA_RESPONSE",
             payload: initSuccessResponse,
           });
+
           setTimeout(() => {
             setInitSuccessMac(macAddress);
-            console.log("Calling searchForMatch");
             searchForMatch();
-          }, 38000);
+            setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+          }, 35000);
         } else {
           console.error("Initialization failed.");
         }
+      } else {
+        console.error("Connection failed.");
       }
     } catch (error) {
-      console.error("Error connecting or initializing BLE data:", error);
-      alert("Failed to connect or initialize. Please try again.");
+      console.error("Error in connect and init sequence:", error);
+      alert("Failed to complete the process. Please try again.");
     } finally {
-      setActiveMacAddress(null);
+      setConnectingMacAddress(null);
+      setInitializingMacAddress(null);
       setLoading(false);
     }
   };
@@ -354,8 +356,9 @@ const ScanDataPage = () => {
                       onClick={(e) =>
                         handleConnectAndInit(e, device.macAddress)
                       }
-                      className={`mt-2 px-4 py-2 border rounded-md ${
-                        activeMacAddress === device.macAddress
+                      className={`px-4 py-2 border rounded-md ml-4 ${
+                        connectingMacAddress === device.macAddress ||
+                        initializingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : connectionSuccessMac === device.macAddress &&
                             initSuccessMac === device.macAddress
@@ -363,11 +366,14 @@ const ScanDataPage = () => {
                           : "bg-oves-blue text-white"
                       }`}
                       disabled={
-                        loading || activeMacAddress === device.macAddress
+                        loading ||
+                        connectingMacAddress === device.macAddress ||
+                        initializingMacAddress === device.macAddress
                       }
                     >
-                      {activeMacAddress === device.macAddress
-                        ? "Connecting & Initializing..."
+                      {connectingMacAddress === device.macAddress ||
+                      initializingMacAddress === device.macAddress
+                        ? "Processing..."
                         : connectionSuccessMac === device.macAddress &&
                           initSuccessMac === device.macAddress
                         ? "Connected"
