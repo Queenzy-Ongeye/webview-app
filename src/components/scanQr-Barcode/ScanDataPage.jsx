@@ -205,44 +205,49 @@ const ScanDataPage = () => {
     setLoading(true); // Start loading indicator for the entire process
 
     try {
-      // Step 1: Attempt to connect to the Bluetooth device
-      const response = await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device", macAddress);
-
-      // If the connection is successful, set the success state for the connection
-      if (response && response.respCode == 200) {
-        setTimeout(() => {
-          setConnectionSuccessMac(macAddress);
-          setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear connection success state after 10 seconds
-        }, 23000);
-
-        // Step 2: Initialize BLE Data after successful connection
-        setConnectingMacAddress(macAddress);
-
-        const response = await initBleData(macAddress);
-        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-
-        // If initialization is successful, set the success state for BLE data initialization
-        setTimeout(() => {
-          setConnectingMacAddress(macAddress);
-          searchForMatch();
-          setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear init success state after 10 seconds
-        }, 35000);
-      }
+      // Step 1: Connect to the Bluetooth device
+      console.log(`Attempting to connect to Bluetooth device: ${macAddress}`);
+      await connectToBluetoothDevice(macAddress);
+      console.log(`Connected to Bluetooth device: ${macAddress}`);
+  
+      // Set connection success state
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 23000);
+  
+      // Step 2: Add a short delay before initializing BLE data
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1-second delay
+  
+      // Step 3: Initialize BLE Data
+      console.log(`Initializing BLE data for device: ${macAddress}`);
+      const response = await initBleData(macAddress);
+      console.log("initBleData Response:", response);  // Log the initialization response
+  
+      // Dispatch response data to the application state if successful
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+  
+      // Set initialization success state
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        searchForMatch();
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 35000);
     } catch (error) {
-      // Handle any errors that occur in either connection or initialization
-      console.error(
-        "Error during Bluetooth connection or BLE data initialization:",
-        error.message
-      );
-      // Ensure that neither success state is set in case of failure
+      // Log any error encountered during the process
+      console.error("Error during BLE connection or initialization:", error);
+      alert("Failed to connect or initialize BLE data. Please try again.");
+  
+      // Clear success states in case of failure
       setConnectionSuccessMac(null);
+      setInitSuccessMac(null);
     } finally {
-      // Clear loading indicators and reset relevant states
+      // Clear loading and connecting/initializing states after completion
       setTimeout(() => {
         setConnectingMacAddress(null);
+        setInitializingMacAddress(null);
         setLoading(false);
-      }, 35000);
+      }, 35000);  // Matches the time used in success state timeout for consistency
     }
   };
 
@@ -275,13 +280,7 @@ const ScanDataPage = () => {
     handleMatchResult(match, foundDeviceData);
   };
 
-  // useEffect hook to monitor initBleData and scannedData changes
-  useEffect(() => {
-    if (state.initBleData && state.scannedData && isPopupVisible) {
-      // Run the search only when both initBleData and scannedData are available
-      searchForMatch();
-    }
-  }, [state.initBleData, state.scannedData]);
+
   // Start scanning for BLE devices
   const scanBleDevices = () => {
     setIsScanning(true);
@@ -391,6 +390,12 @@ const ScanDataPage = () => {
                     >
                       Connect and Initialize BLE
                     </button>
+                    {connectionSuccessMac && (
+                      <p>Connection successful for {connectionSuccessMac}</p>
+                    )}
+                    {initSuccessMac && (
+                      <p>Initialization successful for {initSuccessMac}</p>
+                    )}
                   </li>
                 </React.Fragment>
               ))}
