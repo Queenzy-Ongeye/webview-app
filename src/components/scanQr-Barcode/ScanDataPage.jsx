@@ -216,16 +216,16 @@ const ScanDataPage = () => {
       }, 23000);
 
       // Step 2: Initialize BLE Data after successful connection
-      setInitializingMacAddress(macAddress);
+      setConnectingMacAddress(macAddress);
 
       const response = await initBleData(macAddress);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
 
       // If initialization is successful, set the success state for BLE data initialization
       setTimeout(() => {
-        setInitSuccessMac(macAddress);
+        setConnectingMacAddress(macAddress);
         searchForMatch();
-        setTimeout(() => setInitSuccessMac(null), 10000); // Clear init success state after 10 seconds
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear init success state after 10 seconds
       }, 35000);
     } catch (error) {
       // Handle any errors that occur in either connection or initialization
@@ -235,12 +235,10 @@ const ScanDataPage = () => {
       );
       // Ensure that neither success state is set in case of failure
       setConnectionSuccessMac(null);
-      setInitSuccessMac(null);
     } finally {
       // Clear loading indicators and reset relevant states
       setTimeout(() => {
         setConnectingMacAddress(null);
-        setInitializingMacAddress(null);
         setLoading(false);
       }, 35000);
     }
@@ -365,7 +363,7 @@ const ScanDataPage = () => {
                         initializingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : connectionSuccessMac === device.macAddress &&
-                            initSuccessMac === device.macAddress
+                            InitializingMacAddress === device.macAddress
                           ? "bg-green-500 text-white"
                           : "bg-oves-blue text-white"
                       }`}
