@@ -206,27 +206,29 @@ const ScanDataPage = () => {
 
     try {
       // Step 1: Attempt to connect to the Bluetooth device
-      await connectToBluetoothDevice(macAddress);
+      const response = await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
       // If the connection is successful, set the success state for the connection
-      setTimeout(() => {
-        setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear connection success state after 10 seconds
-      }, 23000);
+      if (response && response.respCode == 200) {
+        setTimeout(() => {
+          setConnectionSuccessMac(macAddress);
+          setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear connection success state after 10 seconds
+        }, 23000);
 
-      // Step 2: Initialize BLE Data after successful connection
-      setConnectingMacAddress(macAddress);
-
-      const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-
-      // If initialization is successful, set the success state for BLE data initialization
-      setTimeout(() => {
+        // Step 2: Initialize BLE Data after successful connection
         setConnectingMacAddress(macAddress);
-        searchForMatch();
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear init success state after 10 seconds
-      }, 35000);
+
+        const response = await initBleData(macAddress);
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+
+        // If initialization is successful, set the success state for BLE data initialization
+        setTimeout(() => {
+          setConnectingMacAddress(macAddress);
+          searchForMatch();
+          setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear init success state after 10 seconds
+        }, 35000);
+      }
     } catch (error) {
       // Handle any errors that occur in either connection or initialization
       console.error(
