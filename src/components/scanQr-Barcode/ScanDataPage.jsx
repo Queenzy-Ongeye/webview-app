@@ -383,13 +383,15 @@ const ScanDataPage = () => {
                         ? "Connected"
                         : "Connect"}
                     </button> */}
+                    <button
+                      onClick={(e) =>
+                        handleConnectAndInit(e, device.macAddress)
+                      }
+                      className="px-4 py-2 border rounded-md ml-4 bg-oves-blue text-white"
+                    >
+                      Connect and Initialize BLE
+                    </button>
                   </li>
-                  <button
-                    onClick={(e) => handleConnectAndInit(e, device.macAddress)}
-                    className="px-4 py-2 border rounded-md ml-4 bg-oves-blue"
-                  >
-                    Connect and Initialize BLE
-                  </button>
                 </React.Fragment>
               ))}
             </ul>
