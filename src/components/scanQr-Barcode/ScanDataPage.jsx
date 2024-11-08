@@ -231,7 +231,7 @@ const ScanDataPage = () => {
       // Set initialization success state
       setTimeout(() => {
         setInitSuccessMac(macAddress);
-        searchForMatch();
+        // searchForMatch();
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 38000);
     } catch (error) {
