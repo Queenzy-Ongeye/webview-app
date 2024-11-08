@@ -386,6 +386,7 @@ const ScanDataPage = () => {
                   </li>
                   <button
                     onClick={(e) => handleConnectAndInit(e, device.macAddress)}
+                    className="px-4 py-2 border rounded-md ml-4 bg-oves-blue"
                   >
                     Connect and Initialize BLE
                   </button>
