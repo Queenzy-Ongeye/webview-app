@@ -19,7 +19,7 @@ const ScanDataPage = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
   const navigate = useNavigate();
-  const [bleData, setBleData] = useState(null); // Track active MAC address
+  const [activeMacAddress, setActiveMacAddress] = useState(null); // Track active MAC address
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -202,28 +202,53 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setLoading(true);
+    setInitializingMacAddress(null);
+    setLoading(true); // Start loading indicator for the entire process
 
     try {
-      // Step 1: Connect to the device
+      // Step 1: Connect to the Bluetooth device
+      console.log(`Attempting to connect to Bluetooth device: ${macAddress}`);
       await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device", macAddress);
+      console.log(`Connected to Bluetooth device: ${macAddress}`);
 
-      // Step 2: Initialize BLE data
+      // Set connection success state
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress);
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 23000);
+
+      // Step 2: Add a short delay before initializing BLE data
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1-second delay
+
+      // Step 3: Initialize BLE Data
+      console.log(`Initializing BLE data for device: ${macAddress}`);
       const response = await initBleData(macAddress);
-      if (response && response.respCode === "200") {
-        setBleData(response.respData); // Store retrieved data
-        setInitSuccessMac(macAddress); // Indicate successful initialization
-      }
+      console.log("initBleData Response:", response); // Log the initialization response
 
-      setConnectionSuccessMac(macAddress);
-      searchForMatch();
+      // Dispatch response data to the application state if successful
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+
+      // Set initialization success state
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        searchForMatch();
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
+      }, 38000);
     } catch (error) {
-      console.error("Error during connect and init:", error);
-      alert("Failed to connect and initialize. Please try again.");
+      // Log any error encountered during the process
+      console.error("Error during BLE connection or initialization:", error);
+      alert("Failed to connect or initialize BLE data. Please try again.");
+
+      // Clear success states in case of failure
+      setConnectionSuccessMac(null);
+      setInitSuccessMac(null);
     } finally {
-      setConnectingMacAddress(null);
-      setLoading(false);
+      // Clear loading and connecting/initializing states after completion
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        setInitializingMacAddress(null);
+        setLoading(false);
+      }, 35000); // Matches the time used in success state timeout for consistency
     }
   };
 
@@ -362,14 +387,17 @@ const ScanDataPage = () => {
                         handleConnectAndInit(e, device.macAddress)
                       }
                       className={`px-4 py-2 border rounded-md ml-4 ${
-                        connectingMacAddress === device.macAddress
+                        connectingMacAddress === device.macAddress ||
+                        initializingMacAddress === device.macAddress
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : connectionSuccessMac === device.macAddress
+                          : connectionSuccessMac === device.macAddress &&
+                            initializingMacAddress === device.macAddress
                           ? "bg-green-500 text-white"
                           : "bg-oves-blue text-white"
                       }`}
                     >
-                      {connectingMacAddress === device.macAddress 
+                      {connectingMacAddress === device.macAddress ||
+                      initializingMacAddress === device.macAddress
                         ? "Processing..."
                         : connectionSuccessMac === device.macAddress &&
                           initSuccessMac === device.macAddress
@@ -379,16 +407,8 @@ const ScanDataPage = () => {
                     {connectionSuccessMac && (
                       <p>Connection successful for {connectionSuccessMac}</p>
                     )}
-                    {initSuccessMac === device.macAddress && bleData ? (
-                      <p>
-                        Initialization successful for {device.macAddress}:{" "}
-                        {JSON.stringify(bleData)}
-                      </p>
-                    ) : (
-                      <p>
-                        Initialization in progress or failed for{" "}
-                        {device.macAddress}
-                      </p>
+                    {initSuccessMac && (
+                      <p>Initialization successful for {state.initBleData}</p>
                     )}
                   </li>
                 </React.Fragment>
