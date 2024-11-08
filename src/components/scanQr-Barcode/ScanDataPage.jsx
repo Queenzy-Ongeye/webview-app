@@ -158,8 +158,10 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === "200") {
+              initBleData(macAddress);
+            }
             dispatch({ type: "SET_BLE_DATA", payload: parsedData });
-            console.log("BLE Device Data:", parsedData);
           } catch (error) {
             console.error(
               "Error parsing JSON data from 'connBleByMacAddress' response:",
@@ -231,13 +233,12 @@ const ScanDataPage = () => {
       // Set initialization success state
       setTimeout(() => {
         setInitSuccessMac(macAddress);
-        // searchForMatch();
+        searchForMatch();
         setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 38000);
     } catch (error) {
       // Log any error encountered during the process
       console.error("Error during BLE connection or initialization:", error);
-      alert("Failed to connect or initialize BLE data. Please try again.");
 
       // Clear success states in case of failure
       setConnectionSuccessMac(null);
@@ -408,7 +409,8 @@ const ScanDataPage = () => {
                       <p>Connection successful for {connectionSuccessMac}</p>
                     )}
                     {initSuccessMac && (
-                      <p>Initialization successful for {state.initBleData}</p>
+                      <p>Initialization successful for {state.initBleData.dataList
+                      }</p>
                     )}
                   </li>
                 </React.Fragment>
