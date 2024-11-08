@@ -150,7 +150,7 @@ const ScanDataPage = () => {
   };
 
   // Connecting to a single Ble Device using the macAddress
-  const connectToBluetoothDevice = async (macAddress) => {
+  const connectToBluetoothDevice = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
@@ -162,6 +162,7 @@ const ScanDataPage = () => {
               initBleData(macAddress);
             }
             dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+            console.log("BLE Device Data:", parsedData);
           } catch (error) {
             console.error(
               "Error parsing JSON data from 'connBleByMacAddress' response:",
@@ -175,8 +176,7 @@ const ScanDataPage = () => {
     }
   };
 
-  // Initializing BLE Data using the macAddress retrieved from connectToBluetoothDevice()
-  const initBleData = async (macAddress) => {
+  const initBleData = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
         "initBleData",
@@ -185,10 +185,11 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(responseData);
             dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            console.log("BLE Init Data:", parsedData);
           } catch (error) {
             console.error(
-              "Error processing initBleData response:",
-              error.message
+              "Error parsing JSON data from 'initBleData' response:",
+              error
             );
           }
         }
@@ -210,7 +211,7 @@ const ScanDataPage = () => {
     try {
       // Step 1: Connect to the Bluetooth device
       console.log(`Attempting to connect to Bluetooth device: ${macAddress}`);
-      await connectToBluetoothDevice(macAddress);
+      connectToBluetoothDevice(macAddress);
       console.log(`Connected to Bluetooth device: ${macAddress}`);
 
       // Set connection success state
@@ -224,7 +225,7 @@ const ScanDataPage = () => {
 
       // Step 3: Initialize BLE Data
       console.log(`Initializing BLE data for device: ${macAddress}`);
-      const response = await initBleData(macAddress);
+      const response = initBleData(macAddress);
       console.log("initBleData Response:", response); // Log the initialization response
 
       // Dispatch response data to the application state if successful
@@ -409,8 +410,10 @@ const ScanDataPage = () => {
                       <p>Connection successful for {connectionSuccessMac}</p>
                     )}
                     {initSuccessMac && (
-                      <p>Initialization successful for {state.initBleData.dataList
-                      }</p>
+                      <p>
+                        Initialization successful for{" "}
+                        {state.initBleData.dataList}
+                      </p>
                     )}
                   </li>
                 </React.Fragment>
