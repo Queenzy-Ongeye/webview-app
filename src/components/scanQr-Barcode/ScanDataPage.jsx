@@ -202,43 +202,47 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setInitializingMacAddress(macAddress);
-    setLoading(true);
+    setLoading(true); // Start loading indicator for the entire process
 
     try {
-      const connectionSuccess = await connectToBluetoothDevice(macAddress);
+      // Step 1: Attempt to connect to the Bluetooth device
+      await connectToBluetoothDevice(macAddress);
+      console.log("Connected to Bluetooth device", macAddress);
+
+      // If the connection is successful, set the success state for the connection
       setTimeout(() => {
         setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 5000); // Clear success state after 10 seconds
+        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear connection success state after 10 seconds
       }, 23000);
-      if (connectionSuccess) {
-        setConnectionSuccessMac(macAddress);
-        const initSuccessResponse = await initBleData(macAddress);
-        if (initSuccessResponse) {
-          setInitSuccessMac(macAddress);
-          dispatch({
-            type: "SET_INIT_BLE_DATA_RESPONSE",
-            payload: initSuccessResponse,
-          });
 
-          setTimeout(() => {
-            setInitSuccessMac(macAddress);
-            searchForMatch();
-            setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-          }, 35000);
-        } else {
-          console.error("Initialization failed.");
-        }
-      } else {
-        console.error("Connection failed.");
-      }
+      // Step 2: Initialize BLE Data after successful connection
+      setInitializingMacAddress(macAddress);
+
+      const response = await initBleData(macAddress);
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+
+      // If initialization is successful, set the success state for BLE data initialization
+      setTimeout(() => {
+        setInitSuccessMac(macAddress);
+        searchForMatch();
+        setTimeout(() => setInitSuccessMac(null), 10000); // Clear init success state after 10 seconds
+      }, 35000);
     } catch (error) {
-      console.error("Error in connect and init sequence:", error);
-      alert("Failed to complete the process. Please try again.");
+      // Handle any errors that occur in either connection or initialization
+      console.error(
+        "Error during Bluetooth connection or BLE data initialization:",
+        error.message
+      );
+      // Ensure that neither success state is set in case of failure
+      setConnectionSuccessMac(null);
+      setInitSuccessMac(null);
     } finally {
-      setConnectingMacAddress(null);
-      setInitializingMacAddress(null);
-      setLoading(false);
+      // Clear loading indicators and reset relevant states
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        setInitializingMacAddress(null);
+        setLoading(false);
+      }, 35000);
     }
   };
 
