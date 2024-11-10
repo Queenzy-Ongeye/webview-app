@@ -354,15 +354,17 @@ const ScanDataPage = () => {
               {uniqueDevice.map((device, index) => (
                 <React.Fragment key={device.macAddress}>
                   <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
-                    <p className="text-gray-700">
-                      Device Name: {device.name || "Unknown Device"}
-                    </p>
-                    <p className="text-gray-700">
-                      Mac-Address: {device.macAddress}
-                    </p>
-                    <p className="text-gray-700">
-                      Signal Strength: {device.rssi}db
-                    </p>
+                    <div>
+                      <p className="text-gray-700">
+                        Device Name: {device.name || "Unknown Device"}
+                      </p>
+                      <p className="text-gray-700">
+                        Mac-Address: {device.macAddress}
+                      </p>
+                      <p className="text-gray-700">
+                        Signal Strength: {device.rssi}db
+                      </p>
+                    </div>
                     <button
                       onClick={(e) => handleConnectClick(e, device.macAddress)}
                       className={`px-4 py-2 border rounded-md ml-4 ${
