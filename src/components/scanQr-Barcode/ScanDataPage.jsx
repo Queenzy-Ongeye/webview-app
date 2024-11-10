@@ -164,6 +164,8 @@ const ScanDataPage = () => {
         setConnectionSuccessMac(macAddress);
         setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
       }, 23000);
+      // Call handleInitBleDataClick after a successful connection
+      await handleInitBleDataClick(e, macAddress);
     } catch (error) {
       // If the connection fails, log the error and show an alert
       console.error("Error connecting to Bluetooth device:", error);
@@ -357,49 +359,32 @@ const ScanDataPage = () => {
                     <p className="text-gray-700">
                       Signal Strength: {device.rssi}db
                     </p>
-                  </li>
-                  <div className="flex justify-between mt-2">
                     <button
                       onClick={(e) => handleConnectClick(e, device.macAddress)}
-                      className={`w-full px-4 py-2 border rounded-md ${
-                        connectingMacAddress === device.macAddress
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : connectionSuccessMac === device.macAddress
+                      className={`px-4 py-2 border rounded-md ml-4 ${
+                        connectingMacAddress === device.macAddress ||
+                        initializingMacAddress === device.macAddress
+                          ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
+                          : connectionSuccessMac === device.macAddress &&
+                            initSuccessMac === device.macAddress
                           ? "bg-green-500 text-white"
-                          : "bg-blue-500 text-white"
+                          : "bg-oves-blue text-white"
                       }`}
                       disabled={
-                        loading || connectingMacAddress === device.macAddress
+                        loading ||
+                        connectingMacAddress === device.macAddress ||
+                        initializingMacAddress === device.macAddress
                       }
                     >
-                      {connectingMacAddress === device.macAddress
-                        ? "Connecting..."
-                        : connectionSuccessMac === device.macAddress
+                      {connectingMacAddress === device.macAddress ||
+                      initializingMacAddress === device.macAddress
+                        ? "Processing..."
+                        : connectionSuccessMac === device.macAddress &&
+                          initSuccessMac === device.macAddress
                         ? "Connected"
                         : "Connect"}
                     </button>
-                    <button
-                      onClick={(e) =>
-                        handleInitBleDataClick(e, device.macAddress)
-                      }
-                      className={`w-full px-4 py-2 border rounded-md ${
-                        initializingMacAddress === device.macAddress
-                          ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                          : initSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
-                          : "bg-yellow-500 text-white"
-                      }`}
-                      disabled={
-                        loading || initializingMacAddress === device.macAddress
-                      }
-                    >
-                      {initializingMacAddress === device.macAddress
-                        ? "Initializing..."
-                        : initSuccessMac === device.macAddress
-                        ? "Initialized"
-                        : "Init BLE Data"}
-                    </button>
-                  </div>
+                  </li>
                 </React.Fragment>
               ))}
             </ul>
