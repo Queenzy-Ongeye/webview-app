@@ -158,14 +158,19 @@ const ScanDataPage = () => {
 
     try {
       // Attempt to connect to the Bluetooth device
-      await connectToBluetoothDevice(macAddress);
-      // If the connection is successful, set the success state for the current MAC
-      setTimeout(() => {
-        setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 23000);
-      // Call handleInitBleDataClick after a successful connection
-      await handleInitBleDataClick(e, macAddress);
+      const isConnected = await connectToBluetoothDevice(macAddress);
+      if (isConnected) {
+        // If the connection is successful, set the success state for the current MAC
+        setTimeout(() => {
+          setConnectionSuccessMac(macAddress);
+          setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+        }, 23000);
+
+        // Call handleInitBleDataClick after a successful connection
+        await handleInitBleDataClick(e, macAddress);
+      } else {
+        console.error("Connection failed.");
+      }
     } catch (error) {
       // If the connection fails, log the error and show an alert
       console.error("Error connecting to Bluetooth device:", error);
@@ -205,7 +210,7 @@ const ScanDataPage = () => {
         }, 38000); // Stop loading after initialization
       } else {
         console.error("Initialization failed.");
-      };
+      }
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
@@ -348,7 +353,7 @@ const ScanDataPage = () => {
             <ul className="text-left">
               {uniqueDevice.map((device, index) => (
                 <React.Fragment key={device.macAddress}>
-                  <li className="mt-2 p-2 border rounded-md shadow">
+                  <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
                     <p className="text-gray-700">
                       Device Name: {device.name || "Unknown Device"}
                     </p>
