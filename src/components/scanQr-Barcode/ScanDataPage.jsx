@@ -205,8 +205,7 @@ const ScanDataPage = () => {
         }, 38000); // Stop loading after initialization
       } else {
         console.error("Initialization failed.");
-      }
-      F;
+      };
     } catch (error) {
       console.error("Error during BLE Data Initialization:", error);
       alert("Failed to initialize BLE data. Please try again.");
