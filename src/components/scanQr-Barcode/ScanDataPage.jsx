@@ -94,7 +94,7 @@ const ScanDataPage = () => {
   };
 
   // Scan BLE devices
-  const startBleScan = () => {
+  const scanBleDevices = () => {
     if (window.WebViewJavascriptBridge) {
       // Indicate that scanning has started
       dispatch({ type: "SET_IS_SCANNING", payload: true });
