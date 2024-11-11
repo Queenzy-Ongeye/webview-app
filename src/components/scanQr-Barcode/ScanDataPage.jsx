@@ -9,18 +9,21 @@ const ScanDataPage = () => {
   const { state, dispatch } = useStore();
   const [deviceQueue, setDeviceQueue] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [progressMessage, setProgressMessage] = useState(""); // Track progress message
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
+  const [progressMessage, setProgressMessage] = useState(
+    "Scanning for devices..."
+  );
   const navigate = useNavigate();
 
   // Handle match result and show a popup
   const handleMatchResult = (found) => {
     setMatchFound(found);
     setPopupVisible(true);
+    setLoading(false);
   };
 
-  // Handle continuing to the device data page when match is found
+  // Handle continue to the device data page if a match is found
   const handleContinue = () => {
     if (matchFound && state.initBleData) {
       navigate("/device-data", {
@@ -79,14 +82,13 @@ const ScanDataPage = () => {
     }
   }, []);
 
-  // Handle scanned data and start BLE scanning and connection
+  // Handle scanned data, start BLE scanning, and connection
   const handleScanData = (scannedValue) => {
     if (scannedValue) {
       console.log("Scanned Value:", scannedValue);
       dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
       setLoading(true); // Start loading spinner
-      setProgressMessage("Scanning for devices..."); // Show scanning message
-      scanBleDevices(); // Start BLE device scan and connection process
+      scanBleDevices(); // Start BLE scan
     } else {
       console.error("Invalid scan data received.");
       alert("Invalid scan data. Neither a barcode nor a QR code.");
@@ -96,52 +98,30 @@ const ScanDataPage = () => {
   // Scan BLE devices
   const scanBleDevices = () => {
     if (window.WebViewJavascriptBridge) {
-      // Indicate that scanning has started
-      dispatch({ type: "SET_IS_SCANNING", payload: true });
-
       window.WebViewJavascriptBridge.callHandler(
         "startBleScan",
-        "",
+        null,
         (responseData) => {
           try {
-            const jsonData = JSON.parse(responseData);
-
-            if (jsonData && jsonData.devices && jsonData.devices.length > 0) {
-              // Sort devices by RSSI (signal strength) in descending order
-              const sortedDevices = jsonData.devices.sort(
+            const parsedData = JSON.parse(responseData);
+            if (parsedData && parsedData.devices) {
+              // Sort devices by RSSI and store in the device queue
+              const sortedDevices = parsedData.devices.sort(
                 (a, b) => b.rssi - a.rssi
               );
-              // Dispatch sorted devices
-              dispatch({
-                type: "SET_BLE_DATA",
-                payload: { ...jsonData, devices: sortedDevices },
-              });
-              console.log("Sorted BLE Data:", sortedDevices);
-              setDeviceQueue(sortedDevices.map((device) => device.macAddress)); // Queue the top devices
-              setProgressMessage("Connecting to devices..."); // Show connecting message
-              connectToNextDevice(); // Start connecting to devices
-            } else {
-              // No devices found
-              console.warn("No BLE devices found.");
-              dispatch({
-                type: "SET_SCAN_ERROR",
-                payload: "No BLE devices found.",
-              });
+              setDeviceQueue(sortedDevices.map((device) => device.macAddress));
+              setProgressMessage("Connecting to devices...");
+              connectToNextDevice(); // Start connecting to devices in order
             }
           } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'startBleScan' response:",
-              error
-            );
-          } finally {
-            // Set scanning state to false regardless of success or failure
-            dispatch({ type: "SET_IS_SCANNING", payload: false });
+            console.error("Error parsing BLE scan data:", error.message);
+            setLoading(false);
           }
         }
       );
     } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-      dispatch({ type: "SET_IS_SCANNING", payload: false });
+      console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
+      setLoading(false);
     }
   };
 
@@ -150,24 +130,22 @@ const ScanDataPage = () => {
     if (deviceQueue.length === 0) {
       alert("No matching device found. Please scan again.");
       setLoading(false);
-      setProgressMessage(""); // Clear message when no device found
       return;
     }
 
     const nextDeviceMac = deviceQueue[0];
-    setProgressMessage(`Connecting to device: ${nextDeviceMac}...`); // Show connecting to specific device
     connectToBluetoothDevice(nextDeviceMac)
-      .then(() => {
-        setProgressMessage("Initializing device data..."); // Show initializing message
-        return initBleData(nextDeviceMac);
-      })
+      .then(() => initBleData(nextDeviceMac))
       .then((response) => {
         dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
         searchForMatch();
       })
       .catch(() => {
-        setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove the failed device and try next
-        connectToNextDevice();
+        // Retry the next device after 1-minute delay if connection fails
+        setTimeout(() => {
+          setDeviceQueue((prevQueue) => prevQueue.slice(1));
+          connectToNextDevice();
+        }, 60000);
       });
   };
 
@@ -201,7 +179,7 @@ const ScanDataPage = () => {
           (responseData) => {
             try {
               const parsedData = JSON.parse(responseData);
-              resolve(parsedData); // Resolve with the retrieved data
+              resolve(parsedData);
             } catch (error) {
               reject("Error parsing BLE data initialization response");
             }
@@ -220,7 +198,6 @@ const ScanDataPage = () => {
     if (!initBleData || !scannedData) {
       handleMatchResult(false);
       setLoading(false);
-      setProgressMessage(""); // Clear message when search is done
       return;
     }
 
@@ -243,7 +220,6 @@ const ScanDataPage = () => {
 
     handleMatchResult(match, foundDeviceData);
     setLoading(false);
-    setProgressMessage(""); // Clear message when match is found or not found
   };
 
   return (
@@ -262,9 +238,9 @@ const ScanDataPage = () => {
       </div>
 
       {loading && (
-        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
-          <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white mb-4" />
-          <h2 className="text-white">{progressMessage}</h2>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+          <h2>{progressMessage}</h2>
         </div>
       )}
 
