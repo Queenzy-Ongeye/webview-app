@@ -159,8 +159,10 @@ const ScanDataPage = () => {
     try {
       const isConnected = await connectToBluetoothDevice(macAddress); // Wait for connection
       if (isConnected) {
-        setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000);
+        setTimeout(() => {
+          setConnectionSuccessMac(macAddress);
+          setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
+        }, 23000);
 
         // Wait for the initialization response
         await handleInitBleDataClick(e, macAddress);
