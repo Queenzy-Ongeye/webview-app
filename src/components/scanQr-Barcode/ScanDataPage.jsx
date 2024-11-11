@@ -94,31 +94,54 @@ const ScanDataPage = () => {
   };
 
   // Scan BLE devices
-  const scanBleDevices = () => {
+  const startBleScan = () => {
     if (window.WebViewJavascriptBridge) {
+      // Indicate that scanning has started
+      dispatch({ type: "SET_IS_SCANNING", payload: true });
+
       window.WebViewJavascriptBridge.callHandler(
         "startBleScan",
-        null,
+        "",
         (responseData) => {
           try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData && parsedData.devices) {
-              const topDevices = parsedData.devices
-                .sort((a, b) => b.rssi - a.rssi)
-                .slice(0, 5);
-              setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue the top devices
+            const jsonData = JSON.parse(responseData);
+
+            if (jsonData && jsonData.devices && jsonData.devices.length > 0) {
+              // Sort devices by RSSI (signal strength) in descending order
+              const sortedDevices = jsonData.devices.sort(
+                (a, b) => b.rssi - a.rssi
+              );
+              // Dispatch sorted devices
+              dispatch({
+                type: "SET_BLE_DATA",
+                payload: { ...jsonData, devices: sortedDevices },
+              });
+              console.log("Sorted BLE Data:", sortedDevices);
+              setDeviceQueue(sortedDevices.map((device) => device.macAddress)); // Queue the top devices
               setProgressMessage("Connecting to devices..."); // Show connecting message
               connectToNextDevice(); // Start connecting to devices
+            } else {
+              // No devices found
+              console.warn("No BLE devices found.");
+              dispatch({
+                type: "SET_SCAN_ERROR",
+                payload: "No BLE devices found.",
+              });
             }
           } catch (error) {
-            console.error("Error parsing BLE scan data:", error.message);
-            setLoading(false);
+            console.error(
+              "Error parsing JSON data from 'startBleScan' response:",
+              error
+            );
+          } finally {
+            // Set scanning state to false regardless of success or failure
+            dispatch({ type: "SET_IS_SCANNING", payload: false });
           }
         }
       );
     } else {
-      console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
-      setLoading(false);
+      console.error("WebViewJavascriptBridge is not initialized.");
+      dispatch({ type: "SET_IS_SCANNING", payload: false });
     }
   };
 
