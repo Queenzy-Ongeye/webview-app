@@ -183,7 +183,7 @@ const ScanDataPage = () => {
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
         }, 10000); // Clear after 10 seconds
-      }, 10000); // 3-second delay before starting BLE initialization
+      }, 50000); // 3-second delay before starting BLE initialization
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
