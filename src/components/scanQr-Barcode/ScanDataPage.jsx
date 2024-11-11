@@ -220,25 +220,30 @@ const ScanDataPage = () => {
     setLoading(true);
 
     try {
-      // Connect to Bluetooth device
+      // Step 1: Connect to the Bluetooth device
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
-      // After successful connection, initialize BLE data
-      const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-      console.log("Initialized BLE data:", response);
+      // Step 2: Set a timer delay after connection to allow for device stabilization
+      setTimeout(async () => {
+        console.log("Starting BLE data initialization after delay");
 
-      // Set successful states for UI feedback
-      setConnectionSuccessMac(macAddress);
-      setInitSuccessMac(macAddress);
-      searchForMatch();
+        // Step 3: Initialize BLE data after the delay
+        const response = await initBleData(macAddress);
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+        console.log("Initialized BLE data:", response);
 
-      // Clear success states after a delay
-      setTimeout(() => {
-        setConnectionSuccessMac(null);
-        setInitSuccessMac(null);
-      }, 10000);
+        // Step 4: Set successful states for UI feedback
+        setConnectionSuccessMac(macAddress);
+        setInitSuccessMac(macAddress);
+        searchForMatch();
+
+        // Clear success states after another delay
+        setTimeout(() => {
+          setConnectionSuccessMac(null);
+          setInitSuccessMac(null);
+        }, 10000); // Clear after 10 seconds
+      }, 30000); // 3-second delay before starting BLE initialization
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
@@ -246,6 +251,7 @@ const ScanDataPage = () => {
       );
       alert("Failed to connect and initialize BLE data. Please try again.");
     } finally {
+      // Ensure the UI reflects that the process is complete
       setConnectingMacAddress(null);
       setLoading(false);
     }
