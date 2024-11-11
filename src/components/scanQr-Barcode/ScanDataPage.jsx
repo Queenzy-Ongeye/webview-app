@@ -3,6 +3,7 @@ import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
+import PopupNotification from "../notification/PopUp";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
