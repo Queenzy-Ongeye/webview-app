@@ -212,6 +212,44 @@ const ScanDataPage = () => {
     }
   };
 
+  const handleConnectAndInit = async (e, macAddress) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setConnectingMacAddress(macAddress);
+    setLoading(true);
+
+    try {
+      // Connect to Bluetooth device
+      await connectToBluetoothDevice(macAddress);
+      console.log("Connected to Bluetooth device", macAddress);
+
+      // After successful connection, initialize BLE data
+      const response = await initBleData(macAddress);
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+      console.log("Initialized BLE data:", response);
+
+      // Set successful states for UI feedback
+      setConnectionSuccessMac(macAddress);
+      setInitSuccessMac(macAddress);
+
+      // Clear success states after a delay
+      setTimeout(() => {
+        setConnectionSuccessMac(null);
+        setInitSuccessMac(null);
+      }, 10000);
+    } catch (error) {
+      console.error(
+        "Error during Bluetooth connection or BLE data initialization:",
+        error
+      );
+      alert("Failed to connect and initialize BLE data. Please try again.");
+    } finally {
+      setConnectingMacAddress(null);
+      setLoading(false);
+    }
+  };
+
   const connectToBluetoothDevice = (macAddress) => {
     return new Promise((resolve, reject) => {
       if (window.WebViewJavascriptBridge) {
@@ -378,6 +416,19 @@ const ScanDataPage = () => {
                       </p>
                     </div>
                     <button
+                      onClick={(e) =>
+                        handleConnectAndInit(e, device.macAddress)
+                      }
+                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                        loading
+                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                          : "bg-cyan-600 text-white hover:bg-cyan-700"
+                      }`}
+                      disabled={loading}
+                    >
+                      {loading ? "Processing..." : "Connect"}
+                    </button>
+                    {/* <button
                       onClick={(e) => handleConnectClick(e, device.macAddress)}
                       className={`px-4 py-2 border rounded-md ml-4 ${
                         connectingMacAddress === device.macAddress ||
@@ -401,7 +452,7 @@ const ScanDataPage = () => {
                           initSuccessMac === device.macAddress
                         ? "Connected"
                         : "Connect"}
-                    </button>
+                    </button> */}
                   </li>
                 </React.Fragment>
               ))}
