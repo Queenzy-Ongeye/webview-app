@@ -232,6 +232,7 @@ const ScanDataPage = () => {
       // Set successful states for UI feedback
       setConnectionSuccessMac(macAddress);
       setInitSuccessMac(macAddress);
+      searchForMatch();
 
       // Clear success states after a delay
       setTimeout(() => {
