@@ -23,6 +23,7 @@ const BleButtons = ({
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [activeTab, setActiveTab] = useState("ATT");
+  const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -35,65 +36,59 @@ const BleButtons = ({
     (a, b) => b.rssi - a.rssi
   );
 
-  const handleConnectClick = async (e, macAddress) => {
+  // Initiate device pairing process
+  const handleConnectAndInit = async (e, macAddress) => {
     e.preventDefault();
     e.stopPropagation();
 
+    // Update loading state for the specific device
+    setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
-    setLoading(true); // Start loading indicator for the connection process
 
     try {
-      // Attempt to connect to the Bluetooth device
+      console.log("Connecting to Bluetooth device", macAddress);
       await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device", macAddress);
 
-      // If the connection is successful, set the success state for the current MAC
-      setTimeout(() => {
-        setConnectionSuccessMac(macAddress);
-        setTimeout(() => setConnectionSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 23000);
+      // Add delay and initialize BLE data as in your original code...
+      setTimeout(async () => {
+        console.log("Starting BLE data initialization after delay");
+
+        // Step 3: Initialize BLE data after the delay
+        const response = await initBleData(macAddress);
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+        console.log("Initialized BLE data:", response);
+
+        // Step 4: Set successful states for UI feedback
+        setTimeout(() => {
+          setConnectionSuccessMac(macAddress);
+          setInitSuccessMac(macAddress);
+          navigate("/device-data")
+        }, 40000);
+
+        // Clear success states after another delay
+        setTimeout(() => {
+          setConnectionSuccessMac(null);
+          setInitSuccessMac(null);
+        }, 10000); // Clear after 10 seconds
+      }, 25000); // 3-second delay before starting BLE initialization
+
+      // Wait and then search for match as in your original code...
     } catch (error) {
-      // If the connection fails, log the error and show an alert
-      console.error("Error connecting to Bluetooth device:", error);
-      alert("Failed to connect to Bluetooth device. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
-      setConnectionSuccessMac(null); // Clear any success indicator
+      console.error(
+        "Error during Bluetooth connection or BLE data initialization:",
+        error
+      );
+      alert("Failed to connect and initialize BLE data. Please try again.");
     } finally {
       setTimeout(() => {
         setConnectingMacAddress(null);
-        setLoading(false);
-      }, 23000);
-    }
-  };
-
-  const handleInitBleDataClick = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    setInitializingMacAddress(macAddress);
-    setLoading(true);
-
-    try {
-      const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-
-      // If initialization is successful, set the success state for the current MAC
-      setTimeout(() => {
-        setInitSuccessMac(macAddress);
-        setTimeout(() => setInitSuccessMac(null), 10000); // Clear success state after 10 seconds
-      }, 35000);
-    } catch (error) {
-      console.error("Error during BLE Data Initialization:", error);
-      alert("Failed to initialize BLE data. Please try again.");
-
-      // Ensure that the success state is not set in case of failure
-      setInitSuccessMac(null);
-    } finally {
-      setTimeout(() => {
-        setInitializingMacAddress(null);
-        setLoading(false);
-      }, 35000);
+        // Clear loading state for the specific device
+        setLoadingMap((prevMap) => {
+          const newMap = new Map(prevMap);
+          newMap.set(macAddress, false);
+          return newMap;
+        });
+      }, 50000);
     }
   };
 
@@ -121,141 +116,42 @@ const BleButtons = ({
         </h3>
         <div className="space-y-4 overflow-y-auto max-h-screen max-w-screen">
           {uniqueDevice.length > 0 ? (
-            uniqueDevice.map((device, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-left justify-between w-full p-4 bg-white shadow rounded-lg border border-gray-200 transition-transform transform hover:scale-105"
-              >
-                <div className="w-full mb-2">
-                  <p className="font-semibold text-left">
-                    {device.name || "Unnamed Device"}
-                  </p>
-                  <p className="text-sm text-gray-500 text-left">
-                    MAC Address: {device.macAddress}
-                  </p>
-                  <p className="text-sm text-gray-500 text-left">
-                    Signal Strength: {device.rssi}
-                  </p>
-                </div>
-                <div className="flex justify-between w-full mt-4 space-x-2">
-                  <button
-                    onClick={(e) => handleConnectClick(e, device.macAddress)}
-                    className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
-                      connectingMacAddress === device.macAddress
-                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                        : connectionSuccessMac === device.macAddress
-                        ? "bg-green-500 text-white"
-                        : "bg-cyan-600 text-white hover:bg-cyan-700"
-                    }`}
-                    disabled={
-                      isLoading || connectingMacAddress === device.macAddress
-                    }
-                  >
-                    {connectingMacAddress === device.macAddress
-                      ? "Connecting..."
-                      : connectionSuccessMac === device.macAddress
-                      ? "Connected"
-                      : "Connect"}
-                  </button>
-                  <button
-                    onClick={(e) =>
-                      handleInitBleDataClick(e, device.macAddress)
-                    }
-                    className={`w-full px-4 py-2 border rounded-md transition-colors duration-300 ${
-                      initializingMacAddress === device.macAddress
-                        ? "bg-gray-500 text-white cursor-not-allowed animate-pulse"
-                        : initSuccessMac === device.macAddress
-                        ? "bg-green-500 text-white"
-                        : "bg-cyan-700 text-white"
-                    }`}
-                    disabled={
-                      isLoading || initializingMacAddress === device.macAddress
-                    }
-                  >
-                    {initializingMacAddress === device.macAddress
-                      ? "Initializing..."
-                      : initSuccessMac === device.macAddress
-                      ? "Initialized"
-                      : "Init BLE Data"}
-                  </button>
-                </div>
-                {initBleDataResponse &&
-                  initBleDataResponse.macAddress === device.macAddress && (
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-                      <button
-                        onClick={() =>
-                          navigateToPage("/att", "ATT_SERVICE_NAME")
-                        }
-                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "ATT_SERVICE_NAME"
-                            ? "bg-gray-200 text-blue-500"
-                            : ""
-                        }`}
-                      >
-                        ATT
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/cmd", "CMD_SERVICE_NAME")
-                        }
-                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "CMD_SERVICE_NAME"
-                            ? "bg-gray-200 text-blue-500"
-                            : ""
-                        }`}
-                      >
-                        CMD
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/sts", "STS_SERVICE_NAME")
-                        }
-                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "STS_SERVICE_NAME"
-                            ? "bg-gray-200 text-blue-500"
-                            : ""
-                        }`}
-                      >
-                        STS
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/dta", "DTA_SERVICE_NAME")
-                        }
-                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "DTA_SERVICE_NAME"
-                            ? "bg-gray-200 text-blue-500"
-                            : ""
-                        }`}
-                      >
-                        DTA
-                      </button>
-                      <button
-                        onClick={() =>
-                          navigateToPage("/dia", "DIA_SERVICE_NAME")
-                        }
-                        className={`w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200 ${
-                          activeTab === "DIA_SERVICE_NAME"
-                            ? "bg-gray-200 text-blue-500"
-                            : ""
-                        }`}
-                      >
-                        DIA
-                      </button>
-                      <button
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                        onClick={handleMqttConnection}
-                        disabled={isButtonDisabled}
-                      >
-                        Connect to MQTT
-                      </button>
-                      <ToastContainer />
+            <ul className="text-left">
+              {uniqueDevice.map((device, index) => (
+                <React.Fragment key={device.macAddress}>
+                  <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-700">
+                        Device Name: {device.name || "Unknown Device"}
+                      </p>
+                      <p className="text-gray-700">
+                        Mac-Address: {device.macAddress}
+                      </p>
+                      <p className="text-gray-700">
+                        Signal Strength: {device.rssi}db
+                      </p>
                     </div>
-                  )}
-              </div>
-            ))
+                    <button
+                      onClick={(e) =>
+                        handleConnectAndInit(e, device.macAddress)
+                      }
+                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                        loadingMap.get(device.macAddress)
+                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                          : "bg-cyan-700 text-white"
+                      }`}
+                      disabled={loadingMap.get(device.macAddress)}
+                    >
+                      {loadingMap.get(device.macAddress)
+                        ? "Processing..."
+                        : "Connect"}
+                    </button>
+                  </li>
+                </React.Fragment>
+              ))}
+            </ul>
           ) : (
-            <p className="text-black text-center">No devices detected</p>
+            <p className="text-gray-500">No BLE devices detected.</p>
           )}
         </div>
       </div>

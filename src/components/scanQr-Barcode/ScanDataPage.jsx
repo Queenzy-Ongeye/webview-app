@@ -11,7 +11,6 @@ const ScanDataPage = () => {
   const [deviceQueue, setDeviceQueue] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
-  const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
@@ -19,7 +18,6 @@ const ScanDataPage = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
   const navigate = useNavigate();
-  const [activeMacAddress, setActivemacAddress] = useState(null); // Track active MAC address
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
