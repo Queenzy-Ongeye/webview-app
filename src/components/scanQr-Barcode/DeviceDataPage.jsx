@@ -121,7 +121,7 @@ const DeviceDataPage = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen mt-10">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Device Data</h2>
 
@@ -134,14 +134,11 @@ const DeviceDataPage = () => {
               className={`px-4 py-2 rounded-md font-semibold transition-all
                 ${
                   activeCategory === category
-                    ? "bg-blue-600 text-white shadow-md"
+                    ? "border bg-oves-blue text-white shadow-md"
                     : "bg-white text-gray-600 hover:bg-gray-100"
                 }`}
             >
               {category}
-              <span className="ml-2 text-sm">
-                ({categorizedData[category].length})
-              </span>
             </button>
           ))}
         </div>

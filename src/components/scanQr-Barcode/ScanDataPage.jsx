@@ -342,6 +342,11 @@ const ScanDataPage = () => {
     }
   }, [state.detectedDevices]);
 
+  // Helper function to check if any device is loading
+  const isAnyDeviceLoading = () => {
+    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
+  };
+
   return (
     <div className="scan-data-page flex flex-col h-screen">
       <div className="mt-10">
@@ -401,7 +406,7 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
-      {loadingMap.get(device.macAddress) && (
+      {isAnyDeviceLoading() && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
