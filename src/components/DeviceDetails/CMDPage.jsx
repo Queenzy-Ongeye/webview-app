@@ -57,17 +57,15 @@ const CMDPage = () => {
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="text-xl sm:text-2xl text-blue-600 hover:text-blue-800 flex items-center"
+          className="text-xl sm:text-2xl text-oves-blue flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 border border-oves-blue transition-all"
         >
-          <FaArrowLeft /> {/* Icon only */}
+          <FaArrowLeft />
         </button>
 
         {/* Publish Button */}
         <button
           className={`py-2 px-4 text-sm sm:text-base font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out flex items-center ${
-            loading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
+            loading ? "bg-gray-400 cursor-not-allowed" : "bg-oves-blue"
           } text-white`}
           onClick={() => publishMqttMessage("emit/content/bleData/cmd")}
           disabled={loading}
@@ -81,7 +79,7 @@ const CMDPage = () => {
         </button>
       </div>
 
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-blue-600">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-black">
         CMD Data
       </h2>
 
