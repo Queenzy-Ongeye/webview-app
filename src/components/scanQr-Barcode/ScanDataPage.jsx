@@ -14,7 +14,7 @@ const ScanDataPage = () => {
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
-  const [loading, setLoading] = useState(null);
+  const [loading, setLoading] = useState(false);
   const requestCode = 999;
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
@@ -184,7 +184,7 @@ const ScanDataPage = () => {
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
         }, 10000); // Clear after 10 seconds
-      }, 3000); // 3-second delay before starting BLE initialization
+      }, 50000); // 3-second delay before starting BLE initialization
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
@@ -194,7 +194,7 @@ const ScanDataPage = () => {
     } finally {
       // Ensure the UI reflects that the process is complete
       setConnectingMacAddress(null);
-      setLoading(null);
+      setLoading(false);
     }
   };
 
@@ -368,13 +368,13 @@ const ScanDataPage = () => {
                         handleConnectAndInit(e, device.macAddress)
                       }
                       className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                        loading === device.macAddress
+                        loading
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : "bg-cyan-600 text-white hover:bg-cyan-700"
                       }`}
-                      disabled={loading === device.macAddress}
+                      disabled={loading}
                     >
-                      {loading === device.macAddress ? "Processing..." : "Connect"}
+                      {loading ? "Processing..." : "Connect"}
                     </button>
                   </li>
                 </React.Fragment>
