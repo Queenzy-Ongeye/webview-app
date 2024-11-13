@@ -29,7 +29,9 @@ const ScanDataPage = () => {
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
     if (matchFound && state.initBleData) {
-      navigate("/device-data", { state: { deviceData: state.initBleData.dataList } }); // Pass data to new page
+      navigate("/device-data", {
+        state: { deviceData: state.initBleData.dataList },
+      }); // Pass data to new page
     }
     setPopupVisible(false); // Close the popup
   };
@@ -159,6 +161,7 @@ const ScanDataPage = () => {
 
     try {
       // Step 1: Connect to the Bluetooth device
+      setLoading(true);
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
@@ -183,7 +186,7 @@ const ScanDataPage = () => {
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
         }, 10000); // Clear after 10 seconds
-      }, 50000); // 3-second delay before starting BLE initialization
+      }, 3000); // 3-second delay before starting BLE initialization
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
@@ -367,13 +370,21 @@ const ScanDataPage = () => {
                         handleConnectAndInit(e, device.macAddress)
                       }
                       className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                        loading
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                        connectingMacAddress === device.macAddress ||
+                        initializingMacAddress === device.macAddress ||
+                        initSuccessMac === device.macAddress
+                          ? "bg-green-500 text-white"
                           : "bg-cyan-600 text-white hover:bg-cyan-700"
                       }`}
                       disabled={loading}
                     >
-                      {loading ? "Processing..." : "Connect"}
+                      {connectingMacAddress === device.macAddress ||
+                      initializingMacAddress === device.macAddress
+                        ? "Processing..."
+                        : connectionSuccessMac === device.macAddress &&
+                          initSuccessMac === device.macAddress
+                        ? "Connected"
+                        : "Connect"}
                     </button>
                   </li>
                 </React.Fragment>

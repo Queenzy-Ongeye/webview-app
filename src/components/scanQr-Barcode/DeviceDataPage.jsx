@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 
 const DeviceDataPage = () => {
   const location = useLocation();
-  const dataList = location.state?.dataList || [];
+  const {dataList} = location.state || [];
 
   // Categorize data by the specific service name attributes
   const categorizedData = {
