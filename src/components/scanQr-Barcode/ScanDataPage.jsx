@@ -165,12 +165,27 @@ const ScanDataPage = () => {
       await connectToBluetoothDevice(macAddress);
 
       // Add delay and initialize BLE data as in your original code...
-      const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-      console.log("Initialized BLE data:", response);
+      setTimeout(async () => {
+        console.log("Starting BLE data initialization after delay");
 
-      setConnectionSuccessMac(macAddress);
-      setInitSuccessMac(macAddress);
+        // Step 3: Initialize BLE data after the delay
+        const response = await initBleData(macAddress);
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+        console.log("Initialized BLE data:", response);
+
+        // Step 4: Set successful states for UI feedback
+        setTimeout(() => {
+          setConnectionSuccessMac(macAddress);
+          setInitSuccessMac(macAddress);
+          searchForMatch();
+        }, 40000);
+
+        // Clear success states after another delay
+        setTimeout(() => {
+          setConnectionSuccessMac(null);
+          setInitSuccessMac(null);
+        }, 10000); // Clear after 10 seconds
+      }, 3000); // 3-second delay before starting BLE initialization
 
       // Wait and then search for match as in your original code...
     } catch (error) {
