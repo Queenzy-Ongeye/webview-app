@@ -1,166 +1,177 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast, Bounce, ToastContainer } from "react-toastify"; // Added Bounce for transition
-import { AiOutlineLoading3Quarters } from "react-icons/ai"; // Import a loading icon
+import { toast, Bounce, ToastContainer } from "react-toastify";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { FaArrowLeft } from "react-icons/fa"; // Import arrow icon
+import "react-toastify/dist/ReactToastify.css";
 
 const CMDPage = () => {
   const location = useLocation();
   const { data } = location.state || {};
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Function for publishing to MQTT
   const publishMqttMessage = (topic) => {
     if (window.WebViewJavascriptBridge) {
       if (!data || data.length === 0) {
-        console.error("No BLE data available to publish.");
         toast.error("No BLE data available to publish.", {
           position: "top-right",
           autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+          theme: "colored",
         });
         return;
       }
 
       const publishData = {
-        topic: topic,
-        qos: 0, // Quality of Service level
-        content: JSON.stringify(data), // Publish BLE data as content
+        topic,
+        qos: 0,
+        content: JSON.stringify(data),
       };
 
-      // Start loading before publishing
       setLoading(true);
-
       window.WebViewJavascriptBridge.callHandler(
         "mqttPublishMsg",
         publishData,
-        (responseData) => {
-          // Stop loading once the publishing is successful
+        () => {
           setLoading(false);
-
           toast.success("Message published successfully", {
             position: "top-right",
             autoClose: 5000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
+            theme: "colored",
             transition: Bounce,
           });
         }
       );
     } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
       toast.error("Error: WebViewJavascriptBridge is not initialized.", {
         position: "top-right",
         autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
+        theme: "colored",
       });
     }
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-center text-blue-600">
+    <div className="p-4 sm:p-8 max-w-lg mx-auto bg-gray-50 rounded-xl shadow-md mt-4 sm:mt-6">
+      <div className="flex items-center justify-between mb-6">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="text-xl sm:text-2xl text-blue-600 hover:text-blue-800 flex items-center"
+        >
+          <FaArrowLeft /> {/* Icon only */}
+        </button>
+
+        {/* Publish Button */}
+        <button
+          className={`py-2 px-4 text-sm sm:text-base font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out flex items-center ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          } text-white`}
+          onClick={() => publishMqttMessage("emit/content/bleData/cmd")}
+          disabled={loading}
+        >
+          {loading ? (
+            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
+          ) : (
+            "Publish"
+          )}
+          {loading && "Publishing..."}
+        </button>
+      </div>
+
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-blue-600">
         CMD Data
       </h2>
-      {/* Back Button */}
-      <button
-        onClick={() => navigate(-1)} // Go back to the previous page
-        className="mb-4 py-2 px-4 bg-cyan-800 text-white font-semibold rounded-lg shadow-md transition duration-300"
-      >
-        Back
-      </button>
+
       {data && data.length > 0 ? (
         data.map((item, index) => (
-          <div key={index} className="mb-6 p-6 bg-white shadow-lg rounded-lg">
+          <div
+            key={index}
+            className="mb-6 p-4 sm:p-6 bg-white shadow-md rounded-lg"
+          >
             {Object.keys(item.characterMap).map((uuid) => (
-              <div key={uuid} className="mb-4 p-4 border-b last:border-b-0">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              <div key={uuid} className="mb-3 p-3 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
                   {item.characterMap[uuid].desc}
                 </h3>
 
-                <table className="w-full text-left mt-4 border border-gray-300 rounded-lg overflow-hidden">
+                <table className="w-full text-left border border-gray-200 rounded-lg">
                   <tbody>
                     <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">Name</td>
-                      <td className="p-3">{item.characterMap[uuid].name}</td>
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
+                        Name
+                      </td>
+                      <td className="p-2 sm:p-3">
+                        {item.characterMap[uuid].name}
+                      </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Service UUID
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         {item.characterMap[uuid].serviceUuid}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Properties
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         {item.characterMap[uuid].properties}
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Enable Indicate
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         {item.characterMap[uuid].enableIndicate ? "Yes" : "No"}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Enable Notify
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         {item.characterMap[uuid].enableNotify ? "Yes" : "No"}
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Enable Read
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         {item.characterMap[uuid].enableRead ? "Yes" : "No"}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Enable Write
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         {item.characterMap[uuid].enableWrite ? "Yes" : "No"}
                       </td>
                     </tr>
                     <tr className="border-b">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Enable Write No Response
                       </td>
-                      <td className="p-3">
+                      <td className="p-2 sm:p-3">
                         {item.characterMap[uuid].enableWriteNoResp
                           ? "Yes"
                           : "No"}
                       </td>
                     </tr>
                     <tr className="border-b bg-gray-50">
-                      <td className="p-3 font-semibold text-gray-600">
+                      <td className="p-2 sm:p-3 font-semibold text-gray-600">
                         Real Value
                       </td>
-                      <td className="p-3">{item.characterMap[uuid].realVal}</td>
+                      <td className="p-2 sm:p-3">
+                        {item.characterMap[uuid].realVal}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -169,28 +180,10 @@ const CMDPage = () => {
           </div>
         ))
       ) : (
-        <p className="text-center text-gray-500">No data available</p>
+        <p className="text-center text-gray-500 italic">No data available</p>
       )}
 
-      <div className="mqtt-controls my-8 flex justify-center">
-        <ToastContainer />
-        <button
-          className={`py-3 px-6 font-semibold rounded-lg shadow-md transition duration-300 flex justify-center items-center ${
-            loading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-          } text-white focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50`}
-          onClick={() => publishMqttMessage("emit/content/bleData/att")}
-          disabled={loading} // Disable button when loading
-        >
-          {loading ? (
-            <AiOutlineLoading3Quarters className="animate-spin h-5 w-5 mr-2" />
-          ) : (
-            "Publish BLE Init Data"
-          )}
-          {loading && "Publishing..."}
-        </button>
-      </div>
+      <ToastContainer />
     </div>
   );
 };
