@@ -14,7 +14,7 @@ const ScanDataPage = () => {
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({});
   const requestCode = 999;
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
@@ -29,9 +29,7 @@ const ScanDataPage = () => {
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
     if (matchFound && state.initBleData) {
-      navigate("/device-data", {
-        state: { deviceData: state.initBleData.dataList },
-      }); // Pass data to new page
+      navigate("/device-data", { state: { deviceData: state.initBleData.dataList } }); // Pass data to new page
     }
     setPopupVisible(false); // Close the popup
   };
@@ -157,11 +155,11 @@ const ScanDataPage = () => {
     e.stopPropagation();
 
     setConnectingMacAddress(macAddress);
-    setLoading(true);
+    setLoading((prev) => ({ ...prev, [macAddress]: true }));
 
     try {
       // Step 1: Connect to the Bluetooth device
-      setLoading(true);
+      setLoading(true)
       await connectToBluetoothDevice(macAddress);
       console.log("Connected to Bluetooth device", macAddress);
 
@@ -185,6 +183,7 @@ const ScanDataPage = () => {
         setTimeout(() => {
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
+          setLoading((prev) => ({ ...prev, [macAddress]: false }));
         }, 10000); // Clear after 10 seconds
       }, 3000); // 3-second delay before starting BLE initialization
     } catch (error) {
@@ -196,7 +195,7 @@ const ScanDataPage = () => {
     } finally {
       // Ensure the UI reflects that the process is complete
       setConnectingMacAddress(null);
-      setLoading(false);
+      setLoading((prev) => ({ ...prev, [macAddress]: false }));
     }
   };
 
@@ -370,21 +369,13 @@ const ScanDataPage = () => {
                         handleConnectAndInit(e, device.macAddress)
                       }
                       className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                        connectingMacAddress === device.macAddress ||
-                        initializingMacAddress === device.macAddress ||
-                        initSuccessMac === device.macAddress
-                          ? "bg-green-500 text-white"
+                        loading[device.macAddress]
+                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                           : "bg-cyan-600 text-white hover:bg-cyan-700"
                       }`}
-                      disabled={loading}
+                      disabled={loading[device.macAddress]}
                     >
-                      {connectingMacAddress === device.macAddress ||
-                      initializingMacAddress === device.macAddress
-                        ? "Processing..."
-                        : connectionSuccessMac === device.macAddress &&
-                          initSuccessMac === device.macAddress
-                        ? "Connected"
-                        : "Connect"}
+                      {loading[device.macAddress]? "Processing..." : "Connect"}
                     </button>
                   </li>
                 </React.Fragment>
