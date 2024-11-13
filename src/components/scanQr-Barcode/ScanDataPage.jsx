@@ -194,14 +194,16 @@ const ScanDataPage = () => {
         error
       );
       alert("Failed to connect and initialize BLE data. Please try again.");
-      setLoadingMap((prevMap) => {
-        const newMap = new Map(prevMap);
-        newMap.set(macAddress, false);
-        return newMap;
-      });
     } finally {
-      setConnectingMacAddress(null);
-      // Clear loading state for the specific device
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        // Clear loading state for the specific device
+        setLoadingMap((prevMap) => {
+          const newMap = new Map(prevMap);
+          newMap.set(macAddress, false);
+          return newMap;
+        });
+      }, 50000);
     }
   };
 
