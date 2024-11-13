@@ -28,7 +28,7 @@ const DeviceDataPage = () => {
       <h2 className="text-2xl font-bold mb-6">Device Data</h2>
 
       {/* Category Navigation */}
-      <div className="flex space-x-4 mb-8 border-b pb-4">
+      <div className="flex space-x-2 mb-8 border-b pb-4">
         {Object.keys(categorizedData).map((category) => (
           <button
             key={category}
