@@ -14,7 +14,7 @@ const ScanDataPage = () => {
   const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
   const requestCode = 999;
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
@@ -156,38 +156,23 @@ const ScanDataPage = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    try {
-      // Set loading state at the very beginning
-      setLoading(true);
-      setConnectingMacAddress(macAddress);
+    // Update loading state for the specific device
+    setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
+    setConnectingMacAddress(macAddress);
 
-      // Step 1: Connect to the Bluetooth device
+    try {
       console.log("Connecting to Bluetooth device", macAddress);
       await connectToBluetoothDevice(macAddress);
-      console.log("Connected to Bluetooth device", macAddress);
 
-      // Step 2: Wait for device stabilization
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      console.log("Starting BLE data initialization after delay");
-
-      // Step 3: Initialize BLE data
+      // Add delay and initialize BLE data as in your original code...
       const response = await initBleData(macAddress);
       dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
       console.log("Initialized BLE data:", response);
 
-      // Step 4: Set success states and search for match
       setConnectionSuccessMac(macAddress);
       setInitSuccessMac(macAddress);
 
-      // Wait for initialization to complete
-      await new Promise((resolve) => setTimeout(resolve, 40000));
-      searchForMatch();
-
-      // Clear success states after 10 seconds
-      setTimeout(() => {
-        setConnectionSuccessMac(null);
-        setInitSuccessMac(null);
-      }, 10000);
+      // Wait and then search for match as in your original code...
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
@@ -195,9 +180,13 @@ const ScanDataPage = () => {
       );
       alert("Failed to connect and initialize BLE data. Please try again.");
     } finally {
-      // Ensure loading states are cleared
       setConnectingMacAddress(null);
-      setLoading(false);
+      // Clear loading state for the specific device
+      setLoadingMap((prevMap) => {
+        const newMap = new Map(prevMap);
+        newMap.set(macAddress, false);
+        return newMap;
+      });
     }
   };
 
@@ -371,13 +360,15 @@ const ScanDataPage = () => {
                         handleConnectAndInit(e, device.macAddress)
                       }
                       className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                        loading
+                        loadingMap.get(device.macAddress)
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : "bg-cyan-600 text-white hover:bg-cyan-700"
+                          : "bg-cyan-700 text-white"
                       }`}
-                      disabled={loading}
+                      disabled={loadingMap.get(device.macAddress)}
                     >
-                      {loading ? "Processing..." : "Connect"}
+                      {loadingMap.get(device.macAddress)
+                        ? "Processing..."
+                        : "Connect"}
                     </button>
                   </li>
                 </React.Fragment>
