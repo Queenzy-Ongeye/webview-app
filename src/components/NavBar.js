@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaHome, FaQrcode, FaUser, FaSearch } from "react-icons/fa"; // Import icons
+import { FaCloud, FaHome, FaQrcode } from "react-icons/fa"; // Import cloud icons
 import ThemeToggle from "./ThemeToggle";
 import { useThemeProvider } from "../utility/ThemeContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { GoCloudOffline } from "react-icons/go";
+import { connectMqtt } from "../service/javascriptBridge";
 
 const NavigationBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentTheme } = useThemeProvider(); // Get current theme
+  const [isConnected, setIsConnected] = useState(false); // MQTT connection status
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -15,6 +20,15 @@ const NavigationBar = () => {
   const closeMenu = () => {
     setIsOpen(false);
   };
+
+  // MQTT Connection
+  useEffect(() => {
+    const handleMqttConnection = () => {
+      connectMqtt();
+      setIsConnected(true);
+    };
+    handleMqttConnection();
+  }, []);
 
   return (
     <div>
@@ -26,7 +40,7 @@ const NavigationBar = () => {
             : "bg-oves-blue text-white"
         } z-50`}
       >
-        {/* Icons on the Top Right */}
+        {/* Cloud Icon for MQTT Status */}
         <div className="flex items-center space-x-4">
           {/* Hamburger Menu Button for Mobile */}
           <button
@@ -39,6 +53,11 @@ const NavigationBar = () => {
           >
             ☰
           </button>
+        </div>
+
+        {/* Cloud Icon for MQTT Status at the end of the Navbar */}
+        <div className={`text-white ${isConnected ? "text-green-500" : "text-gray-500"}`}>
+          {isConnected ? <FaCloud /> : <GoCloudOffline />}
         </div>
       </div>
 
