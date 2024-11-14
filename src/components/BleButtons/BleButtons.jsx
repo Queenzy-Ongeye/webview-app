@@ -55,15 +55,15 @@ const BleButtons = ({
         setTimeout(() => {
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
-          navigate("/device-data", {
-            state: { data: initBleData.dataList },
-          });
-        }, 90000);
+        }, 120000);
 
         // Clear success states after another delay
         setTimeout(() => {
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
+          navigate("/device-data", {
+            state: { data: state.initBleData.dataList },
+          });
         }, 10000); // Clear after 10 seconds
       }, 25000); // 3-second delay before starting BLE initialization
 
