@@ -11,7 +11,7 @@ const BleButtons = ({
   initBleDataResponse,
   isLoading,
 }) => {
-  const { dispatch } = useStore();
+  const { dispatch, state } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
@@ -56,9 +56,9 @@ const BleButtons = ({
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
           navigate("/device-data", {
-            state: { data: initBleDataResponse?.dataList },
+            state: { data: initBleData.dataList },
           });
-        }, 80000);
+        }, 90000);
 
         // Clear success states after another delay
         setTimeout(() => {
