@@ -90,8 +90,6 @@ const BleButtons = ({
     const filteredData = initBleDataResponse?.dataList?.filter(
       (item) => item.serviceNameEnum === serviceNameEnum
     );
-    // Update the active tab based on the service name
-    setActiveTab(serviceNameEnum);
     // Navigate to the selected page, passing filtered data
     navigate(page, { state: { data: filteredData } });
   };
