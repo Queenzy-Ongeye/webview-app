@@ -102,7 +102,7 @@ const BleButtons = ({
 
   return (
     <div className="flex flex-col items-center w-full overflow-hidden h-screen">
-      <div className="mt-6">
+      <div className="mt-10">
         <h3 className="text-lg font-semibold text-left">
           Detected BLE Devices:
         </h3>
