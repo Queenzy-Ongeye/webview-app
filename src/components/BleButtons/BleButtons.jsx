@@ -3,9 +3,7 @@ import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FaCheckCircle } from "react-icons/fa"; // Success Icon
-import { connectMqtt } from "../../service/javascriptBridge";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -17,12 +15,8 @@ const BleButtons = ({
   const { dispatch } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
-  const [initializingMacAddress, setInitializingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
   const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
-  const [loading, setLoading] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [activeTab, setActiveTab] = useState("ATT");
   const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
 
   // Create a Map to ensure uniqueness based on MAC Address
@@ -62,7 +56,7 @@ const BleButtons = ({
         setTimeout(() => {
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
-          navigate("/device-data")
+          navigate("/device-data");
         }, 40000);
 
         // Clear success states after another delay
@@ -102,10 +96,10 @@ const BleButtons = ({
     navigate(page, { state: { data: filteredData } });
   };
 
-  // MQTT Connection
-  const handleMqttConnection = () => {
-    connectMqtt();
-    setIsButtonDisabled(true);
+
+  // Helper function to check if any device is loading
+  const isAnyDeviceLoading = () => {
+    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
   };
 
   return (
@@ -155,7 +149,7 @@ const BleButtons = ({
           )}
         </div>
       </div>
-      {loading && (
+      {isAnyDeviceLoading() && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
         </div>
