@@ -176,7 +176,7 @@ const ScanDataPage = () => {
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
           searchForMatch();
-        }, 40000);
+        }, 60000);
 
         // Clear success states after another delay
         setTimeout(() => {
@@ -201,7 +201,7 @@ const ScanDataPage = () => {
           newMap.set(macAddress, false);
           return newMap;
         });
-      }, 50000);
+      }, 10000);
     }
   };
 
