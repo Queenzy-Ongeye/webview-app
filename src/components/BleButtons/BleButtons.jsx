@@ -57,7 +57,7 @@ const BleButtons = ({
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
           navigate("/device-data", {
-            state: { deviceData: state.initBleData.dataList },
+            state: { deviceData: initBleDataResponse.dataList },
           });
         }, 60000);
 
