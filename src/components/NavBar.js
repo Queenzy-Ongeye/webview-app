@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaCloud, FaHome, FaQrcode } from "react-icons/fa"; // Import cloud icons
+import { FaCloud, FaHome, FaQrcode } from "react-icons/fa";
+import { GoCloudOffline } from "react-icons/go";
 import ThemeToggle from "./ThemeToggle";
 import { useThemeProvider } from "../utility/ThemeContext";
+import { connectMqtt } from "../service/javascriptBridge";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { GoCloudOffline } from "react-icons/go";
-import { connectMqtt } from "../service/javascriptBridge";
 
 const NavigationBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { currentTheme } = useThemeProvider(); // Get current theme
-  const [isConnected, setIsConnected] = useState(false); // MQTT connection status
+  const { currentTheme } = useThemeProvider();
+  const [isConnected, setIsConnected] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -23,10 +23,17 @@ const NavigationBar = () => {
 
   // MQTT Connection
   useEffect(() => {
-    const handleMqttConnection = () => {
-      connectMqtt();
-      setIsConnected(true);
+    const handleMqttConnection = async () => {
+      try {
+        await connectMqtt(); // Initiates connection
+        // Assume connectMqtt returns a promise or can confirm connection asynchronously
+        setIsConnected(true);
+      } catch (error) {
+        console.error("Failed to connect to MQTT:", error);
+        setIsConnected(false);
+      }
     };
+
     handleMqttConnection();
   }, []);
 
@@ -40,9 +47,8 @@ const NavigationBar = () => {
             : "bg-oves-blue text-white"
         } z-50`}
       >
-        {/* Cloud Icon for MQTT Status */}
+        {/* Hamburger Menu Button */}
         <div className="flex items-center space-x-4">
-          {/* Hamburger Menu Button for Mobile */}
           <button
             className={`${
               currentTheme === "dark"
