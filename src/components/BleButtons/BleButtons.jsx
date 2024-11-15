@@ -242,13 +242,7 @@ const BleButtons = ({
                       >
                         DIA
                       </button>
-                      <button
-                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
-                        onClick={handleMqttConnection}
-                        disabled={isButtonDisabled}
-                      >
-                        Connect to MQTT
-                      </button>
+                      
                       <ToastContainer />
                     </div>
                   )}
