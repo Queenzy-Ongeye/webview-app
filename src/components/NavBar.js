@@ -25,7 +25,7 @@ const NavigationBar = () => {
   useEffect(() => {
     const handleMqttConnection = async () => {
       try {
-        await connectMqtt(); // Initiates connection
+        connectMqtt(); // Initiates connection
         // Assume connectMqtt returns a promise or can confirm connection asynchronously
         setIsConnected(true);
       } catch (error) {
@@ -63,7 +63,7 @@ const NavigationBar = () => {
 
         {/* Cloud Icon for MQTT Status at the end of the Navbar */}
         <div className={`text-white ${isConnected ? "text-green-500" : "text-gray-500"}`}>
-          {isConnected ? <FaCloud /> : <GoCloudOffline />}
+          {isConnected ? <FaCloud />  : <GoCloudOffline />}
         </div>
       </div>
 
