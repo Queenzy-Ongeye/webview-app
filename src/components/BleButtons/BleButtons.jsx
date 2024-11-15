@@ -42,32 +42,29 @@ const BleButtons = ({
       console.log("Connecting to Bluetooth device", macAddress);
       await connectToBluetoothDevice(macAddress);
 
-      // Add delay and initialize BLE data as in your original code...
-      setTimeout(async () => {
-        console.log("Starting BLE data initialization after delay");
+      console.log("Starting BLE data initialization");
 
-        // Step 3: Initialize BLE data after the delay
-        const response = await initBleData(macAddress);
-        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-        console.log("Initialized BLE data:", response);
+      // Initialize BLE data after connecting
+      const response = await initBleData(macAddress);
+      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+      console.log("Initialized BLE data:", response);
 
-        // Step 4: Set successful states for UI feedback
-        setTimeout(() => {
-          setConnectionSuccessMac(macAddress);
-          setInitSuccessMac(macAddress);
-        }, 120000);
-        navigate("/device-data", {
-          state: { data: initBleDataResponse.dataList },
-        });
+      setTimeout(() => {
+        setConnectionSuccessMac(macAddress);
+        setInitSuccessMac(macAddress);
+      }, 120000);
 
-        // Clear success states after another delay
-        setTimeout(() => {
-          setConnectionSuccessMac(null);
-          setInitSuccessMac(null);
-        }, 10000); // Clear after 10 seconds
-      }, 25000); // 3-second delay before starting BLE initialization
+      // Navigate to DeviceDataPage with initialized data
+      navigate("/device-data", {
+        state: { data: response.dataList },
+      });
 
-      // Wait and then search for match as in your original code...
+      // Clear success states after another delay
+      setTimeout(() => {
+        setConnectionSuccessMac(null);
+        setInitSuccessMac(null);
+      }, 10000); // Clear after 10 seconds
+
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
@@ -75,15 +72,13 @@ const BleButtons = ({
       );
       alert("Failed to connect and initialize BLE data. Please try again.");
     } finally {
-      setTimeout(() => {
-        setConnectingMacAddress(null);
-        // Clear loading state for the specific device
-        setLoadingMap((prevMap) => {
-          const newMap = new Map(prevMap);
-          newMap.set(macAddress, false);
-          return newMap;
-        });
-      }, 50000);
+      // Clear loading state for the specific device
+      setLoadingMap((prevMap) => {
+        const newMap = new Map(prevMap);
+        newMap.set(macAddress, false);
+        return newMap;
+      });
+      setConnectingMacAddress(null);
     }
   };
 
