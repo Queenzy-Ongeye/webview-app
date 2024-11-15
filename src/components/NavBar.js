@@ -62,7 +62,7 @@ const NavigationBar = () => {
         </div>
 
         {/* Cloud Icon for MQTT Status at the end of the Navbar */}
-        <div className={`text-white ${isConnected ? "text-green-500" : "text-gray-500"}`}>
+        <div className={`${isConnected ? "text-green-500" : "text-gray-500"}`}>
           {isConnected ? <FaCloud />  : <GoCloudOffline />}
         </div>
       </div>

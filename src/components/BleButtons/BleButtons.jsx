@@ -55,11 +55,7 @@ const BleButtons = ({
         setTimeout(() => {
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
-          navigate("/device-data", {
-            state: { data: response.dataList },
-          });
         }, 150000);
-
 
         // Clear success states after another delay
         setTimeout(() => {
@@ -88,12 +84,23 @@ const BleButtons = ({
     }
   };
 
-  const navigateToPage = (page, serviceNameEnum) => {
-    const filteredData = initBleDataResponse?.dataList?.filter(
-      (item) => item.serviceNameEnum === serviceNameEnum
-    );
-    // Navigate to the selected page, passing filtered data
-    navigate(page, { state: { data: filteredData } });
+  const navigateToPage = () => {
+    // Check if we have data to pass
+    if (initBleDataResponse?.dataList) {
+      navigate("/device-data", {
+        state: {
+          data: initBleDataResponse.dataList,
+        },
+      });
+    } else {
+      console.warn("No data available for navigation");
+      // Optionally show an alert or handle the no-data case
+      navigate("/device-data", {
+        state: {
+          data: [],
+        },
+      });
+    }
   };
 
   // Helper function to check if any device is loading
@@ -137,6 +144,17 @@ const BleButtons = ({
                       : "Connect"}
                   </button>
                 </li>
+                {initBleDataResponse &&
+                  initBleDataResponse.macAddress === device.macAddress && (
+                    <div className="mt-4 grid grid-cols-1 gap-4 w-full">
+                      <button
+                        onClick={() => navigateToPage()}
+                        className="w-full py-2 border border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition duration-200"
+                      >
+                        View Device Data
+                      </button>
+                    </div>
+                  )}
               </React.Fragment>
             ))}
           </ul>
