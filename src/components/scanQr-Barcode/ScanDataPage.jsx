@@ -290,13 +290,13 @@ const ScanDataPage = () => {
     handleMatchResult(match, foundDeviceData);
   };
 
-  // useEffect hook to monitor initBleData and scannedData changes
-  useEffect(() => {
-    if (state.initBleData && state.scannedData && isPopupVisible) {
-      // Run the search only when both initBleData and scannedData are available
-      searchForMatch();
-    }
-  }, [state.initBleData, state.scannedData]);
+  // // useEffect hook to monitor initBleData and scannedData changes
+  // useEffect(() => {
+  //   if (state.initBleData && state.scannedData && isPopupVisible) {
+  //     // Run the search only when both initBleData and scannedData are available
+  //     searchForMatch();
+  //   }
+  // }, [state.initBleData, state.scannedData]);
   // Start scanning for BLE devices
   const scanBleDevices = () => {
     setIsScanning(true);
