@@ -123,8 +123,6 @@ const DeviceDataPage = () => {
   return (
     <div className="p-4 bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Device Data</h2>
-
         {/* Category Navigation */}
         <div className="grid grid-cols-5 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-6 border-b pb-4 border-gray-200">
           {availableCategories.map((category) => (
