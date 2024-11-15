@@ -201,7 +201,7 @@ const ScanDataPage = () => {
           newMap.set(macAddress, false);
           return newMap;
         });
-      }, 10000);
+      }, 70000);
     }
   };
 
