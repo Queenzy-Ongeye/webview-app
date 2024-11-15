@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import Notification from "../notification/Notification";
 import PopupNotification from "../notification/PopUp";
+import { useNavigate } from "react-router-dom";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -9,6 +10,7 @@ const ScanDataPage = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(false);
   const requestCode = 999;
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Start QR code scanning on component mount
