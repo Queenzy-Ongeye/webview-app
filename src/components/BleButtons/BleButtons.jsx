@@ -34,46 +34,43 @@ const BleButtons = ({
     e.preventDefault();
     e.stopPropagation();
 
+    // Update loading state for the specific device
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
 
     try {
       console.log("Connecting to Bluetooth device", macAddress);
-      const connectionResult = await connectToBluetoothDevice(macAddress);
-      setConnectionSuccessMac(macAddress);
+      await connectToBluetoothDevice(macAddress);
 
-      // Add a small delay after connection before initialization
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Delay to simulate initialization process
+      setTimeout(async () => {
+        console.log("Starting BLE data initialization after delay");
 
-      console.log("Starting BLE data initialization");
-      const response = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-      console.log("Initialized BLE data:", response);
+        // Step 3: Initialize BLE data after the delay
+        const response = await initBleData(macAddress);
 
-      setConnectionSuccessMac(macAddress);
-      setInitSuccessMac(macAddress);
+        // Dispatch the response to update the store
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+        console.log("Initialized BLE data:", response);
 
-      // Navigate to device-data page with the response data
-      if (response?.dataList) {
-        navigate("/device-data", {
-          state: {
-            data: response.dataList,
-          },
-        });
-      } else {
-        console.error("No data list received in response");
-        navigate("/device-data", {
-          state: {
-            data: [],
-          },
-        });
-      }
+        // Automatically navigate to DeviceDataPage with the retrieved data
+        if (response?.dataList) {
+          navigate("/device-data", {
+            state: {
+              deviceData: response.dataList, // Pass the data to the next page
+            },
+          });
+        } else {
+          console.warn("No data available to navigate");
+        }
 
-      // Clear success states after navigation
-      setTimeout(() => {
-        setConnectionSuccessMac(null);
-        setInitSuccessMac(null);
-      }, 5000);
+        // Clear loading states
+        setConnectionSuccessMac(macAddress);
+        setInitSuccessMac(macAddress);
+        setTimeout(() => {
+          setConnectionSuccessMac(null);
+        }, 10000); // Clear success state after 10 seconds
+      }, 3000); // Adjust delay as needed
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
@@ -89,26 +86,20 @@ const BleButtons = ({
           newMap.set(macAddress, false);
           return newMap;
         });
-      }, 70000);
+      }, 60000); // Adjust the timeout as needed
     }
   };
 
   const navigateToPage = () => {
-    // Check if we have data to pass
     if (initBleDataResponse?.dataList) {
+      console.log("Navigating with data:", initBleDataResponse.dataList);
       navigate("/device-data", {
         state: {
-          data: initBleDataResponse.dataList,
+          deviceData: initBleDataResponse.dataList, // Match key
         },
       });
     } else {
-      console.warn("No data available for navigation");
-      // Optionally show an alert or handle the no-data case
-      navigate("/device-data", {
-        state: {
-          data: [],
-        },
-      });
+      console.error("No data available for navigation");
     }
   };
 
@@ -153,7 +144,7 @@ const BleButtons = ({
                       : "Connect"}
                   </button>
                 </li>
-                {initBleDataResponse &&
+                {/* {initBleDataResponse &&
                   initBleDataResponse.macAddress === device.macAddress && (
                     <div className="mt-4 grid grid-cols-1 gap-4 w-full">
                       <button
@@ -163,7 +154,7 @@ const BleButtons = ({
                         View Device Data
                       </button>
                     </div>
-                  )}
+                  )} */}
               </React.Fragment>
             ))}
           </ul>
