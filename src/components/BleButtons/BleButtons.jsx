@@ -55,10 +55,11 @@ const BleButtons = ({
         setTimeout(() => {
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
+          navigate("/device-data", {
+            state: { data: response.dataList },
+          });
         }, 150000);
-        navigate("/device-data", {
-          state: { data: response.dataList },
-        });
+
 
         // Clear success states after another delay
         setTimeout(() => {
