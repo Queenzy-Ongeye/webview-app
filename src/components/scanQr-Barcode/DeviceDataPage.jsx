@@ -2,12 +2,12 @@ import React, { useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 
 const CharacteristicCard = ({ characteristic, uuid }) => (
-  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+  <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
     <div className="flex justify-between items-start">
-      <h5 className="font-semibold text-blue-600">
+      <h5 className="font-semibold text-blue-600 text-sm">
         {characteristic.name || "Unnamed Characteristic"}
       </h5>
-      <span className="text-xs text-gray-500 font-mono">{uuid}</span>
+      <span className="text-xs text-gray-400 font-mono">{uuid}</span>
     </div>
 
     <div className="mt-2 space-y-2">
@@ -55,12 +55,12 @@ const CharacteristicCard = ({ characteristic, uuid }) => (
 );
 
 const ServiceCard = ({ serviceData }) => (
-  <div className="p-6 border rounded-lg shadow-sm bg-white hover:shadow-md transition-shadow">
+  <div className="p-4 border rounded-lg shadow-sm bg-white hover:shadow-md transition-shadow">
     <div className="flex justify-between items-start mb-4">
-      <h4 className="font-bold text-lg text-gray-800">
+      <h4 className="font-bold text-base text-gray-800">
         {serviceData.serviceNameEnum.replace(/_/g, " ")}
       </h4>
-      <span className="text-xs text-gray-500 font-mono">
+      <span className="text-xs text-gray-400 font-mono">
         {serviceData.uuid}
       </span>
     </div>
@@ -111,7 +111,7 @@ const DeviceDataPage = () => {
     return (
       <div className="p-6 flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">
+          <h2 className="text-xl font-bold text-gray-700 mb-2">
             No Data Available
           </h2>
           <p className="text-gray-500">No device data was found to display.</p>
@@ -121,22 +121,22 @@ const DeviceDataPage = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen mt-10">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Device Data</h2>
+    <div className="p-4 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Device Data</h2>
 
         {/* Category Navigation */}
-        <div className="flex flex-wrap gap-2 mb-8 pb-4 border-b border-gray-200">
+        <div className="grid grid-cols-5 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-6 border-b pb-4 border-gray-200">
           {availableCategories.map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-md font-semibold transition-all
-                ${
-                  activeCategory === category
-                    ? "border bg-oves-blue text-white shadow-md"
-                    : "bg-white text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`px-3 py-1 rounded-md text-sm font-semibold transition-all
+        ${
+          activeCategory === category
+            ? "bg-oves-blue text-white shadow-md"
+            : "bg-white text-gray-600 border hover:bg-gray-100"
+        }`}
             >
               {category}
             </button>
@@ -144,7 +144,7 @@ const DeviceDataPage = () => {
         </div>
 
         {/* Data Display */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {categorizedData[activeCategory].length > 0 ? (
             categorizedData[activeCategory].map((serviceData, index) => (
               <ServiceCard
