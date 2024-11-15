@@ -70,7 +70,7 @@ const BleButtons = ({
         setTimeout(() => {
           setConnectionSuccessMac(null);
         }, 10000); // Clear success state after 10 seconds
-      }, 10000); // Adjust delay as needed
+      }, 25000); // Adjust delay as needed
     } catch (error) {
       console.error(
         "Error during Bluetooth connection or BLE data initialization:",
