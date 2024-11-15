@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { FaCheckCircle } from "react-icons/fa"; // Success Icon
 import { connectMqtt } from "../../service/javascriptBridge";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -242,8 +240,6 @@ const BleButtons = ({
                       >
                         DIA
                       </button>
-                      
-                      <ToastContainer />
                     </div>
                   )}
               </div>
