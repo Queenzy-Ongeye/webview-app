@@ -176,11 +176,9 @@ const ScanDataPage = () => {
         console.log("Initialized BLE data:", response);
 
         // Step 4: Set successful states for UI feedback
-        setTimeout(() => {
-          setConnectionSuccessMac(macAddress);
-          setInitSuccessMac(macAddress);
-          searchForMatch();
-        }, 80000);
+        setConnectionSuccessMac(macAddress);
+        setInitSuccessMac(macAddress);
+        searchForMatch();
 
         // Clear success states after another delay
         setTimeout(() => {
@@ -205,7 +203,7 @@ const ScanDataPage = () => {
           newMap.set(macAddress, false);
           return newMap;
         });
-      }, 70000);
+      }, 80000);
     }
   };
 
