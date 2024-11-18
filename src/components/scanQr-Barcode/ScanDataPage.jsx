@@ -377,7 +377,7 @@ const ScanDataPage = () => {
                         Signal Strength: {device.rssi}db
                       </p>
                     </div>
-                    {/* <button
+                    <button
                       onClick={(e) =>
                         handleConnectAndInit(e, device.macAddress)
                       }
@@ -391,7 +391,7 @@ const ScanDataPage = () => {
                       {loadingMap.get(device.macAddress)
                         ? "Processing..."
                         : "Connect"}
-                    </button> */}
+                    </button>
                   </li>
                 </React.Fragment>
               ))}
