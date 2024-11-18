@@ -118,10 +118,8 @@ const ScanDataPage = () => {
         .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       connectToNextDevice(); // Start the pairing process
-      // Automatically connect to the first device
-      if (topDevices.length > 0) {
-        handleConnectAndInit({}, topDevices[0].macAddress);
-      }
+      handleConnectAndInit({}, topDevices.map((device) => device.macAddress));
+
     } else {
       console.warn("No BLE devices detected.");
     }
@@ -185,7 +183,7 @@ const ScanDataPage = () => {
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
         }, 10000); // Clear after 10 seconds
-      }, 25000); // 3-second delay before starting BLE initialization
+      }, 15000); // 3-second delay before starting BLE initialization
 
       // Wait and then search for match as in your original code...
     } catch (error) {
@@ -379,7 +377,7 @@ const ScanDataPage = () => {
                         Signal Strength: {device.rssi}db
                       </p>
                     </div>
-                    <button
+                    {/* <button
                       onClick={(e) =>
                         handleConnectAndInit(e, device.macAddress)
                       }
@@ -393,7 +391,7 @@ const ScanDataPage = () => {
                       {loadingMap.get(device.macAddress)
                         ? "Processing..."
                         : "Connect"}
-                    </button>
+                    </button> */}
                   </li>
                 </React.Fragment>
               ))}
