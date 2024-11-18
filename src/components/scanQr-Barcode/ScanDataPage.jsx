@@ -118,6 +118,10 @@ const ScanDataPage = () => {
         .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       connectToNextDevice(); // Start the pairing process
+      // Automatically connect to the first device
+      if (topDevices.length > 0) {
+        handleConnectAndInit({}, topDevices[0].macAddress);
+      }
     } else {
       console.warn("No BLE devices detected.");
     }
@@ -175,7 +179,7 @@ const ScanDataPage = () => {
         setTimeout(() => {
           setConnectionSuccessMac(macAddress);
           setInitSuccessMac(macAddress);
-          // searchForMatch();
+          searchForMatch();
         }, 80000);
 
         // Clear success states after another delay
@@ -339,8 +343,10 @@ const ScanDataPage = () => {
   useEffect(() => {
     if (!state.detectedDevices || state.detectedDevices.length === 0) {
       scanBleDevices(); // Start BLE scan if no devices are detected
+    } else if (state.scannedData) {
+      initiateDeviceQueue(); // Start connecting automatically if scanned data is available
     }
-  }, [state.detectedDevices]);
+  }, [state.detectedDevices, state.scannedData]);
 
   // Helper function to check if any device is loading
   const isAnyDeviceLoading = () => {
