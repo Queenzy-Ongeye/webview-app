@@ -337,10 +337,10 @@ const ScanDataPage = () => {
     (a, b) => b.rssi - a.rssi
   );
   useEffect(() => {
-    if (!state.detectedDevices || state.detectedDevices.length === 0) {
-      scanBleDevices(); // Start BLE scan if no devices are detected
-    } else if (state.scannedData) {
-      initiateDeviceQueue(); // Start connecting automatically if scanned data is available
+    if (state.detectedDevices && state.detectedDevices.length > 0 && state.scannedData) {
+      initiateDeviceQueue(); // Automatically start device queue and connection process
+    } else if (!state.detectedDevices || state.detectedDevices.length === 0) {
+      scanBleDevices(); // Scan for devices if no devices are detected
     }
   }, [state.detectedDevices, state.scannedData]);
 
