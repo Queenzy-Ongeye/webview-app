@@ -155,8 +155,8 @@ const ScanDataPage = () => {
 
   // Initiate device pairing process
   const handleConnectAndInit = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e?.preventDefault();
+    e?.stopPropagation();
 
     // Update loading state for the specific device
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
