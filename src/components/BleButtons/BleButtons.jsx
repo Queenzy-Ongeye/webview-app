@@ -60,7 +60,7 @@ const BleButtons = ({
         const combinedData = {
           bleData: response?.dataList,
         };
-        navigate("/device-data", { state: { data: combinedData } });
+        navigate("/ble-data", { state: { data: combinedData } });
 
         // Clear success states after another delay
         setTimeout(() => {
@@ -89,11 +89,8 @@ const BleButtons = ({
     }
   };
 
-  const navigateToPage = (page, serviceNameEnum) => {
-    const filteredData = initBleDataResponse?.dataList?.filter(
-      (item) => item.serviceNameEnum === serviceNameEnum
-    );
-
+  const navigateToPage = (page) => {
+    const filteredData = initBleDataResponse?.dataList
     // Navigate to the selected page, passing filtered data
     navigate(page, { state: { data: filteredData } });
   };
