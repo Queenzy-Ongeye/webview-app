@@ -55,9 +55,12 @@ const BleButtons = ({
         // Step 4: Set successful states for UI feedback
         setConnectionSuccessMac(macAddress);
         setInitSuccessMac(macAddress);
-        navigate("/device-data", {
-          state: { data: initBleDataResponse?.dataList },
-        });
+
+        // Step 4: Navigate to DeviceDataPage with combined data
+        const combinedData = {
+          bleData: response?.dataList,
+        };
+        navigate("/device-data", { state: { data: combinedData } });
 
         // Clear success states after another delay
         setTimeout(() => {

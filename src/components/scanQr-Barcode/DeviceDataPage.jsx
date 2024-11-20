@@ -8,6 +8,7 @@ import * as TabsPrimitive from "@radix-ui/react-tabs"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 import { cn } from "../reusableCards/utils"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "../reusableCards/cards"
+import { useLocation } from "react-router-dom"
 
 // Tooltip components
 const TooltipProvider = TooltipPrimitive.Provider
@@ -129,7 +130,9 @@ const ServiceCard = ({ serviceData }) => (
 )
 
 // Main DeviceDataPage component
-export default function DeviceDataPage({ deviceData = [] }) {
+export default function DeviceDataPage() {
+  const location = useLocation();
+  const { deviceData = [] } = location.state || {};
   const categorizedData = useMemo(() => {
     const categories = {
       ATT: [],
