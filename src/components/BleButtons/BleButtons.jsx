@@ -67,7 +67,7 @@ const BleButtons = ({
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
         }, 10000); // Clear after 10 seconds
-      }, 25000); // 3-second delay before starting BLE initialization
+      }, 60000); // 3-second delay before starting BLE initialization
 
       // Wait and then search for match as in your original code...
     } catch (error) {
@@ -85,7 +85,7 @@ const BleButtons = ({
           newMap.set(macAddress, false);
           return newMap;
         });
-      }, 100000);
+      }, 80000);
     }
   };
 
