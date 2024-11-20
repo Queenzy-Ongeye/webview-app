@@ -63,7 +63,17 @@ const NavigationBar = () => {
 
         {/* Cloud Icon for MQTT Status at the end of the Navbar */}
         <div className={`${isConnected ? "text-green-500" : "text-gray-500"}`}>
-          {isConnected ? <><span>Mqtt On</span><FaCloud /></>  : <><span>Mqtt Off</span><GoCloudOffline /></>}
+          {isConnected ? (
+            <>
+              <span>Mqtt On</span>
+              <FaCloud />
+            </>
+          ) : (
+            <>
+              <span>Mqtt Off</span>
+              <GoCloudOffline />
+            </>
+          )}
         </div>
       </div>
 
@@ -110,6 +120,7 @@ const NavigationBar = () => {
           <ThemeToggle />
         </div>
       </nav>
+      <ToastContainer />
     </div>
   );
 };
