@@ -118,7 +118,6 @@ const ScanDataPage = () => {
         .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       connectToNextDevice(); // Start the pairing process
-      handleConnectAndInit({}, topDevices.map((device) => device.macAddress));
 
     } else {
       console.warn("No BLE devices detected.");

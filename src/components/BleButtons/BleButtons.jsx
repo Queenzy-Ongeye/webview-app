@@ -60,14 +60,16 @@ const BleButtons = ({
         const combinedData = {
           bleData: response?.dataList,
         };
-        navigate("/ble-data", { state: { data: combinedData } });
+        setTimeout(() => {
+          navigate("/ble-data", { state: { data: combinedData } });
+        }, 30000)
 
         // Clear success states after another delay
         setTimeout(() => {
           setConnectionSuccessMac(null);
           setInitSuccessMac(null);
         }, 10000); // Clear after 10 seconds
-      }, 60000); // 3-second delay before starting BLE initialization
+      }, 25000); // 3-second delay before starting BLE initialization
 
       // Wait and then search for match as in your original code...
     } catch (error) {
