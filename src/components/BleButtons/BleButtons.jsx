@@ -89,21 +89,8 @@ const BleButtons = () => {
     ) {
       scanBleDevices(); // Scan for devices if no devices are detected
     }
-    return () => stopBleScan();
   }, [state.detectedDevices, state.scannedData]);
 
-  const stopBleScan = () => {
-    if (window.WebViewJavascriptBridge && state.isScanning) {
-      window.WebViewJavascriptBridge.callHandler("stopBleScan", "", () => {
-        console.log("Scanning stopped");
-      });
-      dispatch({ type: "SET_IS_SCANNING", payload: false });
-    } else {
-      console.error(
-        "WebViewJavascriptBridge is not initialized or scanning is not active."
-      );
-    }
-  };
 
   const connectToBluetoothDevice = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
