@@ -132,8 +132,8 @@ const ServiceCard = ({ serviceData }) => (
 // Main DeviceDataPage component
 export default function BleDataPage() {
   const location = useLocation();
-  // const { deviceData = [] } = location.state || {};
-  const deviceData = location.state || {}; 
+  const { deviceData = [] } = location.state || {};
+//   const deviceData = location.state || []; 
   const categorizedData = useMemo(() => {
     const categories = {
       ATT: [],

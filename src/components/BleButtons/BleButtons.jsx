@@ -85,7 +85,7 @@ const BleButtons = ({
           newMap.set(macAddress, false);
           return newMap;
         });
-      }, 80000);
+      }, 100000);
     }
   };
 
