@@ -185,29 +185,6 @@ const Home = () => {
     return () => stopBleScan();
   }, [state.bridgeInitialized, dispatch]);
 
-  const startBleScan = () => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "startBleScan",
-        "",
-        (responseData) => {
-          try {
-            const jsonData = JSON.parse(responseData);
-            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
-            console.log("BLE Data:", jsonData);
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'startBleScan' response:",
-              error
-            );
-          }
-        }
-      );
-      dispatch({ type: "SET_IS_SCANNING", payload: true });
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
 
   const stopBleScan = () => {
     if (window.WebViewJavascriptBridge && state.isScanning) {
@@ -274,13 +251,7 @@ const Home = () => {
   return (
     <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
       <div className="overflow-auto">
-        <BleButtons
-          connectToBluetoothDevice={connectToBluetoothDevice}
-          detectedDevices={state.detectedDevices}
-          initBleData={initBleData}
-          initBleDataResponse={state.initBleData}
-          isLoading={state.isLoading}
-        />
+        <BleButtons />
       </div>
     </div>
   );
