@@ -129,7 +129,7 @@ const Home = () => {
           (data, responseCallback) => {
             try {
               const parsedData = JSON.parse(data);
-              dispatch({ type: "SET_SCANNED_DATA", payload: parsedData });
+              dispatch({type: "SET_SCANNED_DATA", payload: parsedData})
               responseCallback(parsedData);
             } catch (error) {
               console.error(
@@ -178,7 +178,31 @@ const Home = () => {
 
     connectWebViewJavascriptBridge(setupBridge);
     // Automatically start BLE scan when component mounts
+
   }, [state.bridgeInitialized, dispatch]);
+
+  const initBleData = (macAddress) => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            console.log("BLE Init Data:", parsedData);
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'initBleData' response:",
+              error
+            );
+          }
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
 
   return (
     <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
