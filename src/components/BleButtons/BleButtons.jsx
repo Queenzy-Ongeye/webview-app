@@ -69,7 +69,7 @@ const BleButtons = ({
       }, 25000); // 3-second delay before starting BLE initialization
 
       setTimeout(() => {
-        navigate("/ble-data", { state: { data: combinedData } });
+        navigate("/ble-data", { state: { data: initBleDataResponse?.dataList } });
       }, 40000)
 
       // Wait and then search for match as in your original code...
