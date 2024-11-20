@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FaCheckCircle } from "react-icons/fa"; // Success Icon
-import { connectMqtt } from "../../service/javascriptBridge";
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
@@ -11,10 +9,87 @@ const BleButtons = () => {
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
   const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
   const [isScanning, setIsScanning] = useState(false);
 
+  useEffect(() => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.registerHandler(
+        "findBleDeviceCallBack",
+        (data, responseCallback) => {
+          try {
+            const parsedData = JSON.parse(data);
+            if (parsedData) {
+              dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
+              responseCallback(parsedData);
+            } else {
+              throw new Error("Parsed data is not in the expected format.");
+            }
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'findBleDeviceCallBack' handler:",
+              error
+            );
+          }
+        }
+      );
+
+      window.WebViewJavascriptBridge.registerHandler(
+        "bleConnectSuccessCallBack",
+        (data, responseCallback) => {
+          const macAddress = data.macAddress;
+          if (macAddress) {
+            initBleData(macAddress);
+          } else {
+            console.error(
+              "MAC Address not found in successful connection data:",
+              data
+            );
+          }
+          responseCallback(data);
+        }
+      );
+
+      window.WebViewJavascriptBridge.registerHandler(
+        "bleConnectFailCallBack",
+        (data, responseCallback) => {
+          console.log("Bluetooth connection failed:", data);
+          responseCallback(data);
+        }
+      );
+
+      window.WebViewJavascriptBridge.registerHandler(
+        "bleInitDataCallBack",
+        (data, responseCallback) => {
+          try {
+            const parsedData = JSON.parse(data);
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            responseCallback(parsedData);
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'bleInitDataCallBack' handler:",
+              error
+            );
+          }
+        }
+      );
+      window.WebViewJavascriptBridge.registerHandler(
+        "bleConnectSuccessCallBack",
+        (data, responseCallback) => {
+          const macAddress = data.macAddress;
+          if (macAddress) {
+            initBleData(macAddress);
+          } else {
+            console.error(
+              "MAC Address not found in successful connection data:",
+              data
+            );
+          }
+          responseCallback(data);
+        }
+      );
+    }
+  }, []);
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -83,14 +158,10 @@ const BleButtons = () => {
     }
   };
   useEffect(() => {
-    if (
-      state.detectedDevices &&
-      state.detectedDevices.lengt
-    ) {
+    if (state.detectedDevices && state.detectedDevices.lengt) {
       scanBleDevices(); // Scan for devices if no devices are detected
     }
   }, [state.detectedDevices, state.scannedData]);
-
 
   const connectToBluetoothDevice = (macAddress) => {
     if (window.WebViewJavascriptBridge) {
