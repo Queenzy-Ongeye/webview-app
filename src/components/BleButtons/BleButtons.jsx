@@ -89,6 +89,7 @@ const BleButtons = () => {
     ) {
       scanBleDevices(); // Scan for devices if no devices are detected
     }
+    return () => stopBleScan();
   }, [state.detectedDevices, state.scannedData]);
 
   const stopBleScan = () => {
