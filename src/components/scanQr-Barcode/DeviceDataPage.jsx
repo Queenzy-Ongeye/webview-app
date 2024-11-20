@@ -132,7 +132,8 @@ const ServiceCard = ({ serviceData }) => (
 // Main DeviceDataPage component
 export default function DeviceDataPage() {
   const location = useLocation();
-  const { deviceData = [] } = location.state || {};
+  // const { deviceData = [] } = location.state || {};
+  const deviceData = location.state?.deviceData || []; 
   const categorizedData = useMemo(() => {
     const categories = {
       ATT: [],
