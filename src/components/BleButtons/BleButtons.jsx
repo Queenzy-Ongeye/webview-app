@@ -70,7 +70,7 @@ const BleButtons = ({
 
       setTimeout(() => {
         navigate("/ble-data", { state: { data: initBleDataResponse?.dataList } });
-      }, 80000)
+      }, 90000)
 
       // Wait and then search for match as in your original code...
     } catch (error) {
