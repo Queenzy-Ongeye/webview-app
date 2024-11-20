@@ -179,7 +179,6 @@ const Home = () => {
 
     connectWebViewJavascriptBridge(setupBridge);
     // Automatically start BLE scan when component mounts
-    startBleScan();
 
     // Clean up: stop the scan if the component is unmounted
     return () => stopBleScan();

@@ -6,13 +6,14 @@ import { FaCheckCircle } from "react-icons/fa"; // Success Icon
 import { connectMqtt } from "../../service/javascriptBridge";
 
 const BleButtons = () => {
-  const { dispatch } = useStore();
+  const { dispatch, state } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
   const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
+  const [isScanning, setIsScanning] = useState(false);
 
 
   // Create a Map to ensure uniqueness based on MAC Address
@@ -84,11 +85,8 @@ const BleButtons = () => {
   useEffect(() => {
     if (
       state.detectedDevices &&
-      state.detectedDevices.length > 0 &&
-      state.scannedData
+      state.detectedDevices.lengt
     ) {
-      initiateDeviceQueue(); // Automatically start device queue and connection process
-    } else if (!state.detectedDevices || state.detectedDevices.length === 0) {
       scanBleDevices(); // Scan for devices if no devices are detected
     }
   }, [state.detectedDevices, state.scannedData]);

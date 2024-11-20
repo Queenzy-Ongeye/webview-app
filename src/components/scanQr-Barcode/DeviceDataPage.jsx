@@ -16,10 +16,7 @@ const Tooltip = TooltipPrimitive.Root
 
 const TooltipTrigger = TooltipPrimitive.Trigger
 
-const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
+const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => (
   <TooltipPrimitive.Content
     ref={ref}
     sideOffset={sideOffset}
@@ -33,29 +30,14 @@ const TooltipContent = React.forwardRef<
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
 // ScrollArea component (simplified for this example)
-const ScrollArea = ({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+const ScrollArea = ({ className, children, ...props }) => (
   <div className={cn("overflow-auto", className)} {...props}>
     {children}
   </div>
 )
 
-// Types
-type Characteristic = {
-  name: string
-  desc?: string
-  realVal?: any
-  properties?: string
-  descMap?: Record<string, { desc: string }>
-}
-
-type ServiceData = {
-  serviceNameEnum: string
-  uuid: string
-  characterMap: Record<string, Characteristic>
-}
-
 // CharacteristicCard component
-const CharacteristicCard = ({ characteristic, uuid }: { characteristic: Characteristic; uuid: string }) => {
+const CharacteristicCard = ({ characteristic, uuid }) => {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
@@ -126,7 +108,7 @@ const CharacteristicCard = ({ characteristic, uuid }: { characteristic: Characte
 }
 
 // ServiceCard component
-const ServiceCard = ({ serviceData }: { serviceData: ServiceData }) => (
+const ServiceCard = ({ serviceData }) => (
   <Card>
     <CardHeader>
       <div className="flex justify-between items-start">
@@ -147,9 +129,9 @@ const ServiceCard = ({ serviceData }: { serviceData: ServiceData }) => (
 )
 
 // Main DeviceDataPage component
-export default function DeviceDataPage({ deviceData = [] }: { deviceData?: ServiceData[] }) {
+export default function DeviceDataPage({ deviceData = [] }) {
   const categorizedData = useMemo(() => {
-    const categories: Record<string, ServiceData[]> = {
+    const categories = {
       ATT: [],
       DTA: [],
       DIA: [],
