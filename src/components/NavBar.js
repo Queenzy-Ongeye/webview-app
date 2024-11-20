@@ -65,7 +65,6 @@ const NavigationBar = () => {
         <div className={`${isConnected ? "text-green-500" : "text-gray-500"}`}>
           {isConnected ? (
             <>
-              <span>Mqtt On</span>
               <FaCloud />
             </>
           ) : (
