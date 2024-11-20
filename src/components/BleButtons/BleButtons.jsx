@@ -62,7 +62,7 @@ const BleButtons = ({
         };
         setTimeout(() => {
           navigate("/ble-data", { state: { data: combinedData } });
-        }, 30000)
+        }, 40000)
 
         // Clear success states after another delay
         setTimeout(() => {
