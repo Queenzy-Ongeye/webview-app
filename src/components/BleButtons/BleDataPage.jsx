@@ -8,7 +8,7 @@ const BleDataPage = () => {
   // Simulating location state with useState for demonstration
   const {state} = useStore();
   const location = useLocation();
-  const deviceData = location.state || state.initBleData.dataList || []; // Fallback to global state
+  const deviceData = location.state?.dataList || state?.initBleData?.dataList || [];
 
   useEffect(() => {
     console.log("Received data in BleDataPage:", deviceData);
