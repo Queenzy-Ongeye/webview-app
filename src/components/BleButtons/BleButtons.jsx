@@ -28,7 +28,7 @@ const BleButtons = () => {
         state: { deviceData: state.initBleData.dataList },
       });
     } else {
-      log("Response data is not found:", !state.initBleData.dataList);
+      console.log("Response data is not found:", !state.initBleData.dataList);
     }
   };
 
@@ -79,7 +79,7 @@ const BleButtons = () => {
         // Step 4: Navigate to DeviceDataPage with combined data
 
         setTimeout(() => {
-          navigateToPage("/ble-data");
+          navigatePage();
         }, 50000);
         // Clear success states after another delay
         setTimeout(() => {
