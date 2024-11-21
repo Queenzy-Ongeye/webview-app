@@ -85,22 +85,6 @@ const Home = () => {
         );
 
         bridge.registerHandler(
-          "bleConnectSuccessCallBack",
-          (data, responseCallback) => {
-            const macAddress = data.macAddress;
-            if (macAddress) {
-              initBleData(macAddress);
-            } else {
-              console.error(
-                "MAC Address not found in successful connection data:",
-                data
-              );
-            }
-            responseCallback(data);
-          }
-        );
-
-        bridge.registerHandler(
           "bleConnectFailCallBack",
           (data, responseCallback) => {
             console.log("Bluetooth connection failed:", data);
@@ -222,65 +206,10 @@ const Home = () => {
     }
   };
 
-  const connectToBluetoothDevice = (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData.respCode === "200") {
-              initBleData(macAddress);
-            }
-            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
-            console.log("BLE Device Data:", parsedData);
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'connBleByMacAddress' response:",
-              error
-            );
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
-  const initBleData = (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "initBleData",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-            console.log("BLE Init Data:", parsedData);
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'initBleData' response:",
-              error
-            );
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
   return (
     <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
       <div className="overflow-auto">
-        <BleButtons
-          connectToBluetoothDevice={connectToBluetoothDevice}
-          detectedDevices={state.detectedDevices}
-          initBleData={initBleData}
-          initBleDataResponse={state.initBleDataResponse}
-          isLoading={state.isLoading}
-        />
+        <BleButtons />
       </div>
     </div>
   );

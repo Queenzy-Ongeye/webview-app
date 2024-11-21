@@ -3,14 +3,8 @@ import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Wifi, WifiOff } from "lucide-react";
 
-const BleButtons = ({
-  connectToBluetoothDevice,
-  initBleData,
-  detectedDevices,
-  initBleDataResponse,
-  isLoading,
-}) => {
-  const { dispatch } = useStore();
+const BleButtons = () => {
+  const { dispatch, state } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
@@ -19,7 +13,7 @@ const BleButtons = ({
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
-  detectedDevices.forEach((device) => {
+  state.detectedDevices.forEach((device) => {
     uniqueDevicesMap.set(device.macAddress, device);
   });
 
@@ -27,6 +21,75 @@ const BleButtons = ({
   const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
     (a, b) => b.rssi - a.rssi
   );
+
+  useEffect(() => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.registerHandler(
+        "bleConnectSuccessCallBack",
+        (data, responseCallback) => {
+          const macAddress = data.macAddress;
+          if (macAddress) {
+            initBleData(macAddress);
+          } else {
+            console.error(
+              "MAC Address not found in successful connection data:",
+              data
+            );
+          }
+          responseCallback(data);
+        }
+      );
+    }
+  }, []);
+
+  const connectToBluetoothDevice = (macAddress) => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === "200") {
+              initBleData(macAddress);
+            }
+            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+            console.log("BLE Device Data:", parsedData);
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'connBleByMacAddress' response:",
+              error
+            );
+          }
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
+
+  const initBleData = (macAddress) => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            console.log("BLE Init Data:", parsedData);
+          } catch (error) {
+            console.error(
+              "Error parsing JSON data from 'initBleData' response:",
+              error
+            );
+          }
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
 
   // Initiate device pairing process
   const handleConnectAndInit = async (e, macAddress) => {
@@ -56,7 +119,7 @@ const BleButtons = ({
         // Step 4: Navigate to DeviceDataPage with combined data
 
         setTimeout(() => {
-          navigateToPage('/ble-data');
+          navigateToPage("/ble-data");
         }, 50000);
         // Clear success states after another delay
         setTimeout(() => {
@@ -86,17 +149,18 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    console.log("Navigating with initBleDataResponse:", initBleDataResponse);
-  
-    if (!initBleDataResponse?.dataList || initBleDataResponse.dataList.length === 0) {
+    console.log("Navigating with initBleDataResponse:", state.initBleDataResponse);
+    if (
+      !state.initBleDataResponse?.dataList ||
+      state.initBleDataResponse.dataList.length === 0
+    ) {
       alert("No data to navigate with.");
       return;
     }
-  
+
     // Pass dataList to BleDataPage
-    navigate(page, { state: initBleDataResponse.dataList });
+    navigate(page, { state: state.initBleDataResponse.dataList });
   };
-  
 
   // Helper function to check if any device is loading
   const isAnyDeviceLoading = () => {
@@ -116,9 +180,7 @@ const BleButtons = ({
                       <p className="text-gray-700">
                         {device.name || "Unknown Device"}
                       </p>
-                      <p className="text-gray-700">
-                       {device.macAddress}
-                      </p>
+                      <p className="text-gray-700">{device.macAddress}</p>
                       <div className="flex items-left">
                         {device.rssi > -50 ? (
                           <Wifi className="text-green-500" />
