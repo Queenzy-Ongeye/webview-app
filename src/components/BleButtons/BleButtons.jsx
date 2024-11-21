@@ -86,15 +86,15 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    console.log("Navigating with initBleDataResponse:", initBleDataResponse);
+    console.log("Navigating with initBleDataResponse:", initBleData.dataList);
   
-    if (!initBleDataResponse?.dataList || initBleDataResponse.dataList.length === 0) {
+    if (!initBleData?.dataList || initBleData.dataList.length === 0) {
       alert("No data to navigate with.");
       return;
     }
   
     // Pass dataList to BleDataPage
-    navigate(page, { state: initBleDataResponse.dataList });
+    navigate(page, { state: initBleData.dataList });
   };
   
 
@@ -105,7 +105,7 @@ const BleButtons = ({
 
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
-      <div className="min-h-screen bg-gray-100">
+      <div className="min-h-screen bg-gray-100 w-full">
         <div className="p-2">
           {uniqueDevice.length > 0 ? (
             <ul className="text-left">
