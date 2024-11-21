@@ -188,10 +188,10 @@ const BleButtons = () => {
             const parsedData = JSON.parse(responseData);
             console.log("Parsed init response:", parsedData);
 
-            if (!parsedData || !parsedData.dataList) {
-              reject(new Error("Invalid initialization response format"));
-              return;
-            }
+            // if (!parsedData || !parsedData.dataList) {
+            //   reject(new Error("Invalid initialization response format"));
+            //   return;
+            // }
 
             resolve(parsedData);
           } catch (error) {
