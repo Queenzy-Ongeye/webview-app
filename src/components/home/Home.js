@@ -278,7 +278,7 @@ const Home = () => {
           connectToBluetoothDevice={connectToBluetoothDevice}
           detectedDevices={state.detectedDevices}
           initBleData={initBleData}
-          initBleDataResponse={initBleDataResponse}
+          initBleDataResponse={state.initBleDataResponse}
           isLoading={state.isLoading}
         />
       </div>
