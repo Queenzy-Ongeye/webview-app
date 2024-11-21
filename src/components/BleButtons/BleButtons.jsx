@@ -57,7 +57,11 @@ const BleButtons = ({
         // Step 4: Set successful states for UI feedback
         setConnectionSuccessMac(macAddress);
         setInitSuccessMac(macAddress);
-
+        setTimeout(() => {
+          navigate("/ble-data", {
+            state: { data: response.dataList },
+          });
+        }, 90000);
         // Step 4: Navigate to DeviceDataPage with combined data
         const combinedData = {
           bleData: response?.dataList,
@@ -69,12 +73,6 @@ const BleButtons = ({
           setInitSuccessMac(null);
         }, 10000); // Clear after 10 seconds
       }, 25000); // 3-second delay before starting BLE initialization
-
-      setTimeout(() => {
-        navigate("/ble-data", {
-          state: { data: initBleDataResponse?.dataList },
-        });
-      }, 90000);
 
       // Wait and then search for match as in your original code...
     } catch (error) {
