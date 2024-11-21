@@ -86,12 +86,12 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    if (!initBleDataResponse || !initBleDataResponse.dataList) {
+    if (!initBleData || !initBleData.dataList) {
       console.error("No data to navigate with.");
       return;
     }
     // Pass valid data structure to BleDataPage
-    navigate(page, { state: initBleDataResponse });
+    navigate(page, { state: initBleData });
   };
 
   // Helper function to check if any device is loading
@@ -103,48 +103,53 @@ const BleButtons = ({
     <div className="scan-data-page flex flex-col h-screen mt-4">
       <div className="min-h-screen bg-gray-100">
         <div className="p-2">
-          {uniqueDevice.map((device, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-sm shadow-sm w-full p-4 mb-4 flex items-left"
-            >
-              <div className="ml-4 flex-1">
-                <h2 className="text-lg font-semibold">{device.name}</h2>
-                <div className="flex items-left">
-                  {device.rssi > -50 ? (
-                    <Wifi className="text-green-500" />
-                  ) : device.rssi > -70 ? (
-                    <Wifi className="text-yellow-500" />
-                  ) : (
-                    <WifiOff className="text-red-500" />
-                  )}
-                  <span className="text-sm text-gray-500">
-                    Signal Strength: {device.rssi}dBm
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500">{device.energyType}</p>
-                <p className="text-sm text-gray-500">{device.macAddress}</p>
-              </div>
-              <button
-                onClick={(e) => handleConnectAndInit(e, device.macAddress)}
-                className={`px-4 py-2 text-white rounded-md ml-4 transition-colors duration-300 ${
-                  isLoading
-                    ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                    : "bg-cyan-700 text-white"
-                }`}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    <span>Connecting...</span>
-                  </div>
-                ) : (
-                  "Connect"
-                )}
-              </button>
-            </div>
-          ))}
+          {uniqueDevice.length > 0 ? (
+            <ul className="text-left">
+              {uniqueDevice.map((device, index) => (
+                <React.Fragment key={device.macAddress}>
+                  <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-700">
+                        Device Name: {device.name || "Unknown Device"}
+                      </p>
+                      <p className="text-gray-700">
+                        Mac-Address: {device.macAddress}
+                      </p>
+                      <div className="flex items-left">
+                        {device.rssi > -50 ? (
+                          <Wifi className="text-green-500" />
+                        ) : device.rssi > -70 ? (
+                          <Wifi className="text-yellow-500" />
+                        ) : (
+                          <WifiOff className="text-red-500" />
+                        )}
+                        <span className="text-sm text-gray-500">
+                          Signal Strength: {device.rssi}dBm
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) =>
+                        handleConnectAndInit(e, device.macAddress)
+                      }
+                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                        loadingMap.get(device.macAddress)
+                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                          : "bg-cyan-700 text-white"
+                      }`}
+                      disabled={loadingMap.get(device.macAddress)}
+                    >
+                      {loadingMap.get(device.macAddress)
+                        ? "Processing..."
+                        : "Connect"}
+                    </button>
+                  </li>
+                </React.Fragment>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No BLE devices detected.</p>
+          )}
         </div>
       </div>
       {isAnyDeviceLoading() && (
