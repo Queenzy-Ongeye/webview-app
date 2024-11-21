@@ -57,7 +57,7 @@ const BleButtons = ({
 
         setTimeout(() => {
           navigateToPage("/ble-data");
-        }, 40000);
+        }, 50000);
         // Clear success states after another delay
         setTimeout(() => {
           setConnectionSuccessMac(null);
@@ -86,12 +86,12 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    if (!initBleDataResponse || !initBleDataResponse.dataList) {
+    if (!initBleDataResponse) {
       console.error("No data to navigate with.");
       return;
     }
     // Pass valid data structure to BleDataPage
-    navigate(page, { state: initBleDataResponse});
+    navigate(page, { state: initBleDataResponse });
   };
 
   // Helper function to check if any device is loading
@@ -125,6 +125,19 @@ const BleButtons = ({
                 <p className="text-sm text-gray-500">{device.energyType}</p>
                 <p className="text-sm text-gray-500">{device.macAddress}</p>
               </div>
+              <button
+                onClick={(e) => handleConnectAndInit(e, device.macAddress)}
+                className={`px-4 py-2 text-white rounded-md ml-4 transition-colors duration-300 ${
+                  loadingMap.get(device.macAddress)
+                    ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                    : "bg-cyan-700 text-white"
+                }`}
+                disabled={loadingMap.get(device.macAddress)}
+              >
+                {loadingMap.get(device.macAddress)
+                  ? "Processing..."
+                  : "Connect"}
+              </button>
               <button
                 onClick={(e) => handleConnectAndInit(e, macAddress)}
                 disabled={isLoading}
