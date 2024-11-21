@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useLocation } from 'react-router-dom';
+import { useStore } from '../../service/store';
 
 const BleDataPage = () => {
   // Simulating location state with useState for demonstration
+  const {state} = useStore();
   const location = useLocation();
   const deviceData = location.state || state.initBleData?.dataList || []; // Fallback to global state
 
