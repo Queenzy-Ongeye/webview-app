@@ -7,9 +7,11 @@ const BleButtons = () => {
   const { dispatch, state } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
-  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
-  const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
-  const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
+  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
+  const [initSuccessMac, setInitSuccessMac] = useState(null);
+  const [loadingMap, setLoadingMap] = useState(new Map());
+  const [error, setError] = useState(null);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -17,20 +19,9 @@ const BleButtons = () => {
     uniqueDevicesMap.set(device.macAddress, device);
   });
 
-  // Convert the Map to an array and sort by signal strength (RSSI)
   const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
     (a, b) => b.rssi - a.rssi
   );
-
-  const navigatePage = () => {
-    if (state.initBleData) {
-      navigate("/ble-data", {
-        state: { deviceData: state.initBleData.dataList },
-      });
-    } else {
-      console.log("Response data is not found:", !state.initBleData.dataList);
-    }
-  };
 
   useEffect(() => {
     if (window.WebViewJavascriptBridge) {
@@ -52,119 +43,170 @@ const BleButtons = () => {
     }
   }, []);
 
-  // Initiate device pairing process
+  // Watch for changes in initBleData and trigger navigation
+  useEffect(() => {
+    if (state.initBleData?.dataList && !isNavigating) {
+      console.log("Data detected, preparing to navigate:", state.initBleData);
+      performNavigation();
+    }
+  }, [state.initBleData]);
+
+  const performNavigation = () => {
+    if (isNavigating) return; // Prevent multiple navigations
+
+    console.log("Attempting navigation with data:", {
+      initBleData: state.initBleData,
+      dataList: state.initBleData?.dataList,
+    });
+
+    setIsNavigating(true);
+
+    try {
+      if (state.initBleData?.dataList) {
+        // Ensure we have the data before navigating
+        const deviceData = state.initBleData.dataList;
+
+        // Use a short timeout to ensure state updates have completed
+        setTimeout(() => {
+          console.log("Navigating to /ble-data with data:", deviceData);
+          navigate("/ble-data", {
+            state: { deviceData },
+            replace: true, // Use replace to prevent back navigation issues
+          });
+        }, 100);
+      } else {
+        throw new Error("Navigation attempted without valid data");
+      }
+    } catch (error) {
+      console.error("Navigation error:", error);
+      setError(`Failed to navigate: ${error.message}`);
+      setIsNavigating(false);
+    }
+  };
+
   const handleConnectAndInit = async (e, macAddress) => {
     e?.preventDefault();
     e?.stopPropagation();
+    setError(null);
+    setIsNavigating(false); // Reset navigation state
 
-    // Update loading state for the specific device
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
 
     try {
-      await connectToBluetoothDevice(macAddress);
+      console.log("Starting connection process for:", macAddress);
+      const connectionResult = await connectToBluetoothDevice(macAddress);
+      console.log("Connection result:", connectionResult);
 
-      // Add delay and initialize BLE data as in your original code...
-      setTimeout(async () => {
-        console.log("Starting BLE data initialization after delay");
+      // Wait for connection to stabilize
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-        // Step 3: Initialize BLE data after the delay
-        const response = await initBleData(macAddress);
-        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
-        console.log("Initialized BLE data:", response);
+      console.log("Starting BLE data initialization");
+      const response = await initBleData(macAddress);
+      console.log("BLE initialization response:", response);
 
-        // Step 4: Set successful states for UI feedback
-        setConnectionSuccessMac(macAddress);
-        setInitSuccessMac(macAddress);
-        // Step 4: Navigate to DeviceDataPage with combined data
+      if (!response || !response.dataList) {
+        throw new Error("Invalid or missing data in initialization response");
+      }
 
-        setTimeout(() => {
-          navigatePage();
-        }, 50000);
-        // Clear success states after another delay
-        setTimeout(() => {
-          setConnectionSuccessMac(null);
-          setInitSuccessMac(null);
-        }, 10000); // Clear after 10 seconds
-      }, 25000); // 3-second delay before starting BLE initialization
+      // Update store with the response
+      dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
 
-      // Wait and then search for match as in your original code...
+      setConnectionSuccessMac(macAddress);
+      setInitSuccessMac(macAddress);
+
+      // Navigation will be handled by the useEffect hook watching state.initBleData
     } catch (error) {
-      console.error(
-        "Error during Bluetooth connection or BLE data initialization:",
-        error
-      );
-      alert("Failed to connect and initialize BLE data. Please try again.");
+      console.error("Connection/initialization error:", error);
+      setError(error.message || "Failed to connect and initialize BLE data");
     } finally {
+      // Clean up loading states after a delay
       setTimeout(() => {
         setConnectingMacAddress(null);
-        // Clear loading state for the specific device
         setLoadingMap((prevMap) => {
           const newMap = new Map(prevMap);
-          newMap.set(macAddress, false);
+          newMap.delete(macAddress);
           return newMap;
         });
-      }, 80000);
+      }, 3000);
     }
   };
 
   const connectToBluetoothDevice = (macAddress) => {
     return new Promise((resolve, reject) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "connBleByMacAddress",
-          macAddress,
-          (responseData) => {
-            try {
-              const parsedData = JSON.parse(responseData);
-              if (parsedData.respCode === "200") {
-                initBleData(macAddress);
-                resolve(true); // Resolve with success
-              } else {
-                reject("Connection failed");
-              }
-            } catch (error) {
-              console.error("Error parsing JSON data:", error);
-              reject(error);
-            }
-          }
-        );
-      } else {
-        console.error("WebViewJavascriptBridge is not initialized.");
-        reject("WebViewJavascriptBridge not initialized");
+      if (!window.WebViewJavascriptBridge) {
+        reject(new Error("WebViewJavascriptBridge not initialized"));
+        return;
       }
+
+      console.log("Attempting to connect to device:", macAddress);
+
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        macAddress,
+        (responseData) => {
+          try {
+            console.log("Raw connection response:", responseData);
+            const parsedData = JSON.parse(responseData);
+            console.log("Parsed connection response:", parsedData);
+
+            if (parsedData.respCode === "200") {
+              resolve(parsedData);
+            } else {
+              reject(
+                new Error(
+                  `Connection failed: ${parsedData.respMsg || "Unknown error"}`
+                )
+              );
+            }
+          } catch (error) {
+            console.error("Error parsing connection response:", error);
+            reject(
+              new Error(`Failed to parse connection response: ${error.message}`)
+            );
+          }
+        }
+      );
     });
   };
 
   const initBleData = (macAddress) => {
     return new Promise((resolve, reject) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "initBleData",
-          macAddress,
-          (responseData) => {
-            try {
-              const parsedData = JSON.parse(responseData);
-              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-              console.log("BLE Init Data:", parsedData);
-              resolve(parsedData); // Resolve the promise with the retrieved data
-            } catch (error) {
-              console.error(
-                "Error parsing JSON data from 'initBleData' response:",
-                error
-              );
-              reject(error);
-            }
-          }
-        );
-      } else {
-        console.error("WebViewJavascriptBridge is not initialized.");
-        reject("WebViewJavascriptBridge not initialized");
+      if (!window.WebViewJavascriptBridge) {
+        reject(new Error("WebViewJavascriptBridge not initialized"));
+        return;
       }
+
+      console.log("Initializing BLE data for:", macAddress);
+
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          try {
+            console.log("Raw init response:", responseData);
+            const parsedData = JSON.parse(responseData);
+            console.log("Parsed init response:", parsedData);
+
+            if (!parsedData || !parsedData.dataList) {
+              reject(new Error("Invalid initialization response format"));
+              return;
+            }
+
+            resolve(parsedData);
+          } catch (error) {
+            console.error("Error parsing init response:", error);
+            reject(
+              new Error(
+                `Failed to parse initialization response: ${error.message}`
+              )
+            );
+          }
+        }
+      );
     });
   };
 
-  // Helper function to check if any device is loading
   const isAnyDeviceLoading = () => {
     return Array.from(loadingMap.values()).some((isLoading) => isLoading);
   };
@@ -172,47 +214,51 @@ const BleButtons = () => {
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
       <div className="min-h-screen bg-gray-100 w-full">
+        {error && (
+          <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         <div className="p-2">
           {uniqueDevice.length > 0 ? (
             <ul className="text-left">
-              {uniqueDevice.map((device, index) => (
-                <React.Fragment key={device.macAddress}>
-                  <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-700">
-                        {device.name || "Unknown Device"}
-                      </p>
-                      <p className="text-gray-700">{device.macAddress}</p>
-                      <div className="flex items-left">
-                        {device.rssi > -50 ? (
-                          <Wifi className="text-green-500" />
-                        ) : device.rssi > -70 ? (
-                          <Wifi className="text-yellow-500" />
-                        ) : (
-                          <WifiOff className="text-red-500" />
-                        )}
-                        <span className="text-sm text-gray-500">
-                          {device.rssi}dBm
-                        </span>
-                      </div>
+              {uniqueDevice.map((device) => (
+                <li
+                  key={device.macAddress}
+                  className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-gray-700">
+                      {device.name || "Unknown Device"}
+                    </p>
+                    <p className="text-gray-700">{device.macAddress}</p>
+                    <div className="flex items-left">
+                      {device.rssi > -50 ? (
+                        <Wifi className="text-green-500" />
+                      ) : device.rssi > -70 ? (
+                        <Wifi className="text-yellow-500" />
+                      ) : (
+                        <WifiOff className="text-red-500" />
+                      )}
+                      <span className="text-sm text-gray-500">
+                        {device.rssi}dBm
+                      </span>
                     </div>
-                    <button
-                      onClick={(e) =>
-                        handleConnectAndInit(e, device.macAddress)
-                      }
-                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                        loadingMap.get(device.macAddress)
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : "bg-cyan-700 text-white"
-                      }`}
-                      disabled={loadingMap.get(device.macAddress)}
-                    >
-                      {loadingMap.get(device.macAddress)
-                        ? "Processing..."
-                        : "Connect"}
-                    </button>
-                  </li>
-                </React.Fragment>
+                  </div>
+                  <button
+                    onClick={(e) => handleConnectAndInit(e, device.macAddress)}
+                    className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                      loadingMap.get(device.macAddress)
+                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                        : "bg-cyan-700 text-white"
+                    }`}
+                    disabled={loadingMap.get(device.macAddress)}
+                  >
+                    {loadingMap.get(device.macAddress)
+                      ? "Processing..."
+                      : "Connect"}
+                  </button>
+                </li>
               ))}
             </ul>
           ) : (
