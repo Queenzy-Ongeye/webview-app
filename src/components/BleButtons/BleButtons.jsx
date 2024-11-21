@@ -86,9 +86,9 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    console.log("Navigating with initBleDataResponse:", state.initBleData.dataList);
+    console.log("Navigating with initBleDataResponse:", state.initBleDataResponse.dataList);
   
-    if (!state.initBleData?.dataList || state.initBleData.dataList.length === 0) {
+    if (!state.initBleDataResponse?.dataList || state.initBleDataResponse.dataList.length === 0) {
       alert("No data to navigate with.");
       return;
     }
