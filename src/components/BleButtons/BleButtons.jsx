@@ -56,7 +56,7 @@ const BleButtons = ({
         // Step 4: Navigate to DeviceDataPage with combined data
 
         setTimeout(() => {
-          navigateToPage(response);
+          navigateToPage('/ble-data');
         }, 50000);
         // Clear success states after another delay
         setTimeout(() => {
@@ -85,10 +85,18 @@ const BleButtons = ({
     }
   };
 
-  const navigateToPage = (deviceData) => {
-    // Pass valid data structure to BleDataPage
-    navigate("/ble-data", { state: deviceData });
+  const navigateToPage = (page) => {
+    console.log("Navigating with initBleDataResponse:", initBleDataResponse);
+  
+    if (!initBleDataResponse?.dataList || initBleDataResponse.dataList.length === 0) {
+      alert("No data to navigate with.");
+      return;
+    }
+  
+    // Pass dataList to BleDataPage
+    navigate(page, { state: initBleDataResponse.dataList });
   };
+  
 
   // Helper function to check if any device is loading
   const isAnyDeviceLoading = () => {

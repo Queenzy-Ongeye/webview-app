@@ -255,21 +255,25 @@ const Home = () => {
         macAddress,
         (responseData) => {
           try {
-            const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-            console.log("BLE Init Data:", parsedData);
+            // Parse responseData if it's a string
+            const parsedData = typeof responseData === "string" ? JSON.parse(responseData) : responseData;
+  
+            console.log("Parsed BLE Init Data:", parsedData);
+  
+            if (parsedData?.dataList) {
+              // Dispatch to state
+              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+            } else {
+              console.error("No dataList in parsed data:", parsedData);
+            }
           } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'initBleData' response:",
-              error
-            );
+            console.error("Error parsing init BLE Data:", error);
           }
         }
       );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
+  
 
   return (
     <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
