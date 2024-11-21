@@ -180,7 +180,7 @@ const BleDataPage = () => {
             onClick={() => setActiveCategory(category)}
             className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
               activeCategory === category
-                ? "bg-blue-500 text-white"
+                ? "bg-oves-blue text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
           >
