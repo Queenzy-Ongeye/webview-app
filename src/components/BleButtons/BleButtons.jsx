@@ -69,7 +69,7 @@ const BleButtons = () => {
         // Use a short timeout to ensure state updates have completed
         setTimeout(() => {
           console.log("Navigating to /ble-data with data:", deviceData);
-          navigate("/device-data", {
+          navigate("/ble-data", {
             state: { deviceData },
             replace: true, // Use replace to prevent back navigation issues
           });
@@ -105,9 +105,9 @@ const BleButtons = () => {
       const response = await initBleData(macAddress);
       console.log("BLE initialization response:", response);
 
-      if (!response || !response.dataList) {
-        throw new Error("Invalid or missing data in initialization response");
-      }
+      // if (!response || !response.dataList) {
+      //   throw new Error("Invalid or missing data in initialization response");
+      // }
 
       // Update store with the response
       dispatch({ type: "SET_INIT_BLE_DATA", payload: response });

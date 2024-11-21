@@ -27,7 +27,7 @@ const ScanDataPage = () => {
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
     if (matchFound && state.initBleData) {
-      navigate("/device-data", {
+      navigate("/ble-data", {
         state: { deviceData: state.initBleData.dataList },
       }); // Pass data to new page
     }
