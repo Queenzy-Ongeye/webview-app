@@ -69,7 +69,7 @@ const BleButtons = () => {
         // Use a short timeout to ensure state updates have completed
         setTimeout(() => {
           console.log("Navigating to /ble-data with data:", deviceData);
-          navigate("/ble-data", {
+          navigate("/device-data", {
             state: { deviceData },
             replace: true, // Use replace to prevent back navigation issues
           });
