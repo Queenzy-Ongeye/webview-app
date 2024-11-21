@@ -56,7 +56,9 @@ const BleButtons = ({
         // Step 4: Navigate to DeviceDataPage with combined data
 
         setTimeout(() => {
-          navigateToPage('/ble-data');
+          navigate('/ble-data', response.dataList);
+          console.log("response dats: ", response.dataList);
+          
         }, 50000);
         // Clear success states after another delay
         setTimeout(() => {
