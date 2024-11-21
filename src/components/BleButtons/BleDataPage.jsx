@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom';
 const BleDataPage = () => {
   // Simulating location state with useState for demonstration
   const location = useLocation();
-  const deviceData = location.state.dataList || [];
+  const deviceData = location.state || [];
 
   const [activeCategory, setActiveCategory] = useState("ATT");
 

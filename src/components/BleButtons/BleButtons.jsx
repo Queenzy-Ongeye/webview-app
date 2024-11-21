@@ -97,17 +97,17 @@ const BleButtons = ({
   };
 
   return (
-    <div className="scan-data-page flex flex-col h-screen">
+    <div className="scan-data-page flex flex-col h-screen mt-4">
       <div className="min-h-screen bg-gray-100">
-        <div className="p-4">
+        <div className="p-2">
           {uniqueDevice.map((device, index) => (
             <div
               key={index}
-              className="bg-white rounded-lg shadow-md p-4 mb-4 flex items-left"
+              className="bg-white rounded-sm shadow-sm w-full p-4 mb-4 flex items-left"
             >
               <div className="ml-4 flex-1">
                 <h2 className="text-lg font-semibold">{device.name}</h2>
-                <div className="flex items-left space-x-2">
+                <div className="flex items-left">
                   {device.rssi > -50 ? (
                     <Wifi className="text-green-500" />
                   ) : device.rssi > -70 ? (
@@ -125,7 +125,7 @@ const BleButtons = ({
               <button
                 onClick={(e) => handleConnectAndInit(e, device.macAddress)}
                 disabled={loadingMap.get(device.macAddress)}
-                className="px-4 py-2 border rounded-md ml-4 transition-colors duration-300 bg-oves-blue"
+                className="px-4 py-2 w-full border rounded-md ml-4 transition-colors duration-300 bg-oves-blue"
               >
                 {loadingMap.get(device.macAddress) ? (
                   <>
