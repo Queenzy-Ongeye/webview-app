@@ -99,7 +99,7 @@ const BleButtons = () => {
       console.log("Connection result:", connectionResult);
 
       // Wait for connection to stabilize
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 25000));
 
       console.log("Starting BLE data initialization");
       const response = await initBleData(macAddress);
