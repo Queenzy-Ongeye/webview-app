@@ -96,7 +96,7 @@ const BleButtons = ({
   };
 
   return (
-    <div className="scan-data-page flex flex-col h-screen mt-4">
+    <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
       <div className="min-h-screen bg-gray-100">
         <div className="p-2">
           {uniqueDevice.length > 0 ? (
