@@ -22,6 +22,16 @@ const BleButtons = () => {
     (a, b) => b.rssi - a.rssi
   );
 
+  const navigatePage = () => {
+    if (state.initBleData) {
+      navigate("/ble-data", {
+        state: { deviceData: state.initBleData.dataList },
+      });
+    } else {
+      log("Response data is not found:", !state.initBleData.dataList);
+    }
+  };
+
   useEffect(() => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.registerHandler(
@@ -42,55 +52,6 @@ const BleButtons = () => {
     }
   }, []);
 
-  const connectToBluetoothDevice = (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData.respCode === "200") {
-              initBleData(macAddress);
-            }
-            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
-            console.log("BLE Device Data:", parsedData);
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'connBleByMacAddress' response:",
-              error
-            );
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
-  const initBleData = (macAddress) => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "initBleData",
-        macAddress,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
-            console.log("BLE Init Data:", parsedData);
-          } catch (error) {
-            console.error(
-              "Error parsing JSON data from 'initBleData' response:",
-              error
-            );
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-    }
-  };
-
   // Initiate device pairing process
   const handleConnectAndInit = async (e, macAddress) => {
     e?.preventDefault();
@@ -101,7 +62,6 @@ const BleButtons = () => {
     setConnectingMacAddress(macAddress);
 
     try {
-      console.log("Connecting to Bluetooth device", macAddress);
       await connectToBluetoothDevice(macAddress);
 
       // Add delay and initialize BLE data as in your original code...
@@ -148,18 +108,60 @@ const BleButtons = () => {
     }
   };
 
-  const navigateToPage = (page) => {
-    console.log("Navigating with initBleDataResponse:", state.initBleDataResponse);
-    if (
-      !state.initBleDataResponse?.dataList ||
-      state.initBleDataResponse.dataList.length === 0
-    ) {
-      alert("No data to navigate with.");
-      return;
-    }
+  const connectToBluetoothDevice = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "connBleByMacAddress",
+          macAddress,
+          (responseData) => {
+            try {
+              const parsedData = JSON.parse(responseData);
+              if (parsedData.respCode === "200") {
+                initBleData(macAddress);
+                resolve(true); // Resolve with success
+              } else {
+                reject("Connection failed");
+              }
+            } catch (error) {
+              console.error("Error parsing JSON data:", error);
+              reject(error);
+            }
+          }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+        reject("WebViewJavascriptBridge not initialized");
+      }
+    });
+  };
 
-    // Pass dataList to BleDataPage
-    navigate(page, { state: state.initBleDataResponse.dataList });
+  const initBleData = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "initBleData",
+          macAddress,
+          (responseData) => {
+            try {
+              const parsedData = JSON.parse(responseData);
+              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+              console.log("BLE Init Data:", parsedData);
+              resolve(parsedData); // Resolve the promise with the retrieved data
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'initBleData' response:",
+                error
+              );
+              reject(error);
+            }
+          }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+        reject("WebViewJavascriptBridge not initialized");
+      }
+    });
   };
 
   // Helper function to check if any device is loading
