@@ -59,9 +59,9 @@ const BleButtons = ({
         setInitSuccessMac(macAddress);
         setTimeout(() => {
           navigate("/ble-data", {
-            state: { data: response.dataList },
+            state: { data: response },
           });
-        }, 90000);
+        }, 40000);
         // Step 4: Navigate to DeviceDataPage with combined data
         const combinedData = {
           bleData: response?.dataList,
