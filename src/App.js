@@ -7,7 +7,7 @@ import Layout from "./components/Layout"; // Import Layout Component
 import { UserProvider } from "./components/profile/userContex";
 
 // Lazy load the components
-const Home = lazy(() => import("./components/home/Home"));
+const Home = lazy(() => import("./components/BleButtons/BleButtons"));
 const AttPage = lazy(() => import("./components/DeviceDetails/ATTPage"));
 const StsPage = lazy(() => import("./components/DeviceDetails/STSPage"));
 const CMDPage = lazy(() => import("./components/DeviceDetails/CMDPage"));
@@ -46,7 +46,7 @@ const App = () => {
               <Route path="/" element={<Login />} />
               {/* Use Layout for all routes to ensure NavigationBar is included */}
               <Route
-                path="/home"
+                path="/ble"
                 element={
                   <Layout>
                     <Home />
