@@ -56,7 +56,7 @@ const BleButtons = ({
         // Step 4: Navigate to DeviceDataPage with combined data
 
         setTimeout(() => {
-          navigateToPage("/ble-data");
+          navigateToPage(response);
         }, 50000);
         // Clear success states after another delay
         setTimeout(() => {
@@ -85,13 +85,9 @@ const BleButtons = ({
     }
   };
 
-  const navigateToPage = (page) => {
-    if (!initBleData || !initBleData.dataList) {
-      console.error("No data to navigate with.");
-      return;
-    }
+  const navigateToPage = (deviceData) => {
     // Pass valid data structure to BleDataPage
-    navigate(page, { state: initBleData });
+    navigate("/ble-data", { state: deviceData });
   };
 
   // Helper function to check if any device is loading
@@ -110,10 +106,10 @@ const BleButtons = ({
                   <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
                     <div>
                       <p className="text-gray-700">
-                        Device Name: {device.name || "Unknown Device"}
+                        {device.name || "Unknown Device"}
                       </p>
                       <p className="text-gray-700">
-                        Mac-Address: {device.macAddress}
+                       {device.macAddress}
                       </p>
                       <div className="flex items-left">
                         {device.rssi > -50 ? (
@@ -124,7 +120,7 @@ const BleButtons = ({
                           <WifiOff className="text-red-500" />
                         )}
                         <span className="text-sm text-gray-500">
-                          Signal Strength: {device.rssi}dBm
+                          {device.rssi}dBm
                         </span>
                       </div>
                     </div>
