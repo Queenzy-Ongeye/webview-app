@@ -86,10 +86,14 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    const filteredData = initBleDataResponse?.dataList;
-    // Navigate to the selected page, passing filtered data
-    navigate(page, { state: { data: filteredData } });
+    if (!initBleDataResponse || !initBleDataResponse.dataList) {
+      console.error("No data to navigate with.");
+      return;
+    }
+    // Pass valid data structure to BleDataPage
+    navigate(page, { state: initBleDataResponse.dataList });
   };
+  
 
   // Helper function to check if any device is loading
   const isAnyDeviceLoading = () => {

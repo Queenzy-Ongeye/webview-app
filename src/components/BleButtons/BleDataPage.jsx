@@ -7,6 +7,9 @@ const BleDataPage = () => {
   // Simulating location state with useState for demonstration
   const location = useLocation();
   const deviceData = location.state || [];
+  useEffect(() => {
+    console.log("Received data in BleDataPage:", deviceData);
+  }, [deviceData])
 
   const [activeCategory, setActiveCategory] = useState("ATT");
 
