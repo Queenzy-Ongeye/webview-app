@@ -1,11 +1,9 @@
-"use client";
-
+import React from "react";
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge, ChevronDown, ChevronUp, Info } from "lucide-react";
-import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { cn } from "../reusableCards/utils";
 import {
   Card,
