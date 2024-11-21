@@ -1,166 +1,14 @@
-"use client";
-import React from "react";
-import { useState, useMemo } from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom";
 import { Badge, ChevronDown, ChevronUp, Info } from "lucide-react";
-import { cn } from "../reusableCards/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "../reusableCards/cards";
 
+const BleDataPage = () => {
+  // Simulating location state with useState for demonstration
+  const deviceData = location.state.dataList || [];
 
-// Tooltip components
-const TooltipProvider = TooltipPrimitive.Provider;
-
-const Tooltip = TooltipPrimitive.Root;
-
-const TooltipTrigger = TooltipPrimitive.Trigger;
-
-const TooltipContent = React.forwardRef(
-  ({ className, sideOffset = 4, ...props }, ref) => (
-    <TooltipPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        className
-      )}
-      {...props}
-    />
-  )
-);
-TooltipContent.displayName = TooltipPrimitive.Content.displayName;
-
-// ScrollArea component (simplified for this example)
-const ScrollArea = ({ className, children, ...props }) => (
-  <div className={cn("overflow-auto", className)} {...props}>
-    {children}
-  </div>
-);
-
-// CharacteristicCard component
-const CharacteristicCard = ({ characteristic, uuid }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <Card className="mt-4">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-sm font-semibold text-primary">
-            {characteristic.name || "Unnamed Characteristic"}
-          </CardTitle>
-          <Badge className="font-mono text-xs">{uuid}</Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {characteristic.desc && (
-            <p className="text-sm text-muted-foreground">
-              {characteristic.desc}
-            </p>
-          )}
-          {characteristic.realVal !== undefined && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Value:</span>
-              <code className="px-2 py-1 bg-muted rounded-md text-sm">
-                {characteristic.realVal.toString()}
-              </code>
-            </div>
-          )}
-          {characteristic.properties && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Properties:</span>
-              <span className="text-sm">{characteristic.properties}</span>
-            </div>
-          )}
-          {characteristic.descMap &&
-            Object.keys(characteristic.descMap).length > 0 && (
-              <>
-                <button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="flex items-center text-sm font-medium text-primary hover:underline"
-                >
-                  {isExpanded ? (
-                    <ChevronUp className="mr-1 h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="mr-1 h-4 w-4" />
-                  )}
-                  {isExpanded ? "Hide" : "Show"} Descriptors
-                </button>
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ScrollArea className="h-[100px] w-full rounded-md border p-4">
-                        <div className="space-y-2">
-                          {Object.entries(characteristic.descMap).map(
-                            ([descUuid, descItem]) => (
-                              <div
-                                key={descUuid}
-                                className="flex justify-between items-center"
-                              >
-                                <code className="text-xs font-mono text-muted-foreground">
-                                  {descUuid}
-                                </code>
-                                <span className="text-sm">{descItem.desc}</span>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      </ScrollArea>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </>
-            )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-// ServiceCard component
-const ServiceCard = ({ serviceData }) => (
-  <Card>
-    <CardHeader>
-      <div className="flex justify-between items-start">
-        <CardTitle>{serviceData.serviceNameEnum.replace(/_/g, " ")}</CardTitle>
-        <Badge className="font-mono text-xs">{serviceData.uuid}</Badge>
-      </div>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-4">
-        {Object.entries(serviceData.characterMap).map(
-          ([uuid, characteristic]) => (
-            <CharacteristicCard
-              key={uuid}
-              uuid={uuid}
-              characteristic={characteristic}
-            />
-          )
-        )}
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// Main DeviceDataPage component
-export default function BleDataPage() {
-  const location = useLocation();
-  const { deviceData = [] } = location.state || {};
-  //   const deviceData = location.state || [];
   const [activeCategory, setActiveCategory] = useState("ATT");
+
+  // Categorize data
   const categorizedData = useMemo(() => {
     const categories = {
       ATT: [],
@@ -170,31 +18,144 @@ export default function BleDataPage() {
       STS: [],
     };
 
-    deviceData.forEach((serviceData) => {
-      const category = serviceData.serviceNameEnum.split("_")[0];
-      if (categories[category]) {
-        categories[category].push(serviceData);
-      }
-    });
+    if (Array.isArray(deviceData)) {
+      deviceData.forEach((serviceData) => {
+        if (serviceData && serviceData.serviceNameEnum) {
+          const category = serviceData.serviceNameEnum.split("_")[0];
+          if (categories[category]) {
+            categories[category].push(serviceData);
+          }
+        }
+      });
+    }
 
     return categories;
   }, [deviceData]);
 
+  // Determine available categories
   const availableCategories = Object.keys(categorizedData).filter(
     (category) => categorizedData[category].length > 0
   );
 
-  if (deviceData.length === 0) {
+  // Characteristic Card Component
+  const CharacteristicCard = ({ characteristic, uuid }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    if (!characteristic) return null;
+
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <Card>
-          <CardHeader>
-            <CardTitle>No Data Available</CardTitle>
-            <CardDescription>
-              No device data was found to display.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="bg-white border rounded-lg p-4 mt-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-sm font-semibold text-primary">
+            {characteristic.name || "Unnamed Characteristic"}
+          </h3>
+          <Badge className="text-xs">{uuid}</Badge>
+        </div>
+
+        <div className="space-y-2">
+          {characteristic.desc && (
+            <p className="text-sm text-gray-600">{characteristic.desc}</p>
+          )}
+
+          {characteristic.realVal !== undefined && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Value:</span>
+              <code className="px-2 py-1 bg-gray-100 rounded-md text-sm">
+                {String(characteristic.realVal)}
+              </code>
+            </div>
+          )}
+
+          {characteristic.properties && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Properties:</span>
+              <span className="text-sm">{characteristic.properties}</span>
+            </div>
+          )}
+
+          {characteristic.descMap && Object.keys(characteristic.descMap).length > 0 && (
+            <div>
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center text-sm font-medium text-blue-500 hover:underline"
+              >
+                {isExpanded ? <ChevronUp className="mr-1" /> : <ChevronDown className="mr-1" />}
+                {isExpanded ? "Hide" : "Show"} Descriptors
+              </button>
+
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-auto max-h-32 bg-gray-50 p-2 rounded-md mt-2"
+                  >
+                    {Object.entries(characteristic.descMap).map(
+                      ([descUuid, descItem]) => (
+                        <div 
+                          key={descUuid} 
+                          className="flex justify-between items-center mb-1"
+                        >
+                          <code className="text-xs text-gray-500">{descUuid}</code>
+                          <span className="text-sm">{descItem.desc}</span>
+                        </div>
+                      )
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Service Card Component
+  const ServiceCard = ({ serviceData }) => {
+    if (!serviceData) return null;
+
+    return (
+      <div className="bg-white border rounded-lg shadow-sm p-4">
+        <div className="flex justify-between items-start mb-4">
+          <h2 className="text-lg font-bold">
+            {serviceData.serviceNameEnum 
+              ? serviceData.serviceNameEnum.replace(/_/g, " ") 
+              : "Unnamed Service"}
+          </h2>
+          <Badge className="text-xs">{serviceData.uuid}</Badge>
+        </div>
+
+        <div className="space-y-4">
+          {serviceData.characterMap ? (
+            Object.entries(serviceData.characterMap).map(
+              ([uuid, characteristic]) => (
+                <CharacteristicCard
+                  key={uuid}
+                  uuid={uuid}
+                  characteristic={characteristic}
+                />
+              )
+            )
+          ) : (
+            <p className="text-sm text-gray-500">No characteristics found</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // No data available state
+  if (!deviceData || deviceData.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <h2 className="text-2xl font-bold mb-4">No Data Available</h2>
+          <p className="text-gray-600">
+            Please ensure you've connected to a device and retrieved data.
+          </p>
+        </div>
       </div>
     );
   }
@@ -202,50 +163,43 @@ export default function BleDataPage() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Device Data</h1>
-      <TabsPrimitive.Tabs defaultValue={availableCategories[0]}>
-        <TabsPrimitive.TabsList className="grid w-full grid-cols-5">
-          {availableCategories.map((category) => (
-            <TabsPrimitive.TabsTrigger key={category} value={category}>
-               <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-3 py-1 rounded-md text-sm font-semibold transition-all 
-                ${
-                  activeCategory === category
-                    ? "bg-oves-blue text-white shadow-md"
-                    : "bg-white text-gray-600 border hover:bg-gray-100"
-                }`}
-              >
-                {category}
-              </button>
-            </TabsPrimitive.TabsTrigger>
-          ))}
-        </TabsPrimitive.TabsList>
+
+      {/* Category Tabs */}
+      <div className="flex mb-6 space-x-2">
         {availableCategories.map((category) => (
-          <TabsPrimitive.TabsContent key={category} value={category}>
-            <div className="grid gap-6 mt-6">
-              {categorizedData[category].map((serviceData, index) => (
-                <ServiceCard
-                  key={`${serviceData.uuid}-${index}`}
-                  serviceData={serviceData}
-                />
-              ))}
-            </div>
-          </TabsPrimitive.TabsContent>
+          <button
+            key={category}
+            onClick={() => setActiveCategory(category)}
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+              activeCategory === category
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {category}
+          </button>
         ))}
-      </TabsPrimitive.Tabs>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button className="fixed bottom-4 right-4 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors">
-              <Info className="h-6 w-6" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Device data categories and their characteristics</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      </div>
+
+      {/* Category Content */}
+      <div className="space-y-6">
+        {categorizedData[activeCategory].map((serviceData, index) => (
+          <ServiceCard
+            key={`${serviceData.uuid || 'unknown'}-${index}`}
+            serviceData={serviceData}
+          />
+        ))}
+      </div>
+
+      {/* Info Button */}
+      <button 
+        className="fixed bottom-4 right-4 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
+        onClick={() => alert("Device data categories and their characteristics")}
+      >
+        <Info className="h-6 w-6" />
+      </button>
     </div>
   );
-}
+};
+
+export default BleDataPage;

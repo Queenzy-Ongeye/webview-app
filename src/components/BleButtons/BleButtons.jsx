@@ -1,43 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { useStore } from "../../service/store";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../reusableCards/cards";
-import { Loader2, Wifi, WifiOff } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "../reusableCards/Buttons";
-import { ScrollArea } from "../reusableCards/scroll-area";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Wifi, WifiOff, Loader2 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion, AnimatePresence } from "framer-motion";
 
-const BleButtons = ({
+// Define the prop types for type safety and clarity
+interface BleDevice {
+  name?: string;
+  macAddress: string;
+  rssi: number;
+}
+
+interface BleConnectionProps {
+  detectedDevices: BleDevice[];
+  connectToBluetoothDevice: (macAddress: string) => Promise<void>;
+  initBleData: (macAddress: string) => Promise<{ dataList?: any[] }>;
+  isLoading?: boolean;
+}
+
+const BleDeviceConnection: React.FC<BleConnectionProps> = ({
+  detectedDevices,
   connectToBluetoothDevice,
   initBleData,
-  detectedDevices,
-  initBleDataResponse,
-  isLoading,
+  isLoading = false
 }) => {
-  const { dispatch } = useStore();
-  const navigate = useNavigate();
-  const [connectingMacAddress, setConnectingMacAddress] = useState(null);
-  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null); // Track successful connection per MAC
-  const [initSuccessMac, setInitSuccessMac] = useState(null); // Track successful initialization per MAC
-  const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
+  const [connectingMacAddress, setConnectingMacAddress] = useState<string | null>(null);
+  const [loadingMap, setLoadingMap] = useState<Map<string, boolean>>(new Map());
 
   // Create a Map to ensure uniqueness based on MAC Address
-  const uniqueDevicesMap = new Map();
+  const uniqueDevicesMap = new Map<string, BleDevice>();
   detectedDevices.forEach((device) => {
     uniqueDevicesMap.set(device.macAddress, device);
   });
 
   // Convert the Map to an array and sort by signal strength (RSSI)
-  const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
+  const uniqueDevices = Array.from(uniqueDevicesMap.values()).sort(
     (a, b) => b.rssi - a.rssi
   );
 
-  // Initiate device pairing process
-  const handleConnectAndInit = async (e, macAddress) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-
-    // Update loading state for the specific device
+  const handleConnectAndInit = async (macAddress: string) => {
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
 
@@ -45,46 +47,19 @@ const BleButtons = ({
       console.log("Connecting to Bluetooth device", macAddress);
       await connectToBluetoothDevice(macAddress);
 
-      // Add delay and initialize BLE data as in your original code...
       setTimeout(async () => {
         console.log("Starting BLE data initialization after delay");
-
-        // Step 3: Initialize BLE data after the delay
         const response = await initBleData(macAddress);
-        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
         console.log("Initialized BLE data:", response);
 
-        // Step 4: Set successful states for UI feedback
-        setConnectionSuccessMac(macAddress);
-        setInitSuccessMac(macAddress);
-        setTimeout(() => {
-          navigate("/ble-data", {
-            state: { data: response },
-          });
-        }, 40000);
-        // Step 4: Navigate to DeviceDataPage with combined data
-        const combinedData = {
-          bleData: response?.dataList,
-        };
-
-        // Clear success states after another delay
-        setTimeout(() => {
-          setConnectionSuccessMac(null);
-          setInitSuccessMac(null);
-        }, 10000); // Clear after 10 seconds
-      }, 25000); // 3-second delay before starting BLE initialization
-
-      // Wait and then search for match as in your original code...
+        // You can add navigation or further processing here
+      }, 25000);
     } catch (error) {
-      console.error(
-        "Error during Bluetooth connection or BLE data initialization:",
-        error
-      );
-      alert("Failed to connect and initialize BLE data. Please try again.");
+      console.error("Connection error:", error);
+      alert("Failed to connect. Please try again.");
     } finally {
       setTimeout(() => {
         setConnectingMacAddress(null);
-        // Clear loading state for the specific device
         setLoadingMap((prevMap) => {
           const newMap = new Map(prevMap);
           newMap.set(macAddress, false);
@@ -94,15 +69,11 @@ const BleButtons = ({
     }
   };
 
-  const navigateToPage = (page) => {
-    const filteredData = initBleDataResponse?.dataList;
-    // Navigate to the selected page, passing filtered data
-    navigate(page, { state: { data: filteredData } });
-  };
-
-  // Helper function to check if any device is loading
-  const isAnyDeviceLoading = () => {
-    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
+  // Helper function to get WiFi icon based on signal strength
+  const getWiFiIcon = (rssi: number) => {
+    if (rssi > -50) return <Wifi className="text-green-500" />;
+    if (rssi > -70) return <Wifi className="text-yellow-500" />;
+    return <WifiOff className="text-red-500" />;
   };
 
   return (
@@ -111,9 +82,9 @@ const BleButtons = ({
         <CardHeader>
           <CardTitle>Detected BLE Devices</CardTitle>
           <CardDescription>
-            {uniqueDevice.length > 0
-              ? `${uniqueDevice.length} device${
-                  uniqueDevice.length > 1 ? "s" : ""
+            {uniqueDevices.length > 0
+              ? `${uniqueDevices.length} device${
+                  uniqueDevices.length > 1 ? "s" : ""
                 } found`
               : "No BLE devices detected"}
           </CardDescription>
@@ -121,7 +92,7 @@ const BleButtons = ({
         <CardContent>
           <ScrollArea className="h-[60vh]">
             <AnimatePresence>
-              {uniqueDevice.map((device, index) => (
+              {uniqueDevices.map((device, index) => (
                 <motion.div
                   key={device.macAddress}
                   initial={{ opacity: 0, y: 20 }}
@@ -129,7 +100,7 @@ const BleButtons = ({
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
-                  <Card className="mb-4">
+                  <Card className="mb-2">
                     <CardHeader>
                       <CardTitle className="text-lg">
                         {device.name || "Unknown Device"}
@@ -137,14 +108,8 @@ const BleButtons = ({
                       <CardDescription>{device.macAddress}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center space-x-2">
-                        {device.rssi > -50 ? (
-                          <Wifi className="text-green-500" />
-                        ) : device.rssi > -70 ? (
-                          <Wifi className="text-yellow-500" />
-                        ) : (
-                          <WifiOff className="text-red-500" />
-                        )}
+                      <div className="flex items-left space-x-2">
+                        {getWiFiIcon(device.rssi)}
                         <span className="text-sm text-gray-500">
                           Signal Strength: {device.rssi}dB
                         </span>
@@ -152,10 +117,8 @@ const BleButtons = ({
                     </CardContent>
                     <CardFooter>
                       <Button
-                        onClick={(e) =>
-                          handleConnectAndInit(e, device.macAddress)
-                        }
-                        disabled={loadingMap.get(device.macAddress)}
+                        onClick={() => handleConnectAndInit(device.macAddress)}
+                        disabled={loadingMap.get(device.macAddress) || isLoading}
                         className="w-full"
                       >
                         {loadingMap.get(device.macAddress) ? (
@@ -175,7 +138,8 @@ const BleButtons = ({
           </ScrollArea>
         </CardContent>
       </Card>
-      {isAnyDeviceLoading() && (
+
+      {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
@@ -187,4 +151,4 @@ const BleButtons = ({
   );
 };
 
-export default BleButtons;
+export default BleDeviceConnection;
