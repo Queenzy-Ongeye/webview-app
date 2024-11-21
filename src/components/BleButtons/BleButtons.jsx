@@ -86,7 +86,7 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    if (!initBleDataResponse) {
+    if (!initBleDataResponse || !initBleDataResponse.dataList) {
       console.error("No data to navigate with.");
       return;
     }
@@ -128,20 +128,11 @@ const BleButtons = ({
               <button
                 onClick={(e) => handleConnectAndInit(e, device.macAddress)}
                 className={`px-4 py-2 text-white rounded-md ml-4 transition-colors duration-300 ${
-                  loadingMap.get(device.macAddress)
+                  isLoading
                     ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                     : "bg-cyan-700 text-white"
                 }`}
-                disabled={loadingMap.get(device.macAddress)}
-              >
-                {loadingMap.get(device.macAddress)
-                  ? "Processing..."
-                  : "Connect"}
-              </button>
-              <button
-                onClick={(e) => handleConnectAndInit(e, macAddress)}
                 disabled={isLoading}
-                className="px-3 py-1.5 text-sm font-medium border rounded-md transition-colors duration-300 bg-oves-blue text-white hover:bg-oves-blue/90 focus:outline-none focus:ring-2 focus:ring-oves-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
