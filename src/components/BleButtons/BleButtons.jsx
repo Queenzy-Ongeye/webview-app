@@ -91,9 +91,8 @@ const BleButtons = ({
       return;
     }
     // Pass valid data structure to BleDataPage
-    navigate(page, { state: initBleDataResponse.dataList });
+    navigate(page, { state: initBleDataResponse});
   };
-  
 
   // Helper function to check if any device is loading
   const isAnyDeviceLoading = () => {
@@ -127,15 +126,15 @@ const BleButtons = ({
                 <p className="text-sm text-gray-500">{device.macAddress}</p>
               </div>
               <button
-                onClick={(e) => handleConnectAndInit(e, device.macAddress)}
-                disabled={loadingMap.get(device.macAddress)}
-                className="px-4 py-2 w-full border rounded-md ml-4 transition-colors duration-300 bg-oves-blue"
+                onClick={(e) => handleConnectAndInit(e, macAddress)}
+                disabled={isLoading}
+                className="px-3 py-1.5 text-sm font-medium border rounded-md transition-colors duration-300 bg-oves-blue text-white hover:bg-oves-blue/90 focus:outline-none focus:ring-2 focus:ring-oves-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loadingMap.get(device.macAddress) ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connecting...
-                  </>
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    <span>Connecting...</span>
+                  </div>
                 ) : (
                   "Connect"
                 )}
