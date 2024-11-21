@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { useLocation } from 'react-router-dom';
 
 const BleDataPage = () => {
   // Simulating location state with useState for demonstration
+  const location = useLocation();
   const deviceData = location.state.dataList || [];
 
   const [activeCategory, setActiveCategory] = useState("ATT");

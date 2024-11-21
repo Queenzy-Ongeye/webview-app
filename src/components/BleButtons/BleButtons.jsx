@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../reusableCards/cards";
-import { Loader2, Wifi, WifiOff } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "../reusableCards/Buttons";
-import { ScrollArea } from "../reusableCards/scroll-area";
+import { Loader2, Wifi, WifiOff } from "lucide-react";
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -57,16 +53,11 @@ const BleButtons = ({
         // Step 4: Set successful states for UI feedback
         setConnectionSuccessMac(macAddress);
         setInitSuccessMac(macAddress);
-        setTimeout(() => {
-          navigate("/ble-data", {
-            state: { data: response },
-          });
-        }, 40000);
         // Step 4: Navigate to DeviceDataPage with combined data
-        const combinedData = {
-          bleData: response?.dataList,
-        };
 
+        setTimeout(() => {
+          navigateToPage("/ble-data");
+        }, 40000);
         // Clear success states after another delay
         setTimeout(() => {
           setConnectionSuccessMac(null);
@@ -107,74 +98,48 @@ const BleButtons = ({
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
-      <Card>
-        <CardHeader>
-          <CardTitle>Detected BLE Devices</CardTitle>
-          <CardDescription>
-            {uniqueDevice.length > 0
-              ? `${uniqueDevice.length} device${
-                  uniqueDevice.length > 1 ? "s" : ""
-                } found`
-              : "No BLE devices detected"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[60vh]">
-            <AnimatePresence>
-              {uniqueDevice.map((device, index) => (
-                <motion.div
-                  key={device.macAddress}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <Card className="">
-                    <CardHeader>
-                      <CardTitle className="text-lg">
-                        {device.name || "Unknown Device"}
-                      </CardTitle>
-                      <CardDescription>{device.macAddress}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-left space-x-2">
-                        {device.rssi > -50 ? (
-                          <Wifi className="text-green-500" />
-                        ) : device.rssi > -70 ? (
-                          <Wifi className="text-yellow-500" />
-                        ) : (
-                          <WifiOff className="text-red-500" />
-                        )}
-                        <span className="text-sm text-gray-500">
-                          Signal Strength: {device.rssi}dBm
-                        </span>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        onClick={(e) =>
-                          handleConnectAndInit(e, device.macAddress)
-                        }
-                        disabled={loadingMap.get(device.macAddress)}
-                        className="w-full bg-oves-blue text-white"
-                      >
-                        {loadingMap.get(device.macAddress) ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Connecting...
-                          </>
-                        ) : (
-                          "Connect"
-                        )}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+      <div className="min-h-screen bg-gray-100">
+        <div className="p-4">
+          {uniqueDevice.map((device, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow-md p-4 mb-4 flex items-left"
+            >
+              <div className="ml-4 flex-1">
+                <h2 className="text-lg font-semibold">{device.name}</h2>
+                <div className="flex items-left space-x-2">
+                  {device.rssi > -50 ? (
+                    <Wifi className="text-green-500" />
+                  ) : device.rssi > -70 ? (
+                    <Wifi className="text-yellow-500" />
+                  ) : (
+                    <WifiOff className="text-red-500" />
+                  )}
+                  <span className="text-sm text-gray-500">
+                    Signal Strength: {device.rssi}dBm
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500">{device.energyType}</p>
+                <p className="text-sm text-gray-500">{device.macAddress}</p>
+              </div>
+              <button
+                onClick={(e) => handleConnectAndInit(e, device.macAddress)}
+                disabled={loadingMap.get(device.macAddress)}
+                className="px-4 py-2 border rounded-md ml-4 transition-colors duration-300 bg-oves-blue"
+              >
+                {loadingMap.get(device.macAddress) ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  "Connect"
+                )}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
       {isAnyDeviceLoading() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
