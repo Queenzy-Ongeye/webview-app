@@ -217,6 +217,7 @@ const ScanDataPage = () => {
             try {
               const parsedData = JSON.parse(responseData);
               if (parsedData.respCode === "200") {
+                initBleData(macAddress);
                 resolve(true); // Resolve with success
               } else {
                 reject("Connection failed");
