@@ -6,7 +6,8 @@ import { useLocation } from 'react-router-dom';
 const BleDataPage = () => {
   // Simulating location state with useState for demonstration
   const location = useLocation();
-  const deviceData = location.state || [];
+  const deviceData = location.state || state.initBleData?.dataList || []; // Fallback to global state
+
   useEffect(() => {
     console.log("Received data in BleDataPage:", deviceData);
   }, [deviceData])
