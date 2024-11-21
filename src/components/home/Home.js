@@ -209,6 +209,7 @@ const Home = () => {
   return (
     <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
       <div className="overflow-auto">
+        <BleButtons />
       </div>
     </div>
   );

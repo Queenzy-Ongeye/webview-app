@@ -17,7 +17,7 @@ const LoginPage = () => {
 
         if(email ==="oves.altec@omnivoltaic.com" && password === "Altec1234"){
             setError("");
-            navigate("/ble");
+            navigate("/home");
         }else{
             setError("Invalid email or password");
         };
@@ -26,7 +26,7 @@ const LoginPage = () => {
   return (
     <section class="bg-gray-50 mt-28 m-5">
       <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-oves-cyan dark:text-oves-blue">
+        <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-oves-blue dark:text-oves-blue">
           <img class="h-12 w-30 mr-2 items-center" src='/images/logo-white.png' alt="logo"/>
           Omnivoltaic   
       </a>
@@ -99,10 +99,10 @@ const LoginPage = () => {
                   Forgot password?
                 </a>
               </div>
-              {error && <p className="text-blue-500 text-center">{error}</p>}
+              {error && <p className="text-oves-blue text-center">{error}</p>}
               <button
                 type="submit"
-                class="w-full text-white bg-oves-blue hover:bg-oves-cyan hover:text-oves-cyan focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-oves-blue dark:hover:bg-oves-blue dark:focus:ring-primary-800"
+                class="w-full text-white bg-oves-blue hover:bg-oves-blue hover:text-oves-blue focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-oves-blue dark:hover:bg-oves-blue dark:focus:ring-primary-800"
               >
                 Login
               </button>
