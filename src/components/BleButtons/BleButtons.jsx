@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { FaCheckCircle } from "react-icons/fa"; // Success Icon
-import { connectMqtt } from "../../service/javascriptBridge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../reusableCards/cards";
+import { Loader2, Wifi, WifiOff } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Button } from "../reusableCards/Buttons";
+import { ScrollArea } from "../reusableCards/scroll-area";
 
 const BleButtons = ({
   connectToBluetoothDevice,
@@ -69,8 +71,10 @@ const BleButtons = ({
       }, 25000); // 3-second delay before starting BLE initialization
 
       setTimeout(() => {
-        navigate("/ble-data", { state: { data: initBleDataResponse?.dataList } });
-      }, 90000)
+        navigate("/ble-data", {
+          state: { data: initBleDataResponse?.dataList },
+        });
+      }, 90000);
 
       // Wait and then search for match as in your original code...
     } catch (error) {
@@ -93,7 +97,7 @@ const BleButtons = ({
   };
 
   const navigateToPage = (page) => {
-    const filteredData = initBleDataResponse?.dataList
+    const filteredData = initBleDataResponse?.dataList;
     // Navigate to the selected page, passing filtered data
     navigate(page, { state: { data: filteredData } });
   };
@@ -104,51 +108,81 @@ const BleButtons = ({
   };
 
   return (
-    <div className="flex flex-col items-center w-full overflow-hidden">
-      <div className="mt w-full max-w-full mx-auto p-4 bg-gray-50 rounded-lg shadow-lg">
-        <h3 className="text-lg font-semibold text-left">
-          Detected BLE Devices:
-        </h3>
-        {uniqueDevice.length > 0 ? (
-          <ul className="text-left">
-            {uniqueDevice.map((device, index) => (
-              <React.Fragment key={device.macAddress}>
-                <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-700">
-                      Device Name: {device.name || "Unknown Device"}
-                    </p>
-                    <p className="text-gray-700">
-                      Mac-Address: {device.macAddress}
-                    </p>
-                    <p className="text-gray-700">
-                      Signal Strength: {device.rssi}db
-                    </p>
-                  </div>
-                  <button
-                    onClick={(e) => handleConnectAndInit(e, device.macAddress)}
-                    className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                      loadingMap.get(device.macAddress)
-                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                        : "bg-cyan-700 text-white"
-                    }`}
-                    disabled={loadingMap.get(device.macAddress)}
-                  >
-                    {loadingMap.get(device.macAddress)
-                      ? "Processing..."
-                      : "Connect"}
-                  </button>
-                </li>
-              </React.Fragment>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500">No BLE devices detected.</p>
-        )}
-      </div>
+    <div className="container mx-auto p-4 space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Detected BLE Devices</CardTitle>
+          <CardDescription>
+            {uniqueDevice.length > 0
+              ? `${uniqueDevice.length} device${
+                  uniqueDevice.length > 1 ? "s" : ""
+                } found`
+              : "No BLE devices detected"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[60vh]">
+            <AnimatePresence>
+              {uniqueDevice.map((device, index) => (
+                <motion.div
+                  key={device.macAddress}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <Card className="mb-4">
+                    <CardHeader>
+                      <CardTitle className="text-lg">
+                        {device.name || "Unknown Device"}
+                      </CardTitle>
+                      <CardDescription>{device.macAddress}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center space-x-2">
+                        {device.rssi > -50 ? (
+                          <Wifi className="text-green-500" />
+                        ) : device.rssi > -70 ? (
+                          <Wifi className="text-yellow-500" />
+                        ) : (
+                          <WifiOff className="text-red-500" />
+                        )}
+                        <span className="text-sm text-gray-500">
+                          Signal Strength: {device.rssi}dB
+                        </span>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        onClick={(e) =>
+                          handleConnectAndInit(e, device.macAddress)
+                        }
+                        disabled={loadingMap.get(device.macAddress)}
+                        className="w-full"
+                      >
+                        {loadingMap.get(device.macAddress) ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Connecting...
+                          </>
+                        ) : (
+                          "Connect"
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </ScrollArea>
+        </CardContent>
+      </Card>
       {isAnyDeviceLoading() && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+            <p className="text-gray-700">Connecting to device...</p>
+          </div>
         </div>
       )}
     </div>
