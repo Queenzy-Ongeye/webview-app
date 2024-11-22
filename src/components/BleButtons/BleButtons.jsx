@@ -97,6 +97,33 @@ const BleButtons = () => {
     });
   };
 
+  const initBleData = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (!window.WebViewJavascriptBridge) {
+        reject(new Error("WebViewJavascriptBridge not initialized"));
+        return;
+      }
+
+      console.log("Initializing BLE data for:", macAddress);
+
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          try {
+            console.log("Raw init response:", responseData);
+            const parsedData = JSON.parse(responseData);
+            console.log("Parsed init response:", parsedData);
+            resolve(parsedData);
+          } catch (error) {
+            console.error("Error parsing init response:", error);
+            reject(new Error(`Failed to parse initialization response: ${error.message}`));
+          }
+        }
+      );
+    });
+  };
+
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
       <div className="min-h-screen bg-gray-100 w-full">
