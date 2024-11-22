@@ -1,5 +1,5 @@
 import React from "react";
-import NavigationBar from "./NavBar";
+import { NavigationBar } from "./NavBar";
 import BottomNav from "./BleButtons/BottomNav";
 
 const Layout = ({ children }) => {
