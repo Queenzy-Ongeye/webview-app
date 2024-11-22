@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../../service/store";
-import { Loader2, Send, Info } from "lucide-react";
+import { Loader2, Send, Info } from 'lucide-react';
 import { toast } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
 import {
@@ -23,59 +23,25 @@ import {
 const BleDataPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { dispatch, state } = useStore();
-  const [loading, setLoading] = useState(location.state?.loading || false);
+  const { state } = useStore();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("STS");
 
   useEffect(() => {
-    const initializeData = async () => {
-      if (location.state?.loading && location.state?.macAddress) {
-        try {
-          const response = await initBleData(location.state.macAddress);
-          dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
-          setLoading(false);
-        } catch (error) {
-          console.error("Initialization error:", error);
-          setError("Failed to initialize BLE data. Please try again.");
-          setLoading(false);
-        }
-      }
-    };
+    if (!location.state?.macAddress) {
+      setError("No MAC address provided. Please go back and select a device.");
+      return;
+    }
 
-    initializeData();
-  }, [location.state, dispatch]);
+    if (!state.initBleData) {
+      setError("BLE data not initialized. Please go back and reconnect to the device.");
+      return;
+    }
 
-  const initBleData = (macAddress) => {
-    return new Promise((resolve, reject) => {
-      if (!window.WebViewJavascriptBridge) {
-        reject(new Error("WebViewJavascriptBridge not initialized"));
-        return;
-      }
-
-      console.log("Initializing BLE data for:", macAddress);
-
-      window.WebViewJavascriptBridge.callHandler(
-        "initBleData",
-        macAddress,
-        (responseData) => {
-          try {
-            console.log("Raw init response:", responseData);
-            const parsedData = JSON.parse(responseData);
-            console.log("Parsed init response:", parsedData);
-            resolve(parsedData);
-          } catch (error) {
-            console.error("Error parsing init response:", error);
-            reject(
-              new Error(
-                `Failed to parse initialization response: ${error.message}`
-              )
-            );
-          }
-        }
-      );
-    });
-  };
+    console.log("BleDataPage initialized with macAddress:", location.state.macAddress);
+    console.log("Initial BLE data:", state.initBleData);
+  }, [location.state, state.initBleData]);
 
   const categorizedData = useMemo(() => {
     const categories = {
@@ -192,7 +158,7 @@ const BleDataPage = () => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
           <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-          <p className="text-gray-700">Initializing BLE data...</p>
+          <p className="text-gray-700">Processing...</p>
         </div>
       </div>
     );
