@@ -233,7 +233,7 @@ const BleDataPage = () => {
 
       {/* Publish Button */}
       <button
-        className={`py-3 px-6 mb-4 font-semibold rounded-lg shadow-md transition duration-300 flex items-center space-x-2 ${
+        className={`py-2 px-6 mb-4 font-semibold rounded-lg shadow-md transition duration-300 flex items-center space-x-2 ${
           loading
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-oves-blue hover:bg-blue-700"
