@@ -15,6 +15,7 @@ const initialState = {
   matchingDevice: null, // Holds the BLE device that matches the scanned QR or barcode
   initBleDataResponse: null, // State for BLE initialization response
   bleConnectionStatus: "disconnected", // New state for BLE connection status
+  connectedMacAddress: null,
 };
 
 // Reducer function that handles actions and updates the state accordingly
@@ -49,6 +50,8 @@ const reducer = (state, action) => {
       return { ...state, initBleDataResponse: action.payload };
     case "SET_BLE_CONNECTION_STATUS":
       return { ...state, bleConnectionStatus: action.payload }; // Action for setting BLE connection status
+    case "SET_CONNECTED_MAC_ADDRESS":
+      return {...state, connectedMacAddress: action.payload};
     default:
       return state;
   }
