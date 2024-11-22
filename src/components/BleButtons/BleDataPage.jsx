@@ -103,7 +103,7 @@ const BleDataPage = () => {
   const DescriptorsDialog = ({ descriptors }) => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="text-white">
+        <Button variant="outline" size="sm" className="text-oves-blue">
           Show Descriptors
         </Button>
       </DialogTrigger>
@@ -117,8 +117,8 @@ const BleDataPage = () => {
               key={descUuid}
               className="flex justify-between items-center mb-2 text-white"
             >
-              <code className="text-xs text-gray-500">{descUuid}</code>
-              <span className="text-sm">{descItem.desc}</span>
+              <code className="text-xs text-white">{descUuid}</code>
+              <span className="text-sm text-white">{descItem.desc}</span>
             </div>
           ))}
         </div>
@@ -182,17 +182,17 @@ const BleDataPage = () => {
           {categorizedData[activeCategory].map((serviceData) =>
             Object.entries(serviceData.characterMap || {}).map(
               ([charUuid, characteristic]) => (
-                <TableRow key={`${serviceData.uuid}-${charUuid}`} className="text-sm">
-                  <TableCell className="py-2">
+                <TableRow key={`${serviceData.uuid}-${charUuid}`} className="text-sm text-white">
+                  <TableCell className="py-2 text-white">
                     {serviceData.serviceNameEnum?.replace(/_/g, " ") ||
                       "Unnamed Service"}
                   </TableCell>
-                  <TableCell className="py-2">
+                  <TableCell className="py-2 text-white">
                     {characteristic.name || "Unnamed Characteristic"}
                   </TableCell>
-                  <TableCell className="py-2">{String(characteristic.realVal)}</TableCell>
-                  <TableCell className="py-2">{characteristic.properties}</TableCell>
-                  <TableCell className="py-2">
+                  <TableCell className="py-2 text-white">{String(characteristic.realVal)}</TableCell>
+                  <TableCell className="py-2 text-white">{characteristic.properties}</TableCell>
+                  <TableCell className="py-2 text-white">
                     {characteristic.descMap &&
                       Object.keys(characteristic.descMap).length > 0 && (
                         <DescriptorsDialog
