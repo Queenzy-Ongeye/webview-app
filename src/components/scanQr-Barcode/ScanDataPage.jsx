@@ -5,6 +5,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Notification from "../notification/Notification";
 import PopupNotification from "../notification/PopUp";
 import { useNavigate } from "react-router-dom";
+import { Loader2, Wifi, WifiOff } from "lucide-react";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -366,37 +367,43 @@ const ScanDataPage = () => {
           </h3>
           {uniqueDevice.length > 0 ? (
             <ul className="text-left">
-              {uniqueDevice.map((device, index) => (
-                <React.Fragment key={device.macAddress}>
-                  <li className="mt-2 p-2 border rounded-md shadow flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-700">
-                        Device Name: {device.name || "Unknown Device"}
-                      </p>
-                      <p className="text-gray-700">
-                        Mac-Address: {device.macAddress}
-                      </p>
-                      <p className="text-gray-700">
-                        Signal Strength: {device.rssi}db
-                      </p>
+              {uniqueDevice.map((device) => (
+                <li
+                  key={device.macAddress}
+                  className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-gray-700">
+                      {device.name || "Unknown Device"}
+                    </p>
+                    <p className="text-gray-700">{device.macAddress}</p>
+                    <div className="flex items-left">
+                      {device.rssi > -50 ? (
+                        <Wifi className="text-green-500" />
+                      ) : device.rssi > -70 ? (
+                        <Wifi className="text-yellow-500" />
+                      ) : (
+                        <WifiOff className="text-red-500" />
+                      )}
+                      <span className="text-sm text-gray-500">
+                        {device.rssi}dBm
+                      </span>
                     </div>
-                    <button
-                      onClick={(e) =>
-                        handleConnectAndInit(e, device.macAddress)
-                      }
-                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                        loadingMap.get(device.macAddress)
-                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : "bg-cyan-700 text-white"
-                      }`}
-                      disabled={loadingMap.get(device.macAddress)}
-                    >
-                      {loadingMap.get(device.macAddress)
-                        ? "Processing..."
-                        : "Connect"}
-                    </button>
-                  </li>
-                </React.Fragment>
+                  </div>
+                  <button
+                    onClick={(e) => handleConnectAndInit(e, device.macAddress)}
+                    className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                      loadingMap.get(device.macAddress)
+                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                        : "bg-cyan-700 text-white"
+                    }`}
+                    disabled={loadingMap.get(device.macAddress)}
+                  >
+                    {loadingMap.get(device.macAddress)
+                      ? "Processing..."
+                      : "Connect"}
+                  </button>
+                </li>
               ))}
             </ul>
           ) : (
