@@ -1,14 +1,26 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Badge, Info, Send } from 'lucide-react';
+import { Badge, Info, Send } from "lucide-react";
 import { useStore } from "../../service/store";
 import { toast, Bounce } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../reusableCards/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../reusableCards/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../reusableCards/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../reusableCards/dialog";
 import { RadioGroup, RadioGroupItem } from "../reusableCards/radioButton";
 import { Label } from "../reusableCards/lable";
-
 
 const BleDataPage = () => {
   const { state } = useStore();
@@ -105,7 +117,10 @@ const BleDataPage = () => {
         </DialogHeader>
         <div className="mt-4">
           {Object.entries(descriptors).map(([descUuid, descItem]) => (
-            <div key={descUuid} className="flex justify-between items-center mb-2">
+            <div
+              key={descUuid}
+              className="flex justify-between items-center mb-2"
+            >
               <code className="text-xs text-gray-500">{descUuid}</code>
               <span className="text-sm">{descItem.desc}</span>
             </div>
@@ -171,27 +186,48 @@ const BleDataPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {categorizedData[activeCategory].map((serviceData) => (
-            Object.entries(serviceData.characterMap || {}).map(([charUuid, characteristic]) => (
-              <TableRow key={`${serviceData.uuid}-${charUuid}`}>
-                <TableCell>{serviceData.serviceNameEnum?.replace(/_/g, " ") || "Unnamed Service"}</TableCell>
-                <TableCell><Badge variant="outline">{serviceData.uuid}</Badge></TableCell>
-                <TableCell>{characteristic.name || "Unnamed Characteristic"}</TableCell>
-                <TableCell><Badge variant="outline">{charUuid}</Badge></TableCell>
-                <TableCell>{String(characteristic.realVal)}</TableCell>
-                <TableCell>{characteristic.properties}</TableCell>
-                <TableCell>
-                  {characteristic.descMap && Object.keys(characteristic.descMap).length > 0 && (
-                    <DialogTrigger>
-                      <Button variant="outline" className="bg-oves-blue text-white" size="sm" onClick={() => setSelectedDescriptors(characteristic.descMap)}>
-                        Show Descriptors
-                      </Button>
-                    </DialogTrigger>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          ))}
+          {categorizedData[activeCategory].map((serviceData) =>
+            Object.entries(serviceData.characterMap || {}).map(
+              ([charUuid, characteristic]) => (
+                <TableRow key={`${serviceData.uuid}-${charUuid}`}>
+                  <TableCell>
+                    {serviceData.serviceNameEnum?.replace(/_/g, " ") ||
+                      "Unnamed Service"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{serviceData.uuid}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {characteristic.name || "Unnamed Characteristic"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{charUuid}</Badge>
+                  </TableCell>
+                  <TableCell>{String(characteristic.realVal)}</TableCell>
+                  <TableCell>{characteristic.properties}</TableCell>
+                  <TableCell>
+                    {characteristic.descMap &&
+                      Object.keys(characteristic.descMap).length > 0 && (
+                        <Dialog open={isOpen} onOpenChange={onClose}>
+                          <DialogTrigger>
+                            <Button
+                              variant="outline"
+                              className="bg-oves-blue text-white"
+                              size="sm"
+                              onClick={() =>
+                                setSelectedDescriptors(characteristic.descMap)
+                              }
+                            >
+                              Show Descriptors
+                            </Button>
+                          </DialogTrigger>
+                        </Dialog>
+                      )}
+                  </TableCell>
+                </TableRow>
+              )
+            )
+          )}
         </TableBody>
       </Table>
 
@@ -207,7 +243,9 @@ const BleDataPage = () => {
         variant="outline"
         size="icon"
         className="fixed bottom-4 right-4 rounded-full bg-oves-blue"
-        onClick={() => alert("Device data categories and their characteristics")}
+        onClick={() =>
+          alert("Device data categories and their characteristics")
+        }
       >
         <Info className="h-4 w-4" />
       </Button>
@@ -216,4 +254,3 @@ const BleDataPage = () => {
 };
 
 export default BleDataPage;
-
