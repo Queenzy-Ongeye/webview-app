@@ -182,9 +182,9 @@ const BleDataPage = () => {
         <TableHeader>
           <TableRow>
             <TableHead>Service Name</TableHead>
-            <TableHead>UUID</TableHead>
+            {/* <TableHead>UUID</TableHead> */}
             <TableHead>Characteristic Name</TableHead>
-            <TableHead>Characteristic UUID</TableHead>
+            {/* <TableHead>Characteristic UUID</TableHead> */}
             <TableHead>Value</TableHead>
             <TableHead>Properties</TableHead>
             <TableHead>Descriptors</TableHead>
@@ -200,13 +200,13 @@ const BleDataPage = () => {
                       "Unnamed Service"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{serviceData.uuid}</Badge>
+                    {/* <Badge variant="outline">{serviceData.uuid}</Badge> */}
                   </TableCell>
                   <TableCell>
                     {characteristic.name || "Unnamed Characteristic"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">{charUuid}</Badge>
+                    {/* <Badge variant="outline">{charUuid}</Badge> */}
                   </TableCell>
                   <TableCell>{String(characteristic.realVal)}</TableCell>
                   <TableCell>{characteristic.properties}</TableCell>
