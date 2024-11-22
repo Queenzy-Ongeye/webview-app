@@ -48,48 +48,50 @@ const BleDataPage = () => {
 
   const publishMqttMessage = async (category) => {
     setLoading(true);
-    try {
-      const topicMap = {
-        ATT: "emit/content/bleData/att",
-        DTA: "emit/content/bleData/dta",
-        DIA: "emit/content/bleData/dia",
-        CMD: "emit/content/bleData/cmd",
-        STS: "emit/content/bleData/sts",
-      };
+    if (window.WebViewJavascriptBridge) {
+      try {
+        const topicMap = {
+          ATT: "emit/content/bleData/att",
+          DTA: "emit/content/bleData/dta",
+          DIA: "emit/content/bleData/dia",
+          CMD: "emit/content/bleData/cmd",
+          STS: "emit/content/bleData/sts",
+        };
 
-      const topic = topicMap[category];
-      const dataToPublish = {
-        category,
-        data: categorizedData[category],
-      };
+        const topic = topicMap[category];
+        const dataToPublish = {
+          category,
+          data: categorizedData[category],
+        };
+        // Add your MQTT publish logic here
+        window.WebViewJavascriptBridge.callHandler(
+          "mqttPublishMsg",
+          dataToPublish,
+          (responseData) => {
+            setLoading(false);
+            toast.success("Message published successfully", {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              transition: Bounce,
+            });
+          }
+        );
+        console.log(`Publishing to ${topic}:`, dataToPublish);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast.success("Message published successfully", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } catch (error) {
-      console.error("Error publishing message:", error);
-      toast.error("Failed to publish message. Please try again.", {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } finally {
-      setLoading(false);
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      } catch (error) {
+        console.error("Error publishing message:", error);
+        alert("Failed to publish message. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
