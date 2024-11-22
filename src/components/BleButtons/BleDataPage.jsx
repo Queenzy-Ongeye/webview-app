@@ -208,7 +208,7 @@ const BleDataPage = () => {
                   <TableCell>
                     {characteristic.descMap &&
                       Object.keys(characteristic.descMap).length > 0 && (
-                        <Dialog open={isOpen} onOpenChange={onClose}>
+                        <Dialog>
                           <DialogTrigger>
                             <Button
                               variant="outline"
