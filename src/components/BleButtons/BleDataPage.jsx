@@ -181,7 +181,7 @@ const BleDataPage = () => {
                 <TableCell>{characteristic.properties}</TableCell>
                 <TableCell>
                   {characteristic.descMap && Object.keys(characteristic.descMap).length > 0 && (
-                    <DialogTrigger asChild>
+                    <DialogTrigger>
                       <Button variant="outline" className="bg-oves-blue text-white" size="sm" onClick={() => setSelectedDescriptors(characteristic.descMap)}>
                         Show Descriptors
                       </Button>
