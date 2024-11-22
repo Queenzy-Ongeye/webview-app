@@ -419,8 +419,11 @@ const ScanDataPage = () => {
         </button>
       </div>
       {isAnyDeviceLoading() && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+            <p className="text-gray-700">Connecting to device...</p>
+          </div>
         </div>
       )}
       {isPopupVisible && (
