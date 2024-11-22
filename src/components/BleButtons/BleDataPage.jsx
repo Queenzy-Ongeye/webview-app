@@ -26,7 +26,7 @@ const BleDataPage = () => {
   const { state } = useStore();
   const deviceData = state?.initBleData?.dataList || [];
 
-  const [activeCategory, setActiveCategory] = useState("ATT");
+  const [activeCategory, setActiveCategory] = useState("STS");
   const [loading, setLoading] = useState(false);
   const [selectedDescriptors, setSelectedDescriptors] = useState(null);
 
