@@ -33,7 +33,7 @@ export default function LoginPage() {
 
     if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
       setError("");
-      router.push("/home");
+      router("/home");
     } else {
       setError("Invalid email or password");
     }
@@ -62,7 +62,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -112,7 +112,7 @@ export default function LoginPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button type="submit" className="w-full bg-oves-blue text-white" onClick={handleLogin}>
+            <Button type="submit" className="w-full bg-oves-blue text-white">
               Login
             </Button>
           </form>
