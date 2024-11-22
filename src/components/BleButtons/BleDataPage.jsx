@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge, Info, Send } from "lucide-react";
+import { Badge, Info, Send } from 'lucide-react';
 import { useStore } from "../../service/store";
 import { toast, Bounce } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
@@ -19,8 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../reusableCards/dialog";
-import { RadioGroup, RadioGroupItem } from "../reusableCards/radioButton";
-import { Label } from "../reusableCards/lable";
 
 const BleDataPage = () => {
   const { state } = useStore();
@@ -28,16 +25,14 @@ const BleDataPage = () => {
 
   const [activeCategory, setActiveCategory] = useState("STS");
   const [loading, setLoading] = useState(false);
-  const [selectedDescriptors, setSelectedDescriptors] = useState(null);
 
-  // Categorize data
   const categorizedData = useMemo(() => {
     const categories = {
+      STS: [],
       ATT: [],
       DTA: [],
       DIA: [],
       CMD: [],
-      STS: [],
     };
 
     if (Array.isArray(deviceData)) {
@@ -54,7 +49,6 @@ const BleDataPage = () => {
     return categories;
   }, [deviceData]);
 
-  // Determine available categories
   const availableCategories = Object.keys(categorizedData).filter(
     (category) => categorizedData[category].length > 0
   );
@@ -76,7 +70,6 @@ const BleDataPage = () => {
           category,
           data: categorizedData[category],
         };
-        // Add your MQTT publish logic here
         window.WebViewJavascriptBridge.callHandler(
           "mqttPublishMsg",
           dataToPublish,
@@ -97,7 +90,6 @@ const BleDataPage = () => {
         );
         console.log(`Publishing to ${topic}:`, dataToPublish);
 
-        // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (error) {
         console.error("Error publishing message:", error);
@@ -108,11 +100,10 @@ const BleDataPage = () => {
     }
   };
 
-  // Descriptors Dialog Component
-  const DescriptorsDialog = ({ descriptors, isOpen, onClose }) => (
+  const DescriptorsDialog = ({ descriptors }) => (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="text-white">
           Show Descriptors
         </Button>
       </DialogTrigger>
@@ -124,7 +115,7 @@ const BleDataPage = () => {
           {Object.entries(descriptors).map(([descUuid, descItem]) => (
             <div
               key={descUuid}
-              className="flex justify-between items-center mb-2"
+              className="flex justify-between items-center mb-2 text-white"
             >
               <code className="text-xs text-gray-500">{descUuid}</code>
               <span className="text-sm">{descItem.desc}</span>
@@ -135,7 +126,6 @@ const BleDataPage = () => {
     </Dialog>
   );
 
-  // No data available state
   if (!deviceData || deviceData.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -153,38 +143,36 @@ const BleDataPage = () => {
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Device Data</h1>
 
-      {/* Publish Button */}
       <Button
         onClick={() => publishMqttMessage(activeCategory)}
         disabled={loading}
-        className="mb-4 bg-oves-blue"
+        className="mb-4 bg-oves-blue text-white"
       >
         <Send className="mr-2 h-4 w-4" />
         {loading ? "Publishing..." : `Publish ${activeCategory} Data`}
       </Button>
 
-      {/* Category Selection with Radio Buttons */}
-      <RadioGroup
-        value={activeCategory}
-        onValueChange={setActiveCategory}
-        className="flex mb-6 space-x-4"
-      >
+      <div className="flex mb-6 space-x-2">
         {availableCategories.map((category) => (
-          <div key={category} className="flex items-center space-x-2">
-            <RadioGroupItem value={category} id={category} />
-            <Label htmlFor={category}>{category}</Label>
-          </div>
+          <button
+            key={category}
+            onClick={() => setActiveCategory(category)}
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+              activeCategory === category
+                ? "bg-oves-blue text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {category}
+          </button>
         ))}
-      </RadioGroup>
+      </div>
 
-      {/* Category Content */}
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Service Name</TableHead>
-            {/* <TableHead>UUID</TableHead> */}
             <TableHead>Characteristic Name</TableHead>
-            {/* <TableHead>Characteristic UUID</TableHead> */}
             <TableHead>Value</TableHead>
             <TableHead>Properties</TableHead>
             <TableHead>Descriptors</TableHead>
@@ -194,23 +182,17 @@ const BleDataPage = () => {
           {categorizedData[activeCategory].map((serviceData) =>
             Object.entries(serviceData.characterMap || {}).map(
               ([charUuid, characteristic]) => (
-                <TableRow key={`${serviceData.uuid}-${charUuid}`}>
-                  <TableCell>
+                <TableRow key={`${serviceData.uuid}-${charUuid}`} className="text-sm">
+                  <TableCell className="py-2">
                     {serviceData.serviceNameEnum?.replace(/_/g, " ") ||
                       "Unnamed Service"}
                   </TableCell>
-                  <TableCell>
-                    {/* <Badge variant="outline">{serviceData.uuid}</Badge> */}
-                  </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2">
                     {characteristic.name || "Unnamed Characteristic"}
                   </TableCell>
-                  <TableCell>
-                    {/* <Badge variant="outline">{charUuid}</Badge> */}
-                  </TableCell>
-                  <TableCell>{String(characteristic.realVal)}</TableCell>
-                  <TableCell>{characteristic.properties}</TableCell>
-                  <TableCell>
+                  <TableCell className="py-2">{String(characteristic.realVal)}</TableCell>
+                  <TableCell className="py-2">{characteristic.properties}</TableCell>
+                  <TableCell className="py-2">
                     {characteristic.descMap &&
                       Object.keys(characteristic.descMap).length > 0 && (
                         <DescriptorsDialog
@@ -225,7 +207,6 @@ const BleDataPage = () => {
         </TableBody>
       </Table>
 
-      {/* Info Button */}
       <Button
         variant="outline"
         size="icon"
@@ -241,3 +222,4 @@ const BleDataPage = () => {
 };
 
 export default BleDataPage;
+
