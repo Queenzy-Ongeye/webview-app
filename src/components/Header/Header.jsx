@@ -3,8 +3,8 @@ import { BsQrCodeScan } from "react-icons/bs";
 import { FaBluetooth } from "react-icons/fa";
 import { IoMdBarcode } from "react-icons/io";
 import { Link } from "react-router-dom";
+import NavigationBar from "../NavBar";
 import BottomNav from "../BleButtons/BottomNav";
-import { NavigationBar } from "../NavBar";
 
 const Header = () => {
   return (
