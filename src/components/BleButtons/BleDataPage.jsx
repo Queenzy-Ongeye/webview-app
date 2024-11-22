@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
-import { Badge, Info, Send } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "../../service/store";
-import { toast, Bounce } from "react-toastify";
+import { Loader2, Send, Info } from 'lucide-react';
+import { toast } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
 import {
   Table,
@@ -20,11 +21,57 @@ import {
 } from "../reusableCards/dialog";
 
 const BleDataPage = () => {
-  const { state } = useStore();
-  const deviceData = state?.initBleData?.dataList || [];
-
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { dispatch, state } = useStore();
+  const [loading, setLoading] = useState(location.state?.loading || false);
+  const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("STS");
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      if (location.state?.loading && location.state?.macAddress) {
+        try {
+          const response = await initBleData(location.state.macAddress);
+          dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
+          setLoading(false);
+        } catch (error) {
+          console.error("Initialization error:", error);
+          setError("Failed to initialize BLE data. Please try again.");
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeData();
+  }, [location.state, dispatch]);
+
+  const initBleData = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (!window.WebViewJavascriptBridge) {
+        reject(new Error("WebViewJavascriptBridge not initialized"));
+        return;
+      }
+
+      console.log("Initializing BLE data for:", macAddress);
+
+      window.WebViewJavascriptBridge.callHandler(
+        "initBleData",
+        macAddress,
+        (responseData) => {
+          try {
+            console.log("Raw init response:", responseData);
+            const parsedData = JSON.parse(responseData);
+            console.log("Parsed init response:", parsedData);
+            resolve(parsedData);
+          } catch (error) {
+            console.error("Error parsing init response:", error);
+            reject(new Error(`Failed to parse initialization response: ${error.message}`));
+          }
+        }
+      );
+    });
+  };
 
   const categorizedData = useMemo(() => {
     const categories = {
@@ -35,8 +82,8 @@ const BleDataPage = () => {
       CMD: [],
     };
 
-    if (Array.isArray(deviceData)) {
-      deviceData.forEach((serviceData) => {
+    if (state.initBleData && Array.isArray(state.initBleData.dataList)) {
+      state.initBleData.dataList.forEach((serviceData) => {
         if (serviceData && serviceData.serviceNameEnum) {
           const category = serviceData.serviceNameEnum.split("_")[0];
           if (categories[category]) {
@@ -47,7 +94,7 @@ const BleDataPage = () => {
     }
 
     return categories;
-  }, [deviceData]);
+  }, [state.initBleData]);
 
   const availableCategories = Object.keys(categorizedData).filter(
     (category) => categorizedData[category].length > 0
@@ -55,25 +102,26 @@ const BleDataPage = () => {
 
   const publishMqttMessage = async (category) => {
     setLoading(true);
-    if (window.WebViewJavascriptBridge) {
-      try {
-        const topicMap = {
-          ATT: "emit/content/bleData/att",
-          DTA: "emit/content/bleData/dta",
-          DIA: "emit/content/bleData/dia",
-          CMD: "emit/content/bleData/cmd",
-          STS: "emit/content/bleData/sts",
-        };
+    try {
+      const topicMap = {
+        ATT: "emit/content/bleData/att",
+        DTA: "emit/content/bleData/dta",
+        DIA: "emit/content/bleData/dia",
+        CMD: "emit/content/bleData/cmd",
+        STS: "emit/content/bleData/sts",
+      };
 
-        const topic = topicMap[category];
-        const dataToPublish = {
-          category,
-          data: categorizedData[category],
-        };
+      const topic = topicMap[category];
+      const dataToPublish = {
+        category,
+        data: categorizedData[category],
+      };
+
+      if (window.WebViewJavascriptBridge) {
         window.WebViewJavascriptBridge.callHandler(
           "mqttPublishMsg",
           dataToPublish,
-          (responseData) => {
+          () => {
             setLoading(false);
             toast.success("Message published successfully", {
               position: "top-right",
@@ -84,19 +132,28 @@ const BleDataPage = () => {
               draggable: true,
               progress: undefined,
               theme: "light",
-              transition: Bounce,
             });
           }
         );
-        console.log(`Publishing to ${topic}:`, dataToPublish);
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error("Error publishing message:", error);
-        alert("Failed to publish message. Please try again.");
-      } finally {
-        setLoading(false);
+      } else {
+        throw new Error("WebViewJavascriptBridge not initialized");
       }
+
+      console.log(`Publishing to ${topic}:`, dataToPublish);
+    } catch (error) {
+      console.error("Error publishing message:", error);
+      toast.error("Failed to publish message. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -117,7 +174,7 @@ const BleDataPage = () => {
               key={descUuid}
               className="flex justify-between items-center mb-2 text-white"
             >
-              <code className="text-xs text-white">{descUuid}</code>
+               <code className="text-xs text-white">{descUuid}</code>
               <span className="text-sm text-white">{descItem.desc}</span>
             </div>
           ))}
@@ -126,15 +183,27 @@ const BleDataPage = () => {
     </Dialog>
   );
 
-  if (!deviceData || deviceData.length === 0) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <h2 className="text-2xl font-bold mb-4">No Data Available</h2>
-          <p className="text-gray-600">
-            Please ensure you've connected to a device and retrieved data.
-          </p>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+          <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+          <p className="text-gray-700">Initializing BLE data...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        {error}
+        <Button
+          onClick={() => navigate(-1)}
+          className="mt-4"
+        >
+          Go Back
+        </Button>
       </div>
     );
   }
@@ -154,17 +223,13 @@ const BleDataPage = () => {
 
       <div className="flex mb-6 space-x-2">
         {availableCategories.map((category) => (
-          <button
+          <Button
             key={category}
             onClick={() => setActiveCategory(category)}
-            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-              activeCategory === category
-                ? "bg-oves-blue text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            variant={activeCategory === category ? "default" : "outline"}
           >
             {category}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -182,17 +247,17 @@ const BleDataPage = () => {
           {categorizedData[activeCategory].map((serviceData) =>
             Object.entries(serviceData.characterMap || {}).map(
               ([charUuid, characteristic]) => (
-                <TableRow key={`${serviceData.uuid}-${charUuid}`} className="text-sm text-white">
-                  <TableCell className="py-2 text-white">
+                <TableRow key={`${serviceData.uuid}-${charUuid}`} className="text-sm">
+                  <TableCell className="py-2">
                     {serviceData.serviceNameEnum?.replace(/_/g, " ") ||
                       "Unnamed Service"}
                   </TableCell>
-                  <TableCell className="py-2 text-white">
+                  <TableCell className="py-2">
                     {characteristic.name || "Unnamed Characteristic"}
                   </TableCell>
-                  <TableCell className="py-2 text-white">{String(characteristic.realVal)}</TableCell>
-                  <TableCell className="py-2 text-white">{characteristic.properties}</TableCell>
-                  <TableCell className="py-2 text-white">
+                  <TableCell className="py-2">{String(characteristic.realVal)}</TableCell>
+                  <TableCell className="py-2">{characteristic.properties}</TableCell>
+                  <TableCell className="py-2">
                     {characteristic.descMap &&
                       Object.keys(characteristic.descMap).length > 0 && (
                         <DescriptorsDialog
@@ -222,4 +287,3 @@ const BleDataPage = () => {
 };
 
 export default BleDataPage;
-
