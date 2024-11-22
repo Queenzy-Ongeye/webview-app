@@ -1,23 +1,21 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Badge, ChevronDown, ChevronUp, Info, Send } from "lucide-react";
-import { useLocation } from "react-router-dom";
-import { useStore } from "../../service/store";
-import { toast, Bounce, ToastContainer } from "react-toastify"; // Added Bounce for transition
+import { Badge, Info, Send } from 'lucide-react';
+import { useStore } from "../service/store";
+import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const BleDataPage = () => {
-  // Simulating location state with useState for demonstration
   const { state } = useStore();
-  const location = useLocation();
-  const deviceData =
-    location.state?.dataList || state?.initBleData?.dataList || [];
-
-  useEffect(() => {
-    console.log("Received data in BleDataPage:", deviceData);
-  }, [deviceData]);
+  const deviceData = state?.initBleData?.dataList || [];
 
   const [activeCategory, setActiveCategory] = useState("ATT");
   const [loading, setLoading] = useState(false);
+  const [selectedDescriptors, setSelectedDescriptors] = useState(null);
 
   // Categorize data
   const categorizedData = useMemo(() => {
@@ -50,168 +48,69 @@ const BleDataPage = () => {
 
   const publishMqttMessage = async (category) => {
     setLoading(true);
-    if (window.WebViewJavascriptBridge) {
-      try {
-        const topicMap = {
-          ATT: "emit/content/bleData/att",
-          DTA: "emit/content/bleData/dta",
-          DIA: "emit/content/bleData/dia",
-          CMD: "emit/content/bleData/cmd",
-          STS: "emit/content/bleData/sts",
-        };
+    try {
+      const topicMap = {
+        ATT: "emit/content/bleData/att",
+        DTA: "emit/content/bleData/dta",
+        DIA: "emit/content/bleData/dia",
+        CMD: "emit/content/bleData/cmd",
+        STS: "emit/content/bleData/sts",
+      };
 
-        const topic = topicMap[category];
-        const dataToPublish = {
-          category,
-          data: categorizedData[category],
-        };
-        // Add your MQTT publish logic here
-        window.WebViewJavascriptBridge.callHandler(
-          "mqttPublishMsg",
-          dataToPublish,
-          (responseData) => {
-            setLoading(false);
-            toast.success("Message published successfully", {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "light",
-              transition: Bounce,
-            });
-          }
-        );
-        console.log(`Publishing to ${topic}:`, dataToPublish);
+      const topic = topicMap[category];
+      const dataToPublish = {
+        category,
+        data: categorizedData[category],
+      };
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error("Error publishing message:", error);
-        alert("Failed to publish message. Please try again.");
-      } finally {
-        setLoading(false);
-      }
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      toast.success("Message published successfully", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } catch (error) {
+      console.error("Error publishing message:", error);
+      toast.error("Failed to publish message. Please try again.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Characteristic Card Component
-  const CharacteristicCard = ({ characteristic, uuid }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    if (!characteristic) return null;
-
-    return (
-      <div className="bg-white border rounded-lg p-4 mt-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-sm font-semibold text-primary">
-            {characteristic.name || "Unnamed Characteristic"}
-          </h3>
-          <Badge className="text-xs">{uuid}</Badge>
-        </div>
-
-        <div className="space-y-2">
-          {characteristic.desc && (
-            <p className="text-sm text-gray-600">{characteristic.desc}</p>
-          )}
-
-          {characteristic.realVal !== undefined && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Value:</span>
-              <code className="px-2 py-1 bg-gray-100 rounded-md text-sm">
-                {String(characteristic.realVal)}
-              </code>
+  // Descriptors Dialog Component
+  const DescriptorsDialog = ({ descriptors, isOpen, onClose }) => (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Descriptors</DialogTitle>
+        </DialogHeader>
+        <div className="mt-4">
+          {Object.entries(descriptors).map(([descUuid, descItem]) => (
+            <div key={descUuid} className="flex justify-between items-center mb-2">
+              <code className="text-xs text-gray-500">{descUuid}</code>
+              <span className="text-sm">{descItem.desc}</span>
             </div>
-          )}
-
-          {characteristic.properties && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Properties:</span>
-              <span className="text-sm">{characteristic.properties}</span>
-            </div>
-          )}
-
-          {characteristic.descMap &&
-            Object.keys(characteristic.descMap).length > 0 && (
-              <div>
-                <button
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="flex items-center text-sm font-medium text-blue-500 hover:underline"
-                >
-                  {isExpanded ? (
-                    <ChevronUp className="mr-1" />
-                  ) : (
-                    <ChevronDown className="mr-1" />
-                  )}
-                  {isExpanded ? "Hide" : "Show"} Descriptors
-                </button>
-
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-auto max-h-32 bg-gray-50 p-2 rounded-md mt-2"
-                    >
-                      {Object.entries(characteristic.descMap).map(
-                        ([descUuid, descItem]) => (
-                          <div
-                            key={descUuid}
-                            className="flex justify-between items-center mb-1"
-                          >
-                            <code className="text-xs text-gray-500">
-                              {descUuid}
-                            </code>
-                            <span className="text-sm">{descItem.desc}</span>
-                          </div>
-                        )
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
+          ))}
         </div>
-      </div>
-    );
-  };
-
-  // Service Card Component
-  const ServiceCard = ({ serviceData }) => {
-    if (!serviceData) return null;
-
-    return (
-      <div className="bg-white border rounded-lg shadow-sm p-4">
-        <div className="flex justify-between items-start mb-4">
-          <h2 className="text-lg font-bold">
-            {serviceData.serviceNameEnum
-              ? serviceData.serviceNameEnum.replace(/_/g, " ")
-              : "Unnamed Service"}
-          </h2>
-          <Badge className="text-xs">{serviceData.uuid}</Badge>
-        </div>
-
-        <div className="space-y-4">
-          {serviceData.characterMap ? (
-            Object.entries(serviceData.characterMap).map(
-              ([uuid, characteristic]) => (
-                <CharacteristicCard
-                  key={uuid}
-                  uuid={uuid}
-                  characteristic={characteristic}
-                />
-              )
-            )
-          ) : (
-            <p className="text-sm text-gray-500">No characteristics found</p>
-          )}
-        </div>
-      </div>
-    );
-  };
+      </DialogContent>
+    </Dialog>
+  );
 
   // No data available state
   if (!deviceData || deviceData.length === 0) {
@@ -232,59 +131,86 @@ const BleDataPage = () => {
       <h1 className="text-3xl font-bold mb-6">Device Data</h1>
 
       {/* Publish Button */}
-      <button
-        className={`py-2 px-6 mb-4 font-semibold rounded-lg shadow-md transition duration-300 flex items-center space-x-2 ${
-          loading
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-oves-blue hover:bg-blue-700"
-        } text-white focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50`}
+      <Button
         onClick={() => publishMqttMessage(activeCategory)}
         disabled={loading}
+        className="mb-4"
       >
-        <Send className="h-5 w-5" />
-        <span>
-          {loading ? "Publishing..." : `Publish ${activeCategory} Data`}
-        </span>
-      </button>
+        <Send className="mr-2 h-4 w-4" />
+        {loading ? "Publishing..." : `Publish ${activeCategory} Data`}
+      </Button>
 
-      {/* Category Tabs */}
-      <div className="flex mb-6 space-x-2">
+      {/* Category Selection with Radio Buttons */}
+      <RadioGroup
+        value={activeCategory}
+        onValueChange={setActiveCategory}
+        className="flex mb-6 space-x-4"
+      >
         {availableCategories.map((category) => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-              activeCategory === category
-                ? "bg-oves-blue text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            {category}
-          </button>
+          <div key={category} className="flex items-center space-x-2">
+            <RadioGroupItem value={category} id={category} />
+            <Label htmlFor={category}>{category}</Label>
+          </div>
         ))}
-      </div>
+      </RadioGroup>
 
       {/* Category Content */}
-      <div className="space-y-6">
-        {categorizedData[activeCategory].map((serviceData, index) => (
-          <ServiceCard
-            key={`${serviceData.uuid || "unknown"}-${index}`}
-            serviceData={serviceData}
-          />
-        ))}
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Service Name</TableHead>
+            <TableHead>UUID</TableHead>
+            <TableHead>Characteristic Name</TableHead>
+            <TableHead>Characteristic UUID</TableHead>
+            <TableHead>Value</TableHead>
+            <TableHead>Properties</TableHead>
+            <TableHead>Descriptors</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {categorizedData[activeCategory].map((serviceData) => (
+            Object.entries(serviceData.characterMap || {}).map(([charUuid, characteristic]) => (
+              <TableRow key={`${serviceData.uuid}-${charUuid}`}>
+                <TableCell>{serviceData.serviceNameEnum?.replace(/_/g, " ") || "Unnamed Service"}</TableCell>
+                <TableCell><Badge variant="outline">{serviceData.uuid}</Badge></TableCell>
+                <TableCell>{characteristic.name || "Unnamed Characteristic"}</TableCell>
+                <TableCell><Badge variant="outline">{charUuid}</Badge></TableCell>
+                <TableCell>{String(characteristic.realVal)}</TableCell>
+                <TableCell>{characteristic.properties}</TableCell>
+                <TableCell>
+                  {characteristic.descMap && Object.keys(characteristic.descMap).length > 0 && (
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" onClick={() => setSelectedDescriptors(characteristic.descMap)}>
+                        Show Descriptors
+                      </Button>
+                    </DialogTrigger>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          ))}
+        </TableBody>
+      </Table>
+
+      {/* Descriptors Dialog */}
+      <DescriptorsDialog
+        descriptors={selectedDescriptors}
+        isOpen={!!selectedDescriptors}
+        onClose={() => setSelectedDescriptors(null)}
+      />
 
       {/* Info Button */}
-      <button
-        className="fixed bottom-4 right-4 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
-        onClick={() =>
-          alert("Device data categories and their characteristics")
-        }
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed bottom-4 right-4 rounded-full"
+        onClick={() => alert("Device data categories and their characteristics")}
       >
-        <Info className="h-6 w-6" />
-      </button>
+        <Info className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
 
 export default BleDataPage;
+
