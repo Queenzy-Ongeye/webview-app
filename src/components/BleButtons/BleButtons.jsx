@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Wifi, WifiOff } from "lucide-react";
+import { Wifi, WifiOff } from 'lucide-react';
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
   const navigate = useNavigate();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
-  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
-  const [initSuccessMac, setInitSuccessMac] = useState(null);
-  const [loadingMap, setLoadingMap] = useState(new Map());
   const [error, setError] = useState(null);
-  const [isNavigating, setIsNavigating] = useState(false);
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -43,92 +39,23 @@ const BleButtons = () => {
     }
   }, []);
 
-  // Watch for changes in initBleData and trigger navigation
-  useEffect(() => {
-    if (state.initBleData?.dataList && !isNavigating) {
-      console.log("Data detected, preparing to navigate:", state.initBleData);
-      performNavigation();
-    }
-  }, [state.initBleData]);
-
-  const performNavigation = () => {
-    if (isNavigating) return; // Prevent multiple navigations
-
-    console.log("Attempting navigation with data:", {
-      initBleData: state.initBleData,
-      dataList: state.initBleData?.dataList,
-    });
-
-    setIsNavigating(true);
-
-    try {
-      if (state.initBleData?.dataList) {
-        // Ensure we have the data before navigating
-        const deviceData = state.initBleData.dataList;
-
-        // Use a short timeout to ensure state updates have completed
-        setTimeout(() => {
-          console.log("Navigating to /ble-data with data:", deviceData);
-          navigate("/ble-data", {
-            state: { deviceData },
-            replace: true, // Use replace to prevent back navigation issues
-          });
-        }, 100);
-      } else {
-        throw new Error("Navigation attempted without valid data");
-      }
-    } catch (error) {
-      console.error("Navigation error:", error);
-      setError(`Failed to navigate: ${error.message}`);
-      setIsNavigating(false);
-    }
-  };
-
   const handleConnectAndInit = async (e, macAddress) => {
     e?.preventDefault();
     e?.stopPropagation();
     setError(null);
-    setIsNavigating(false); // Reset navigation state
-
-    setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
 
     try {
       console.log("Starting connection process for:", macAddress);
-      const connectionResult = await connectToBluetoothDevice(macAddress);
-      console.log("Connection result:", connectionResult);
+      await connectToBluetoothDevice(macAddress);
 
-      // Wait for connection to stabilize
-      await new Promise((resolve) => setTimeout(resolve, 25000));
+      // Redirect to BleDataPage immediately after connection
+      navigate("/ble-data", { state: { loading: true, macAddress } });
 
-      console.log("Starting BLE data initialization");
-      const response = await initBleData(macAddress);
-      console.log("BLE initialization response:", response);
-
-      // if (!response || !response.dataList) {
-      //   throw new Error("Invalid or missing data in initialization response");
-      // }
-
-      // Update store with the response
-      dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
-
-      setConnectionSuccessMac(macAddress);
-      setInitSuccessMac(macAddress);
-
-      // Navigation will be handled by the useEffect hook watching state.initBleData
     } catch (error) {
-      console.error("Connection/initialization error:", error);
-      setError(error.message || "Failed to connect and initialize BLE data");
-    } finally {
-      // Clean up loading states after a delay
-      setTimeout(() => {
-        setConnectingMacAddress(null);
-        setLoadingMap((prevMap) => {
-          const newMap = new Map(prevMap);
-          newMap.delete(macAddress);
-          return newMap;
-        });
-      }, 80000);
+      console.error("Connection error:", error);
+      setError(error.message || "Failed to connect to the device");
+      setConnectingMacAddress(null);
     }
   };
 
@@ -170,47 +97,6 @@ const BleButtons = () => {
     });
   };
 
-  const initBleData = (macAddress) => {
-    return new Promise((resolve, reject) => {
-      if (!window.WebViewJavascriptBridge) {
-        reject(new Error("WebViewJavascriptBridge not initialized"));
-        return;
-      }
-
-      console.log("Initializing BLE data for:", macAddress);
-
-      window.WebViewJavascriptBridge.callHandler(
-        "initBleData",
-        macAddress,
-        (responseData) => {
-          try {
-            console.log("Raw init response:", responseData);
-            const parsedData = JSON.parse(responseData);
-            console.log("Parsed init response:", parsedData);
-
-            // if (!parsedData || !parsedData.dataList) {
-            //   reject(new Error("Invalid initialization response format"));
-            //   return;
-            // }
-
-            resolve(parsedData);
-          } catch (error) {
-            console.error("Error parsing init response:", error);
-            reject(
-              new Error(
-                `Failed to parse initialization response: ${error.message}`
-              )
-            );
-          }
-        }
-      );
-    });
-  };
-
-  const isAnyDeviceLoading = () => {
-    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
-  };
-
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
       <div className="min-h-screen bg-gray-100 w-full">
@@ -248,14 +134,14 @@ const BleButtons = () => {
                   <button
                     onClick={(e) => handleConnectAndInit(e, device.macAddress)}
                     className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                      loadingMap.get(device.macAddress)
+                      connectingMacAddress === device.macAddress
                         ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
                         : "bg-cyan-700 text-white"
                     }`}
-                    disabled={loadingMap.get(device.macAddress)}
+                    disabled={connectingMacAddress === device.macAddress}
                   >
-                    {loadingMap.get(device.macAddress)
-                      ? "Processing..."
+                    {connectingMacAddress === device.macAddress
+                      ? "Connecting..."
                       : "Connect"}
                   </button>
                 </li>
@@ -266,14 +152,6 @@ const BleButtons = () => {
           )}
         </div>
       </div>
-      {isAnyDeviceLoading() && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">Connecting to device...</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
