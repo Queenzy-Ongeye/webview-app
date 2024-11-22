@@ -19,7 +19,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../reusableCards/dialog";
-import { Badge } from "../reusableCards/badge";
 
 const BleDataPage = () => {
   const location = useLocation();
@@ -243,7 +242,6 @@ const BleDataPage = () => {
                 ? serviceData.serviceNameEnum.replace(/_/g, " ")
                 : "Unnamed Service"}
             </h2>
-            <Badge className="text-xs">{serviceData.uuid}</Badge>
           </div>
 
           <Table>
