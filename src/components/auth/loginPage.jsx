@@ -1,117 +1,131 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+"use client";
 
-const LoginPage = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const  [error, setError] = useState("");
-    const navigate  = useNavigate();
+import { useState } from "react";
+import { AtSign, Lock, Eye, EyeOff } from "lucide-react";
+import { Alert, AlertDescription } from "../reusableCards/alert";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter
+} from "../reusableCards/cards";
+import { Button } from "../reusableCards/Buttons";
+import { Link, useNavigate } from "react-router-dom";
+import { Input } from "../reusableCards/input";
+import { Label } from "../reusableCards/lable";
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const router = useNavigate();
 
-        if(!email || !password) {
-            setError("Please enter both email and password");
-            return;
-        };
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-        if(email ==="oves.altec@omnivoltaic.com" && password === "Altec1234"){
-            setError("");
-            navigate("/home");
-        }else{
-            setError("Invalid email or password");
-        };
-    };
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
+      setError("");
+      router.push("/home");
+    } else {
+      setError("Invalid email or password");
+    }
+  };
 
   return (
-    <section class="bg-gray-50 mt-28 m-5">
-      <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-oves-blue dark:text-oves-blue">
-          <img class="h-12 w-30 mr-2 items-center" src='/images/logo-white.png' alt="logo"/>
-          Omnivoltaic   
-      </a>
-        <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 border-gray-700">
-          <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-            <h1 class="text-xl text-center font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
-              Welcome back<br></br>Sign in to your account
-            </h1>
-            <form class="space-y-4 md:space-y-6" action="#" onSubmit={handleLogin}>
-              <div>
-                <label
-                  for="email"
-                  class="block mb-2 text-sm font-medium text-gray-900"
-                >
-                  Your email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={email}
+    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+      <Link
+        href="/"
+        className="mb-8 flex items-center text-2xl font-semibold text-primary"
+      >
+        <img
+          src="/images/logo-white.png"
+          alt="Omnivoltaic logo"
+          width={48}
+          height={48}
+          className="mr-2"
+        />
+        Omnivoltaic
+      </Link>
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
+          <CardDescription className="text-center">
+            Sign in to your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <AtSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
                   id="email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                  type="email"
                   placeholder="name@company.com"
-                  required=""
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
                 />
               </div>
-              <div>
-                <label
-                  for="password"
-                  class="block mb-2 text-sm font-medium text-gray-900"
-                >
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
                   id="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  required=""
+                  className="pl-10 pr-10"
+                  required
                 />
-              </div>
-              <div class="flex items-center justify-between">
-                {/* <div class="flex items-start">
-                  <div class="flex items-center h-5">
-                    <input
-                      id="remember"
-                      aria-describedby="remember"
-                      type="checkbox"
-                      class="w-4 h-4 border border-gray-300 rounded bg-gray-200 focus:ring-3 focus:ring-primary-300 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                      required=""
-                    />
-                  </div>
-                  <div class="ml-3 text-sm">
-                    <label
-                      for="remember"
-                      class="text-gray-500 dark:text-gray-500"
-                    >
-                      Remember me
-                    </label>
-                  </div>
-                </div> */}
-                <a
-                  href="#"
-                  class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  Forgot password?
-                </a>
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
               </div>
-              {error && <p className="text-oves-blue text-center">{error}</p>}
-              <button
-                type="submit"
-                class="w-full text-white bg-oves-blue hover:bg-oves-blue hover:text-oves-blue focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-oves-blue dark:hover:bg-oves-blue dark:focus:ring-primary-800"
-              >
-                Login
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </section>
+            </div>
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            <Button type="submit" className="w-full bg-oves-blue text-white">
+              Login
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-muted-foreground hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </CardFooter>
+      </Card>
+    </div>
   );
-};
-
-export default LoginPage;
+}
