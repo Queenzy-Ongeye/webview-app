@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge, Info, Send } from 'lucide-react';
-import { useStore } from "../service/store";
+import { useStore } from "../../service/store";
 import { toast } from "react-toastify";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Button } from "../reusableCards/Buttons";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../reusableCards/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../reusableCards/dialog";
+import { RadioGroup, RadioGroupItem } from "../reusableCards/radioButton";
+import { Label } from "../reusableCards/lable";
 
 const BleDataPage = () => {
   const { state } = useStore();
@@ -134,7 +134,7 @@ const BleDataPage = () => {
       <Button
         onClick={() => publishMqttMessage(activeCategory)}
         disabled={loading}
-        className="mb-4"
+        className="mb-4 bg-oves-blue"
       >
         <Send className="mr-2 h-4 w-4" />
         {loading ? "Publishing..." : `Publish ${activeCategory} Data`}
@@ -180,7 +180,7 @@ const BleDataPage = () => {
                 <TableCell>
                   {characteristic.descMap && Object.keys(characteristic.descMap).length > 0 && (
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setSelectedDescriptors(characteristic.descMap)}>
+                      <Button variant="outline" className="bg-oves-blue text-white" size="sm" onClick={() => setSelectedDescriptors(characteristic.descMap)}>
                         Show Descriptors
                       </Button>
                     </DialogTrigger>
@@ -203,7 +203,7 @@ const BleDataPage = () => {
       <Button
         variant="outline"
         size="icon"
-        className="fixed bottom-4 right-4 rounded-full"
+        className="fixed bottom-4 right-4 rounded-full bg-oves-blue"
         onClick={() => alert("Device data categories and their characteristics")}
       >
         <Info className="h-4 w-4" />
