@@ -110,7 +110,12 @@ const BleDataPage = () => {
 
   // Descriptors Dialog Component
   const DescriptorsDialog = ({ descriptors, isOpen, onClose }) => (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          Show Descriptors
+        </Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Descriptors</DialogTitle>
@@ -208,20 +213,9 @@ const BleDataPage = () => {
                   <TableCell>
                     {characteristic.descMap &&
                       Object.keys(characteristic.descMap).length > 0 && (
-                        <Dialog>
-                          <DialogTrigger>
-                            <Button
-                              variant="outline"
-                              className="bg-oves-blue text-white"
-                              size="sm"
-                              onClick={() =>
-                                setSelectedDescriptors(characteristic.descMap)
-                              }
-                            >
-                              Show Descriptors
-                            </Button>
-                          </DialogTrigger>
-                        </Dialog>
+                        <DescriptorsDialog
+                          descriptors={characteristic.descMap}
+                        />
                       )}
                   </TableCell>
                 </TableRow>
@@ -230,13 +224,6 @@ const BleDataPage = () => {
           )}
         </TableBody>
       </Table>
-
-      {/* Descriptors Dialog */}
-      <DescriptorsDialog
-        descriptors={selectedDescriptors}
-        isOpen={!!selectedDescriptors}
-        onClose={() => setSelectedDescriptors(null)}
-      />
 
       {/* Info Button */}
       <Button
