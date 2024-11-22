@@ -1,6 +1,6 @@
 import React from "react";
-import z from "./NavBar";
 import BottomNav from "./BleButtons/BottomNav";
+import NavigationBar from "./NavBar"
 
 const Layout = ({ children }) => {
   return (
