@@ -2,12 +2,13 @@ import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Badge, Info, Send } from 'lucide-react';
 import { useStore } from "../../service/store";
-import { toast } from "react-toastify";
+import { toast, Bounce } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../reusableCards/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../reusableCards/dialog";
 import { RadioGroup, RadioGroupItem } from "../reusableCards/radioButton";
 import { Label } from "../reusableCards/lable";
+
 
 const BleDataPage = () => {
   const { state } = useStore();
