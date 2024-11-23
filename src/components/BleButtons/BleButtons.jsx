@@ -12,7 +12,12 @@ const BleButtons = () => {
   const [initSuccessMac, setInitSuccessMac] = useState(null);
   const [loadingMap, setLoadingMap] = useState(new Map());
   const [error, setError] = useState(null);
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [showBleDataPage, setShowBleDataPage] = useState(false); // Control rendering of BleDataPage
+
+  // Helper to check if any device is loading
+  const isAnyDeviceLoading = () => {
+    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
+  };
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -86,11 +91,12 @@ const BleButtons = () => {
   };
 
   const handleConnectAndInit = async (e, macAddress) => {
-    e?.preventDefault();
-    e?.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     setError(null);
-    setIsNavigating(false); // Reset navigation state
+    setShowBleDataPage(false); // Hide BleDataPage initially
 
+    // Mark the device as loading
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
 
@@ -99,24 +105,19 @@ const BleButtons = () => {
       const connectionResult = await connectToBluetoothDevice(macAddress);
       console.log("Connection result:", connectionResult);
 
-      // Wait for connection to stabilize
+      // Simulate stabilization time
       await new Promise((resolve) => setTimeout(resolve, 25000));
 
       console.log("Starting BLE data initialization");
       const response = await initBleData(macAddress);
       console.log("BLE initialization response:", response);
 
-      // if (!response || !response.dataList) {
-      //   throw new Error("Invalid or missing data in initialization response");
-      // }
-
-      // Update store with the response
       dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
-
       setConnectionSuccessMac(macAddress);
       setInitSuccessMac(macAddress);
 
-      // Navigation will be handled by the useEffect hook watching state.initBleData
+      // Show BleDataPage after successful initialization
+      setShowBleDataPage(true);
     } catch (error) {
       console.error("Connection/initialization error:", error);
       setError(error.message || "Failed to connect and initialize BLE data");
@@ -129,7 +130,7 @@ const BleButtons = () => {
           newMap.delete(macAddress);
           return newMap;
         });
-      }, 80000);
+      }, 70000);
     }
   };
 
@@ -208,10 +209,6 @@ const BleButtons = () => {
     });
   };
 
-  const isAnyDeviceLoading = () => {
-    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
-  };
-
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
       <div className="min-h-screen bg-gray-100 w-full">
@@ -268,7 +265,8 @@ const BleButtons = () => {
         </div>
       </div>
       {/* Conditionally render BleDataPage after successful connection */}
-      {<BleDataPage />}
+      {showBleDataPage && <BleDataPage />} {/* Controlled rendering */}
+      {/* Loader overlay */}
       {isAnyDeviceLoading() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
