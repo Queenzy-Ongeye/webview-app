@@ -92,9 +92,9 @@ const BleButtons = () => {
     e?.stopPropagation();
     setError(null);
     setIsNavigating(false); // Reset navigation state 
-    setShowBleDataPage(false);
+    setShowBleDataPage(false); // Ensure BleDataPage is hidden initially
 
-
+    // Mark the device as loading
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
 
