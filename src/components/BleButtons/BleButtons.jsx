@@ -212,6 +212,11 @@ const BleButtons = () => {
 
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
+      {isAnyDeviceLoading() && (
+        <div className="absolute inset-0 filter blur-sm">
+          <BleDataPage />
+        </div>
+      )}
       <div className="min-h-screen bg-gray-100 w-full">
         {error && (
           <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -265,8 +270,6 @@ const BleButtons = () => {
           )}
         </div>
       </div>
-      {/* Conditionally render BleDataPage after successful connection */}
-      {showBleDataPage && <BleDataPage />} {/* Controlled rendering */}
       {/* Loader overlay */}
       {isAnyDeviceLoading() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
