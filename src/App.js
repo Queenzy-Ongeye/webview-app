@@ -22,7 +22,8 @@ const DeviceData = lazy(() =>
 );
 const Profile = lazy(() => import("./components/profile/ProfilePage"));
 const EditProfile = lazy(() => import("./components/profile/EditProfilePage"));
-const BleData = lazy(() => import ("./components/BleButtons/BleDataPage"))
+const BleData = lazy(() => import("./components/BleButtons/BleDataPage"));
+const BleContainer = lazy(() => import("./components/BleButtons/BleContainer"));
 
 const App = () => {
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -138,6 +139,14 @@ const App = () => {
                 element={
                   <Layout>
                     <BleData />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/ble-container"
+                element={
+                  <Layout>
+                    <BleContainer />
                   </Layout>
                 }
               />
