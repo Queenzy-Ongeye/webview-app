@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Wifi, WifiOff } from "lucide-react";
-import { BleDataPage } from "./BleDataPage";
+import BleDataPage  from "./BleDataPage";
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
