@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Wifi, WifiOff } from "lucide-react";
-import BleDataPage  from "./BleDataPage";
+import BleDataPage from "./BleDataPage";
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
@@ -14,7 +14,6 @@ const BleButtons = () => {
   const [error, setError] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [showBleDataPage, setShowBleDataPage] = useState(false); // Control BleDataPage rendering
-
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -91,7 +90,7 @@ const BleButtons = () => {
     e?.preventDefault();
     e?.stopPropagation();
     setError(null);
-    setIsNavigating(false); // Reset navigation state 
+    setIsNavigating(false); // Reset navigation state
     setShowBleDataPage(false); // Ensure BleDataPage is hidden initially
 
     // Mark the device as loading
@@ -119,8 +118,8 @@ const BleButtons = () => {
 
       setConnectionSuccessMac(macAddress);
       setInitSuccessMac(macAddress);
-       // Show BleDataPage after initialization
-       setShowBleDataPage(true);
+      // Show BleDataPage after initialization
+      setShowBleDataPage(true);
 
       // Navigation will be handled by the useEffect hook watching state.initBleData
     } catch (error) {
@@ -223,16 +222,6 @@ const BleButtons = () => {
       {/* Conditionally render BleDataPage after successful connection */}
       {showBleDataPage && <BleDataPage />}
 
-      {/* Overlay to block interaction while loading */}
-      {isAnyDeviceLoading && (
-        <div className="absolute inset-0 bg-black w-full bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl text-center">
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">Loading data...</p>
-          </div>
-        </div>
-      )}
-
       {/* Main content: List of devices */}
       <div className="min-h-screen bg-gray-100 w-full">
         {error && (
@@ -287,6 +276,15 @@ const BleButtons = () => {
           )}
         </div>
       </div>
+      {/* Overlay to block interaction while loading */}
+      {isAnyDeviceLoading && (
+        <div className="absolute inset-0 bg-black w-full bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl text-center">
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+            <p className="text-gray-700">Loading data...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
