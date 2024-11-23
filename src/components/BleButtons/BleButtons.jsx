@@ -13,7 +13,7 @@ const BleButtons = () => {
   const [loadingMap, setLoadingMap] = useState(new Map());
   const [error, setError] = useState(null);
   const [showBleDataPage, setShowBleDataPage] = useState(false); // Control rendering of BleDataPage
-  const [isNvigating, setIsNavigating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Helper to check if any device is loading
   const isAnyDeviceLoading = () => {
