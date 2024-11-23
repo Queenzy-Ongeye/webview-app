@@ -13,7 +13,6 @@ const BleButtons = () => {
   const [loadingMap, setLoadingMap] = useState(new Map());
   const [error, setError] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [showBleDataPage, setShowBleDataPage] = useState(false); // Control BleDataPage rendering
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -91,9 +90,7 @@ const BleButtons = () => {
     e?.stopPropagation();
     setError(null);
     setIsNavigating(false); // Reset navigation state
-    setShowBleDataPage(false); // Ensure BleDataPage is hidden initially
 
-    // Mark the device as loading
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
 
@@ -118,8 +115,6 @@ const BleButtons = () => {
 
       setConnectionSuccessMac(macAddress);
       setInitSuccessMac(macAddress);
-      // Show BleDataPage after initialization
-      setShowBleDataPage(true);
 
       // Navigation will be handled by the useEffect hook watching state.initBleData
     } catch (error) {
@@ -218,11 +213,7 @@ const BleButtons = () => {
   };
 
   return (
-    <div className="relative h-screen w-full">
-      {/* Conditionally render BleDataPage after successful connection */}
-      {showBleDataPage && <BleDataPage />}
-
-      {/* Main content: List of devices */}
+    <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
       <div className="min-h-screen bg-gray-100 w-full">
         {error && (
           <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -276,12 +267,13 @@ const BleButtons = () => {
           )}
         </div>
       </div>
-      {/* Overlay to block interaction while loading */}
-      {isAnyDeviceLoading && (
-        <div className="absolute inset-0 bg-black w-full bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl text-center">
+      {/* Conditionally render BleDataPage after successful connection */}
+      {<BleDataPage />}
+      {isAnyDeviceLoading() && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">Loading data...</p>
+            <p className="text-gray-700">Connecting to device...</p>
           </div>
         </div>
       )}
