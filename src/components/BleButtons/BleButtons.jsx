@@ -13,6 +13,8 @@ const BleButtons = () => {
   const [loadingMap, setLoadingMap] = useState(new Map());
   const [error, setError] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showBleDataPage, setShowBleDataPage] = useState(false); // Control BleDataPage rendering
+
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -89,7 +91,9 @@ const BleButtons = () => {
     e?.preventDefault();
     e?.stopPropagation();
     setError(null);
-    setIsNavigating(false); // Reset navigation state
+    setIsNavigating(false); // Reset navigation state 
+    setShowBleDataPage(false);
+
 
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
@@ -115,6 +119,8 @@ const BleButtons = () => {
 
       setConnectionSuccessMac(macAddress);
       setInitSuccessMac(macAddress);
+       // Show BleDataPage after initialization
+       setShowBleDataPage(true);
 
       // Navigation will be handled by the useEffect hook watching state.initBleData
     } catch (error) {
@@ -214,12 +220,12 @@ const BleButtons = () => {
 
   return (
     <div className="relative h-screen w-full">
-      {/* Render BleDataPage in the background */}
-      <BleDataPage />
+      {/* Conditionally render BleDataPage after successful connection */}
+      {showBleDataPage && <BleDataPage />}
 
       {/* Overlay to block interaction while loading */}
       {isAnyDeviceLoading && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="absolute inset-0 bg-black w-full bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl text-center">
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
             <p className="text-gray-700">Loading data...</p>
