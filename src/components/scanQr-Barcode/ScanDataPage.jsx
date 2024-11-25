@@ -17,6 +17,67 @@ const ScanDataPage = () => {
   const requestCode = 999;
   const navigate = useNavigate();
 
+  // Function to initiate the QR/barcode scan
+  const startQrCodeScan = () => {
+    if (window.WebViewJavascriptBridge) {
+      try {
+        window.WebViewJavascriptBridge.callHandler(
+          "startQrCodeScan",
+          requestCode,
+          (responseData) => {
+            const parsedResponse = JSON.parse(responseData);
+            // Check if the scan initiation was successful
+            if (
+              parsedResponse.respCode === "200" &&
+              parsedResponse.respData === true
+            ) {
+              console.log("Scan started successfully.");
+            } else {
+              console.error("Failed to start scan:", parsedResponse.respDesc);
+              alert("Failed to start scan. Please try again.");
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error starting QR code scan:", error.message);
+      }
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
+
+  // Register handler for scan results
+  useEffect(() => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.registerHandler(
+        "scanQrcodeResultCallBack",
+        (data) => {
+          try {
+            const parsedData = JSON.parse(data);
+            const scannedValue = parsedData.respData?.value;
+            const callbackRequestCode = parsedData.respData?.requestCode;
+
+            if (callbackRequestCode === requestCode && scannedValue) {
+              console.log("Scanned data received:", scannedValue);
+              dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+              // Start scanning for BLE devices after successful barcode scan
+              scanBleDevices();
+            } else {
+              console.error(
+                "Request code mismatch or invalid data. Expected:",
+                requestCode,
+                "Received:",
+                callbackRequestCode
+              );
+            }
+          } catch (error) {
+            console.error("Error processing scan callback data:", error.message);
+          }
+        }
+      );
+    }
+  }, []);
+
   // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
     if (matchFound && state.initBleData) {
