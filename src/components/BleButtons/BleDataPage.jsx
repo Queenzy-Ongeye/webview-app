@@ -126,18 +126,18 @@ const BleDataPage = () => {
     </Dialog>
   );
 
-  if (!deviceData || deviceData.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <h2 className="text-2xl font-bold mb-4">No Data Available</h2>
-          <p className="text-gray-600">
-            Please ensure you've connected to a device and retrieved data.
-          </p>
-        </div>
-      </div>
-    );
-  }
+//   if (!deviceData || deviceData.length === 0) {
+//     return (
+//       <div className="flex items-center justify-center min-h-screen bg-gray-100">
+//         <div className="bg-white p-8 rounded-lg shadow-md text-center">
+//           <h2 className="text-2xl font-bold mb-4">No Data Available</h2>
+//           <p className="text-gray-600">
+//             Please ensure you've connected to a device and retrieved data.
+//           </p>
+//         </div>
+//       </div>
+//     );
+//   }
 
   return (
     <div className="container mx-auto py-8">
