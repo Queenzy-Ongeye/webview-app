@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
-import { Loader2, Wifi, WifiOff } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
   const [deviceQueue, setDeviceQueue] = useState([]);
-  const [isScanning, setIsScanning] = useState(false);
-  const [connectingMacAddress, setConnectingMacAddress] = useState(null);
-  const [loadingMap, setLoadingMap] = useState(new Map());
+  const [isProcessing, setIsProcessing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
   const requestCode = 999;
@@ -83,7 +81,8 @@ const ScanDataPage = () => {
     if (scannedValue) {
       console.log("Scanned Value:", scannedValue);
       dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-      initiateDeviceQueue();
+      setIsProcessing(true);
+      scanBleDevices();
     } else {
       console.error("Invalid scan data received.");
       setPopupMessage("Invalid scan data. Neither a barcode nor a QR code.");
@@ -91,30 +90,61 @@ const ScanDataPage = () => {
     }
   };
 
-  const initiateDeviceQueue = () => {
-    const detectedDevices = state.detectedDevices;
-    if (detectedDevices && detectedDevices.length > 0) {
-      const topDevices = detectedDevices
+  const scanBleDevices = () => {
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "startBleScan",
+        null,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData && parsedData.devices) {
+              dispatch({
+                type: "ADD_DETECTED_DEVICE",
+                payload: parsedData.devices,
+              });
+              initiateDeviceQueue(parsedData.devices);
+            }
+          } catch (error) {
+            console.error("Error parsing BLE scan data:", error.message);
+            setIsProcessing(false);
+            setPopupMessage("Error scanning for devices. Please try again.");
+            setShowPopup(true);
+          }
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
+      setIsProcessing(false);
+      setPopupMessage("Device scanning not available. Please try again later.");
+      setShowPopup(true);
+    }
+  };
+
+  const initiateDeviceQueue = (devices) => {
+    if (devices && devices.length > 0) {
+      const topDevices = devices
         .sort((a, b) => b.rssi - a.rssi)
         .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress));
       connectToNextDevice();
     } else {
       console.warn("No BLE devices detected.");
-      scanBleDevices();
+      setIsProcessing(false);
+      setPopupMessage("No devices found. Please try scanning again.");
+      setShowPopup(true);
     }
   };
 
   const connectToNextDevice = () => {
     if (deviceQueue.length === 0) {
+      setIsProcessing(false);
       setPopupMessage("No matching device found. Please scan again.");
       setShowPopup(true);
       return;
     }
 
     const nextDeviceMac = deviceQueue[0];
-    setConnectingMacAddress(nextDeviceMac);
-    setLoadingMap((prevMap) => new Map(prevMap.set(nextDeviceMac, true)));
 
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
@@ -180,6 +210,7 @@ const ScanDataPage = () => {
         ) {
           match = true;
           console.log("Match found:", characteristic);
+          setIsProcessing(false);
           navigate("/ble-data", { state: { deviceData: initBleData.dataList } });
           return;
         }
@@ -194,115 +225,31 @@ const ScanDataPage = () => {
   const moveToNextDevice = () => {
     setDeviceQueue((prevQueue) => {
       const newQueue = prevQueue.slice(1);
-      setLoadingMap((prevMap) => {
-        const newMap = new Map(prevMap);
-        newMap.delete(connectingMacAddress);
-        return newMap;
-      });
-      setConnectingMacAddress(null);
-      
       if (newQueue.length > 0) {
         connectToNextDevice();
       } else {
+        setIsProcessing(false);
         setPopupMessage("No matching device found after checking all devices.");
         setShowPopup(true);
       }
-      
       return newQueue;
     });
   };
 
-  const scanBleDevices = () => {
-    setIsScanning(true);
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "startBleScan",
-        null,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData && parsedData.devices) {
-              dispatch({
-                type: "ADD_DETECTED_DEVICE",
-                payload: parsedData.devices,
-              });
-              initiateDeviceQueue();
-            }
-          } catch (error) {
-            console.error("Error parsing BLE scan data:", error.message);
-          } finally {
-            setIsScanning(false);
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
-      setIsScanning(false);
-    }
-  };
-
-  const uniqueDevicesMap = new Map();
-  state.detectedDevices.forEach((device) => {
-    uniqueDevicesMap.set(device.macAddress, device);
-  });
-
-  const uniqueDevices = Array.from(uniqueDevicesMap.values()).sort(
-    (a, b) => b.rssi - a.rssi
-  );
-
-  useEffect(() => {
-    if (state.scannedData && (!state.detectedDevices || state.detectedDevices.length === 0)) {
-      scanBleDevices();
-    }
-  }, [state.scannedData, state.detectedDevices]);
-
   return (
-    <div className="scan-data-page flex flex-col h-screen mt-4">
-      <div className="mt-10">
+    <div className="scan-data-page flex flex-col h-screen">
+      <div className="mt-10 px-4">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
           <p className="text-left mt-2">Barcode Number: {state.scannedData}</p>
         )}
 
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold text-left">
-            Detected BLE Devices:
-          </h3>
-          {uniqueDevices.length > 0 ? (
-            <ul className="text-left">
-              {uniqueDevices.map((device) => (
-                <li
-                  key={device.macAddress}
-                  className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-gray-700">
-                      {device.name || "Unknown Device"}
-                    </p>
-                    <p className="text-gray-700">{device.macAddress}</p>
-                    <div className="flex items-left">
-                      {device.rssi > -50 ? (
-                        <Wifi className="text-green-500" />
-                      ) : device.rssi > -70 ? (
-                        <Wifi className="text-yellow-500" />
-                      ) : (
-                        <WifiOff className="text-red-500" />
-                      )}
-                      <span className="text-sm text-gray-500">
-                        {device.rssi}dBm
-                      </span>
-                    </div>
-                  </div>
-                  {loadingMap.get(device.macAddress) && (
-                    <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">No BLE devices detected.</p>
-          )}
-        </div>
+        {isProcessing && (
+          <div className="mt-6 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 text-blue-500 animate-spin mr-2" />
+            <p className="text-lg text-gray-700">Fetching device in progress...</p>
+          </div>
+        )}
 
         <button
           onClick={startQrCodeScan}
@@ -311,14 +258,6 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
-      {isScanning && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">Scanning for devices...</p>
-          </div>
-        </div>
-      )}
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
