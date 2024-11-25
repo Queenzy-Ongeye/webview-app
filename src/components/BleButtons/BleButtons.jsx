@@ -131,7 +131,7 @@ const BleButtons = () => {
           newMap.delete(macAddress);
           return newMap;
         });
-      }, 50000);
+      }, 60000);
     }
   };
 
@@ -211,7 +211,7 @@ const BleButtons = () => {
   };
 
   return (
-    <div className="scan-data-page flex flex-col h-screen mt-6 w-full relative">
+    <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
       {/* Background with BleDataPage when loading */}
       {isAnyDeviceLoading() && (
         <div className="absolute inset-0 z-10 opacity-75">

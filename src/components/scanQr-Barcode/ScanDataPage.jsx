@@ -354,7 +354,7 @@ const ScanDataPage = () => {
   };
 
   return (
-    <div className="scan-data-page flex flex-col h-screen">
+    <div className="scan-data-page flex flex-col h-screen mt-2">
       <div className="mt-10">
         <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
         {state.scannedData && (
