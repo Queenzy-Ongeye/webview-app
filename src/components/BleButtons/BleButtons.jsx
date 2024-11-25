@@ -131,7 +131,7 @@ const BleButtons = () => {
           newMap.delete(macAddress);
           return newMap;
         });
-      }, 70000);
+      }, 50000);
     }
   };
 
