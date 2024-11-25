@@ -131,7 +131,7 @@ const BleButtons = () => {
           newMap.delete(macAddress);
           return newMap;
         });
-      }, 60000);
+      }, 55000);
     }
   };
 
@@ -222,7 +222,7 @@ const BleButtons = () => {
       {/* Device List */}
       <div
         className={`${
-          isAnyDeviceLoading() ? "block" : "block"
+          isAnyDeviceLoading() ? "hidden" : "hidden"
         } min-h-screen bg-gray-100 w-full relative z-0`}
       >
         {error && (
