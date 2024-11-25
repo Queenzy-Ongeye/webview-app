@@ -80,7 +80,7 @@ const BleButtons = () => {
             state: { deviceData },
             replace: true, // Use replace to prevent back navigation issues
           });
-        }, 30000);
+        }, 3000);
       } else {
         throw new Error("Navigation attempted without valid data");
       }
