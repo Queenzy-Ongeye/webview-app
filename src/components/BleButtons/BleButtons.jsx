@@ -211,14 +211,20 @@ const BleButtons = () => {
   };
 
   return (
-    <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
+    <div className="scan-data-page flex flex-col h-screen mt-6 w-full relative">
       {/* Background with BleDataPage when loading */}
       {isAnyDeviceLoading() && (
-        <div className="absolute inset-0 z-10 opacity-75 p-2">
+        <div className="absolute inset-0 z-10 opacity-75">
           <BleDataPage />
         </div>
       )}
-      <div className="min-h-screen bg-gray-100 w-full">
+
+      {/* Device List */}
+      <div
+        className={`${
+          isAnyDeviceLoading() ? "hidden" : "block"
+        } min-h-screen bg-gray-100 w-full relative z-0`}
+      >
         {error && (
           <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
@@ -254,13 +260,16 @@ const BleButtons = () => {
                     onClick={(e) => handleConnectAndInit(e, device.macAddress)}
                     className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
                       loadingMap.get(device.macAddress)
-                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                        : "bg-cyan-700 text-white"
+                        ? "bg-gray-400 text-gray-800 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-600 text-white"
                     }`}
                     disabled={loadingMap.get(device.macAddress)}
                   >
-                    {" "}
-                    Connect
+                    {loadingMap.get(device.macAddress) ? (
+                      <Loader2 className="animate-spin mr-2" />
+                    ) : (
+                      "Connect"
+                    )}
                   </button>
                 </li>
               ))}
@@ -270,12 +279,13 @@ const BleButtons = () => {
           )}
         </div>
       </div>
-      {/* Loader overlay */}
+
+      {/* Loading Spinner Overlay */}
       {isAnyDeviceLoading() && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">Connecting to device...</p>
+            <p className="text-gray-700">Loading data...</p>
           </div>
         </div>
       )}
