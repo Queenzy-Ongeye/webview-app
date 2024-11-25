@@ -131,7 +131,7 @@ const BleButtons = () => {
           newMap.delete(macAddress);
           return newMap;
         });
-      }, 70000);
+      }, 50000);
     }
   };
 
@@ -213,13 +213,11 @@ const BleButtons = () => {
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
       {/* Background with BleDataPage */}
-      <div
-        className={`${
-          isAnyDeviceLoading() ? "opacity-50" : "opacity-100"
-        } transition-opacity duration-300 p-2`}
-      >
-        <BleDataPage />
-      </div>
+      {isAnyDeviceLoading() && (
+        <div className="absolute inset-0 opacity-50 z-0 p-2">
+          <BleDataPage />
+        </div>
+      )}
 
       {/* Loading Spinner Overlay */}
       {isAnyDeviceLoading() && (
