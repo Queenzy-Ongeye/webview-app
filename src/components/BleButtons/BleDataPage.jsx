@@ -29,10 +29,10 @@ const BleDataPage = () => {
   const categorizedData = useMemo(() => {
     const categories = {
       STS: [],
-      ATT: [],
+      CMD: [],
       DTA: [],
       DIA: [],
-      CMD: [],
+      ATT: [],
     };
 
     if (Array.isArray(deviceData)) {
@@ -109,7 +109,7 @@ const BleDataPage = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Descriptors</DialogTitle>
+          <DialogTitle className="text-white">Descriptors</DialogTitle>
         </DialogHeader>
         <div className="mt-4">
           {Object.entries(descriptors).map(([descUuid, descItem]) => (
