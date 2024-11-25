@@ -222,7 +222,7 @@ const BleButtons = () => {
       {/* Device List */}
       <div
         className={`${
-          isAnyDeviceLoading() ? "hidden" : "hidden"
+          isAnyDeviceLoading() ? "hidden" : "block"
         } min-h-screen bg-gray-100 w-full relative z-0`}
       >
         {error && (
