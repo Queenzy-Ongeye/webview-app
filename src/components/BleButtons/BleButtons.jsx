@@ -212,9 +212,22 @@ const BleButtons = () => {
 
   return (
     <div className="scan-data-page flex flex-col h-screen mt-6 w-full">
+      {/* Background with BleDataPage */}
+      <div
+        className={`${
+          isAnyDeviceLoading() ? "opacity-50" : "opacity-100"
+        } transition-opacity duration-300 p-2`}
+      >
+        <BleDataPage />
+      </div>
+
+      {/* Loading Spinner Overlay */}
       {isAnyDeviceLoading() && (
-        <div className="absolute inset-0 z-40">
-          <BleDataPage />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+            <p className="text-gray-700">Loading data...</p>
+          </div>
         </div>
       )}
       <div
