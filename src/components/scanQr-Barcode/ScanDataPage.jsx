@@ -1,21 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
-import { Loader2, Wifi, WifiOff } from "lucide-react";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import Notification from "../notification/Notification";
 import PopupNotification from "../notification/PopUp";
 import { useNavigate } from "react-router-dom";
+import { Loader2, Wifi, WifiOff } from "lucide-react";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
   const [deviceQueue, setDeviceQueue] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
-  const [loadingMap, setLoadingMap] = useState(new Map());
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0);
+  const [connectingMacAddress, setConnectingMacAddress] = useState(null);
+  const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
+  const [initSuccessMac, setInitSuccessMac] = useState(null);
+  const [loadingMap, setLoadingMap] = useState(new Map()); // Track loading per device
+  const requestCode = 999;
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
-  const requestCode = 999;
   const navigate = useNavigate();
+
+  const handleMatchResult = (found) => {
+    setMatchFound(found);
+    setPopupVisible(true);
+  };
+
+  // Function to handle "View Device Data" button click when match is found
+  const handleContinue = () => {
+    if (matchFound && state.initBleData) {
+      navigate("/ble-data", {
+        state: { deviceData: state.initBleData.dataList },
+      }); // Pass data to new page
+    }
+    setPopupVisible(false); // Close the popup
+  };
 
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
@@ -23,7 +41,7 @@ const ScanDataPage = () => {
       try {
         window.WebViewJavascriptBridge.callHandler(
           "startQrCodeScan",
-          requestCode,
+          999,
           (responseData) => {
             const parsedResponse = JSON.parse(responseData);
             // Check if the scan initiation was successful
@@ -46,7 +64,7 @@ const ScanDataPage = () => {
     }
   };
 
-  // Register handler for scan results
+  // Register the callback handler for the scan result
   useEffect(() => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.registerHandler(
@@ -57,37 +75,232 @@ const ScanDataPage = () => {
             const scannedValue = parsedData.respData?.value;
             const callbackRequestCode = parsedData.respData?.requestCode;
 
-            if (callbackRequestCode === requestCode && scannedValue) {
+            // Validate the request code to ensure it matches the original request
+            if (callbackRequestCode === requestCode) {
               console.log("Scanned data received:", scannedValue);
-              dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-              // Start scanning for BLE devices after successful barcode scan
-              scanBleDevices();
+              handleScanData(scannedValue); // Process the scanned data
             } else {
               console.error(
-                "Request code mismatch or invalid data. Expected:",
+                "Request code mismatch. Expected:",
                 requestCode,
                 "Received:",
                 callbackRequestCode
               );
             }
           } catch (error) {
-            console.error("Error processing scan callback data:", error.message);
+            console.error(
+              "Error processing scan callback data:",
+              error.message
+            );
           }
         }
       );
     }
   }, []);
 
-  // Function to handle "View Device Data" button click when match is found
-  const handleContinue = () => {
-    if (matchFound && state.initBleData) {
-      navigate("/ble-data", {
-        state: { deviceData: state.initBleData.dataList },
-      });
+  // Function to handle the scanned data after receiving it
+  const handleScanData = (scannedValue) => {
+    if (scannedValue) {
+      console.log("Scanned Value:", scannedValue);
+      dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+      initiateDeviceQueue(); // Start pairing process
+    } else {
+      console.error("Invalid scan data received.");
+      alert("Invalid scan data. Neither a barcode nor a QR code.");
     }
-    setPopupVisible(false);
   };
 
+  // Initiate the device queue based on the top 5 strongest signals
+  const initiateDeviceQueue = () => {
+    const detectedDevices = state.detectedDevices;
+    if (detectedDevices && detectedDevices.length > 0) {
+      const topDevices = detectedDevices
+        .sort((a, b) => b.rssi - a.rssi)
+        .slice(0, 5);
+      setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
+      connectToNextDevice(); // Start the pairing process
+
+    } else {
+      console.warn("No BLE devices detected.");
+    }
+  };
+
+  // Attempt to connect to the next device in the queue
+  const connectToNextDevice = () => {
+    if (deviceQueue.length === 0) {
+      alert("No matching device found. Please scan again.");
+      return;
+    }
+
+    const nextDeviceMac = deviceQueue[0];
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        nextDeviceMac,
+        (responseData) => {
+          const parsedData = JSON.parse(responseData);
+          if (parsedData.respCode === 200) {
+            initBleData(nextDeviceMac);
+          } else {
+            alert("Connection failed. Trying next device...");
+            setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove current device and retry
+            connectToNextDevice();
+          }
+        }
+      );
+    }
+  };
+
+  // Initiate device pairing process
+  const handleConnectAndInit = async (e, macAddress) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    // Update loading state for the specific device
+    setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
+    setConnectingMacAddress(macAddress);
+
+    try {
+      console.log("Connecting to Bluetooth device", macAddress);
+      await connectToBluetoothDevice(macAddress);
+
+      // Add delay and initialize BLE data as in your original code...
+      setTimeout(async () => {
+        console.log("Starting BLE data initialization after delay");
+
+        // Step 3: Initialize BLE data after the delay
+        const response = await initBleData(macAddress);
+        dispatch({ type: "SET_INIT_BLE_DATA_RESPONSE", payload: response });
+        console.log("Initialized BLE data:", response);
+
+        // Step 4: Set successful states for UI feedback
+        setConnectionSuccessMac(macAddress);
+        setInitSuccessMac(macAddress);
+        setTimeout(() => {
+          searchForMatch();
+        }, 40000)
+
+
+        // Clear success states after another delay
+        setTimeout(() => {
+          setConnectionSuccessMac(null);
+          setInitSuccessMac(null);
+        }, 10000); // Clear after 10 seconds
+      }, 25000); // 3-second delay before starting BLE initialization
+
+      // Wait and then search for match as in your original code...
+    } catch (error) {
+      console.error(
+        "Error during Bluetooth connection or BLE data initialization:",
+        error
+      );
+      alert("Failed to connect and initialize BLE data. Please try again.");
+    } finally {
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        // Clear loading state for the specific device
+        setLoadingMap((prevMap) => {
+          const newMap = new Map(prevMap);
+          newMap.set(macAddress, false);
+          return newMap;
+        });
+      }, 80000);
+    }
+  };
+
+  const connectToBluetoothDevice = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "connBleByMacAddress",
+          macAddress,
+          (responseData) => {
+            try {
+              const parsedData = JSON.parse(responseData);
+              if (parsedData.respCode === "200") {
+                initBleData(macAddress);
+                resolve(true); // Resolve with success
+              } else {
+                reject("Connection failed");
+              }
+            } catch (error) {
+              console.error("Error parsing JSON data:", error);
+              reject(error);
+            }
+          }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+        reject("WebViewJavascriptBridge not initialized");
+      }
+    });
+  };
+
+  const initBleData = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "initBleData",
+          macAddress,
+          (responseData) => {
+            try {
+              const parsedData = JSON.parse(responseData);
+              dispatch({ type: "SET_INIT_BLE_DATA", payload: parsedData });
+              console.log("BLE Init Data:", parsedData);
+              resolve(parsedData); // Resolve the promise with the retrieved data
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'initBleData' response:",
+                error
+              );
+              reject(error);
+            }
+          }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+        reject("WebViewJavascriptBridge not initialized");
+      }
+    });
+  };
+
+  // Search for a match in the BLE data once initialized
+  const searchForMatch = () => {
+    const { initBleData, scannedData } = state;
+
+    if (!initBleData || !scannedData) {
+      handleMatchResult(false);
+      return;
+    }
+
+    let match = false;
+    let foundDeviceData = null;
+    for (const item of initBleData.dataList || []) {
+      for (const characteristic of Object.values(item.characterMap || {})) {
+        const { realVal, desc } = characteristic;
+        if (
+          (realVal && realVal.toString().includes(scannedData)) ||
+          (desc && desc.includes(scannedData))
+        ) {
+          match = true;
+          foundDeviceData = item; // Store matched device data
+          console.log("Match:", characteristic);
+          break;
+        }
+      }
+      if (match) break;
+    }
+
+    handleMatchResult(match, foundDeviceData);
+  };
+
+  // useEffect hook to monitor initBleData and scannedData changes
+  useEffect(() => {
+    if (state.initBleData && state.scannedData && isPopupVisible) {
+      // Run the search only when both initBleData and scannedData are available
+      searchForMatch();
+    }
+  }, [state.initBleData, state.scannedData]);
   // Start scanning for BLE devices
   const scanBleDevices = () => {
     setIsScanning(true);
@@ -103,10 +316,6 @@ const ScanDataPage = () => {
                 type: "ADD_DETECTED_DEVICE",
                 payload: parsedData.devices,
               });
-              // After scanning, initiate the automated process if we have scanned data
-              if (state.scannedData) {
-                initiateDeviceQueue(parsedData.devices);
-              }
             }
           } catch (error) {
             console.error("Error parsing BLE scan data:", error.message);
@@ -115,149 +324,11 @@ const ScanDataPage = () => {
           }
         }
       );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
+      setIsScanning(false);
     }
   };
-
-  // Initiate the device queue based on signal strength
-  const initiateDeviceQueue = (devices) => {
-    if (devices && devices.length > 0) {
-      const sortedDevices = devices
-        .sort((a, b) => b.rssi - a.rssi)
-        .map(device => device.macAddress);
-      setDeviceQueue(sortedDevices);
-      setCurrentDeviceIndex(0);
-      setIsProcessing(true);
-    }
-  };
-
-  // Connect to a device and initialize it
-  const connectAndInitDevice = async (macAddress) => {
-    setLoadingMap(prev => new Map(prev.set(macAddress, true)));
-    
-    try {
-      // Connect to device
-      const connected = await connectToBluetoothDevice(macAddress);
-      if (!connected) {
-        throw new Error("Connection failed");
-      }
-
-      // Wait for connection to stabilize
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Initialize BLE data
-      const bleData = await initBleData(macAddress);
-      dispatch({ type: "SET_INIT_BLE_DATA", payload: bleData });
-
-      // Search for match
-      const hasMatch = await searchForMatch(bleData);
-      
-      if (hasMatch) {
-        setMatchFound(true);
-        setPopupVisible(true);
-        setIsProcessing(false);
-      } else {
-        // Move to next device
-        setCurrentDeviceIndex(prev => prev + 1);
-      }
-    } catch (error) {
-      console.error("Error during device processing:", error);
-      // Move to next device on error
-      setCurrentDeviceIndex(prev => prev + 1);
-    } finally {
-      setLoadingMap(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(macAddress);
-        return newMap;
-      });
-    }
-  };
-
-  // Connect to Bluetooth device
-  const connectToBluetoothDevice = (macAddress) => {
-    return new Promise((resolve) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "connBleByMacAddress",
-          macAddress,
-          (responseData) => {
-            try {
-              const parsedData = JSON.parse(responseData);
-              resolve(parsedData.respCode === "200");
-            } catch (error) {
-              resolve(false);
-            }
-          }
-        );
-      } else {
-        resolve(false);
-      }
-    });
-  };
-
-  // Initialize BLE data
-  const initBleData = (macAddress) => {
-    return new Promise((resolve, reject) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "initBleData",
-          macAddress,
-          (responseData) => {
-            try {
-              const parsedData = JSON.parse(responseData);
-              resolve(parsedData);
-            } catch (error) {
-              reject(error);
-            }
-          }
-        );
-      } else {
-        reject(new Error("Bridge not initialized"));
-      }
-    });
-  };
-
-  // Search for a match in the BLE data
-  const searchForMatch = (bleData) => {
-    return new Promise((resolve) => {
-      if (!bleData || !state.scannedData) {
-        resolve(false);
-        return;
-      }
-
-      for (const item of bleData.dataList || []) {
-        for (const characteristic of Object.values(item.characterMap || {})) {
-          const { realVal, desc } = characteristic;
-          if (
-            (realVal && realVal.toString().includes(state.scannedData)) ||
-            (desc && desc.includes(state.scannedData))
-          ) {
-            resolve(true);
-            return;
-          }
-        }
-      }
-      resolve(false);
-    });
-  };
-
-  // Effect to handle the automated process
-  useEffect(() => {
-    if (isProcessing && deviceQueue.length > 0 && currentDeviceIndex < deviceQueue.length) {
-      connectAndInitDevice(deviceQueue[currentDeviceIndex]);
-    } else if (isProcessing && currentDeviceIndex >= deviceQueue.length) {
-      // We've tried all devices and found no match
-      setMatchFound(false);
-      setPopupVisible(true);
-      setIsProcessing(false);
-    }
-  }, [isProcessing, currentDeviceIndex, deviceQueue]);
-
-  // Effect to start scanning when needed
-  useEffect(() => {
-    if (state.scannedData && (!state.detectedDevices || state.detectedDevices.length === 0)) {
-      scanBleDevices();
-    }
-  }, [state.scannedData]);
 
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
@@ -266,9 +337,21 @@ const ScanDataPage = () => {
   });
 
   // Convert the Map to an array and sort by signal strength (RSSI)
-  const uniqueDevices = Array.from(uniqueDevicesMap.values()).sort(
+  const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
     (a, b) => b.rssi - a.rssi
   );
+  useEffect(() => {
+    if (state.detectedDevices && state.detectedDevices.length > 0 && state.scannedData) {
+      initiateDeviceQueue(); // Automatically start device queue and connection process
+    } else if (!state.detectedDevices || state.detectedDevices.length === 0) {
+      scanBleDevices(); // Scan for devices if no devices are detected
+    }
+  }, [state.detectedDevices, state.scannedData]);
+
+  // Helper function to check if any device is loading
+  const isAnyDeviceLoading = () => {
+    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
+  };
 
   return (
     <div className="scan-data-page flex flex-col h-screen mt-2">
@@ -282,9 +365,9 @@ const ScanDataPage = () => {
           <h3 className="text-lg font-semibold text-left">
             Detected BLE Devices:
           </h3>
-          {uniqueDevices.length > 0 ? (
+          {uniqueDevice.length > 0 ? (
             <ul className="text-left">
-              {uniqueDevices.map((device) => (
+              {uniqueDevice.map((device) => (
                 <li
                   key={device.macAddress}
                   className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
@@ -307,9 +390,19 @@ const ScanDataPage = () => {
                       </span>
                     </div>
                   </div>
-                  {loadingMap.get(device.macAddress) && (
-                    <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />
-                  )}
+                  <button
+                    onClick={(e) => handleConnectAndInit(e, device.macAddress)}
+                    className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                      loadingMap.get(device.macAddress)
+                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                        : "bg-cyan-700 text-white"
+                    }`}
+                    disabled={loadingMap.get(device.macAddress)}
+                  >
+                    {loadingMap.get(device.macAddress)
+                      ? "Processing..."
+                      : "Connect"}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -325,18 +418,14 @@ const ScanDataPage = () => {
           <IoQrCodeOutline className="text-2xl text-white" />
         </button>
       </div>
-
-      {isProcessing && (
+      {isAnyDeviceLoading() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">
-              Scanning device {currentDeviceIndex + 1} of {deviceQueue.length}...
-            </p>
+            <p className="text-gray-700">Connecting to device...</p>
           </div>
         </div>
       )}
-
       {isPopupVisible && (
         <PopupNotification
           matchFound={matchFound}
