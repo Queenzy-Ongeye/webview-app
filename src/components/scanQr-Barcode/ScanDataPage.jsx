@@ -10,6 +10,8 @@ const ScanDataPage = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [loadingMap, setLoadingMap] = useState(new Map());
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
   const requestCode = 999;
   const navigate = useNavigate();
 
@@ -28,15 +30,20 @@ const ScanDataPage = () => {
               console.log("Scan started successfully.");
             } else {
               console.error("Failed to start scan:", parsedResponse.respDesc);
-              alert("Failed to start scan. Please try again.");
+              setPopupMessage("Failed to start scan. Please try again.");
+              setShowPopup(true);
             }
           }
         );
       } catch (error) {
         console.error("Error starting QR code scan:", error.message);
+        setPopupMessage("Error starting scan. Please try again.");
+        setShowPopup(true);
       }
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
+      setPopupMessage("Scan functionality not available. Please try again later.");
+      setShowPopup(true);
     }
   };
 
@@ -79,7 +86,8 @@ const ScanDataPage = () => {
       initiateDeviceQueue();
     } else {
       console.error("Invalid scan data received.");
-      alert("Invalid scan data. Neither a barcode nor a QR code.");
+      setPopupMessage("Invalid scan data. Neither a barcode nor a QR code.");
+      setShowPopup(true);
     }
   };
 
@@ -99,7 +107,8 @@ const ScanDataPage = () => {
 
   const connectToNextDevice = () => {
     if (deviceQueue.length === 0) {
-      alert("No matching device found. Please scan again.");
+      setPopupMessage("No matching device found. Please scan again.");
+      setShowPopup(true);
       return;
     }
 
@@ -117,17 +126,13 @@ const ScanDataPage = () => {
             initBleData(nextDeviceMac);
           } else {
             console.log("Connection failed. Trying next device...");
-            setDeviceQueue((prevQueue) => prevQueue.slice(1));
-            setLoadingMap((prevMap) => {
-              const newMap = new Map(prevMap);
-              newMap.delete(nextDeviceMac);
-              return newMap;
-            });
-            setConnectingMacAddress(null);
-            connectToNextDevice();
+            moveToNextDevice();
           }
         }
       );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+      moveToNextDevice();
     }
   };
 
@@ -187,14 +192,24 @@ const ScanDataPage = () => {
   };
 
   const moveToNextDevice = () => {
-    setDeviceQueue((prevQueue) => prevQueue.slice(1));
-    setLoadingMap((prevMap) => {
-      const newMap = new Map(prevMap);
-      newMap.delete(connectingMacAddress);
-      return newMap;
+    setDeviceQueue((prevQueue) => {
+      const newQueue = prevQueue.slice(1);
+      setLoadingMap((prevMap) => {
+        const newMap = new Map(prevMap);
+        newMap.delete(connectingMacAddress);
+        return newMap;
+      });
+      setConnectingMacAddress(null);
+      
+      if (newQueue.length > 0) {
+        connectToNextDevice();
+      } else {
+        setPopupMessage("No matching device found after checking all devices.");
+        setShowPopup(true);
+      }
+      
+      return newQueue;
     });
-    setConnectingMacAddress(null);
-    connectToNextDevice();
   };
 
   const scanBleDevices = () => {
@@ -301,6 +316,19 @@ const ScanDataPage = () => {
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
             <p className="text-gray-700">Scanning for devices...</p>
+          </div>
+        </div>
+      )}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <p className="text-gray-700 mb-4">{popupMessage}</p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
