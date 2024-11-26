@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
-import { Badge, Info, Send } from "lucide-react";
+import { Info, Send } from 'lucide-react';
 import { useStore } from "../../service/store";
-import { toast, Bounce } from "react-toastify";
+import { toast } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
 import {
   Table,
@@ -29,10 +29,10 @@ const BleDataPage = () => {
   const categorizedData = useMemo(() => {
     const categories = {
       STS: [],
-      CMD: [],
+      ATT: [],
       DTA: [],
       DIA: [],
-      ATT: [],
+      CMD: [],
     };
 
     if (Array.isArray(deviceData)) {
@@ -84,7 +84,6 @@ const BleDataPage = () => {
               draggable: true,
               progress: undefined,
               theme: "light",
-              transition: Bounce,
             });
           }
         );
@@ -109,16 +108,16 @@ const BleDataPage = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-white">Descriptors</DialogTitle>
+          <DialogTitle>Descriptors</DialogTitle>
         </DialogHeader>
         <div className="mt-4">
           {Object.entries(descriptors).map(([descUuid, descItem]) => (
             <div
               key={descUuid}
-              className="flex justify-between items-center mb-2 text-white"
+              className="flex justify-between items-center mb-2 text-gray-700"
             >
-              <code className="text-xs text-white">{descUuid}</code>
-              <span className="text-sm text-white">{descItem.desc}</span>
+              <code className="text-xs">{descUuid}</code>
+              <span className="text-sm">{descItem.desc}</span>
             </div>
           ))}
         </div>
@@ -126,98 +125,100 @@ const BleDataPage = () => {
     </Dialog>
   );
 
-//   if (!deviceData || deviceData.length === 0) {
-//     return (
-//       <div className="flex items-center justify-center min-h-screen bg-gray-100">
-//         <div className="bg-white p-8 rounded-lg shadow-md text-center">
-//           <h2 className="text-2xl font-bold mb-4">No Data Available</h2>
-//           <p className="text-gray-600">
-//             Please ensure you've connected to a device and retrieved data.
-//           </p>
-//         </div>
-//       </div>
-//     );
-//   }
-
   return (
-    <div className="container mx-auto py-8 mt-2">
+    <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Device Data</h1>
 
-      <Button
-        onClick={() => publishMqttMessage(activeCategory)}
-        disabled={loading}
-        className="mb-4 bg-oves-blue text-white"
-      >
-        <Send className="mr-2 h-4 w-4" />
-        {loading ? "Publishing..." : `Publish ${activeCategory} Data`}
-      </Button>
-
-      <div className="flex mb-6 space-x-2">
-        {availableCategories.map((category) => (
-          <button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-              activeCategory === category
-                ? "bg-oves-blue text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+      {deviceData.length === 0 ? (
+        <div className="text-center text-gray-500">
+          <p>No data available. Connect to a device to view data.</p>
+        </div>
+      ) : (
+        <>
+          <Button
+            onClick={() => publishMqttMessage(activeCategory)}
+            disabled={loading}
+            className="mb-4 bg-oves-blue text-white"
           >
-            {category}
-          </button>
-        ))}
-      </div>
+            <Send className="mr-2 h-4 w-4" />
+            {loading ? "Publishing..." : `Publish ${activeCategory} Data`}
+          </Button>
 
-      {categorizedData[activeCategory].map((serviceData) => (
-        <div key={serviceData.uuid} className="mb-8">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-lg font-bold">
-              {serviceData.serviceNameEnum
-                ? serviceData.serviceNameEnum.replace(/_/g, " ")
-                : "Unnamed Service"}
-            </h2>
+          <div className="flex mb-6 space-x-2">
+            {availableCategories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+                  activeCategory === category
+                    ? "bg-oves-blue text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {category}
+              </button>
+            ))}
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Characteristic Name</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Properties</TableHead>
-                <TableHead>Descriptors</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Object.entries(serviceData.characterMap || {}).map(
-                ([charUuid, characteristic]) => (
-                  <TableRow
-                    key={`${serviceData.uuid}-${charUuid}`}
-                    className="text-sm"
-                  >
-                    <TableCell className="py-2">
-                      {characteristic.name || "Unnamed Characteristic"}
-                    </TableCell>
-                    <TableCell className="py-2">
-                      {String(characteristic.realVal)}
-                    </TableCell>
-                    <TableCell className="py-2">
-                      {characteristic.properties}
-                    </TableCell>
-                    <TableCell className="py-2">
-                      {characteristic.descMap &&
-                        Object.keys(characteristic.descMap).length > 0 && (
-                          <DescriptorsDialog
-                            descriptors={characteristic.descMap}
-                          />
-                        )}
-                    </TableCell>
+          {categorizedData[activeCategory].map((serviceData) => (
+            <div key={serviceData.uuid} className="mb-8">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-lg font-bold">
+                  {serviceData.serviceNameEnum
+                    ? serviceData.serviceNameEnum.replace(/_/g, " ")
+                    : "Unnamed Service"}
+                </h2>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Characteristic Name</TableHead>
+                    <TableHead>Value</TableHead>
+                    <TableHead>Properties</TableHead>
+                    <TableHead>Descriptors</TableHead>
                   </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      ))}
+                </TableHeader>
+                <TableBody>
+                  {Object.entries(serviceData.characterMap || {}).map(
+                    ([charUuid, characteristic]) => (
+                      <TableRow
+                        key={`${serviceData.uuid}-${charUuid}`}
+                        className="text-sm"
+                      >
+                        <TableCell className="py-2">
+                          <div>
+                            <p className="font-semibold">
+                              {characteristic.name || "Unnamed Characteristic"}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {characteristic.desc || "No description available"}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2">
+                          {String(characteristic.realVal)}
+                        </TableCell>
+                        <TableCell className="py-2">
+                          {characteristic.properties}
+                        </TableCell>
+                        <TableCell className="py-2">
+                          {characteristic.descMap &&
+                            Object.keys(characteristic.descMap).length > 0 && (
+                              <DescriptorsDialog
+                                descriptors={characteristic.descMap}
+                              />
+                            )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          ))}
+        </>
+      )}
 
       <Button
         variant="outline"
