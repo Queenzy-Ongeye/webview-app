@@ -459,18 +459,6 @@ const ScanDataPage = () => {
                         {device.name || "Unknown Device"}
                       </p>
                       <p className="text-gray-700">{device.macAddress.toLowerCase()}</p>
-                      <div className="flex items-left">
-                        {device.rssi > -50 ? (
-                          <Wifi className="text-green-500" />
-                        ) : device.rssi > -70 ? (
-                          <Wifi className="text-yellow-500" />
-                        ) : (
-                          <WifiOff className="text-red-500" />
-                        )}
-                        <span className="text-sm text-gray-500">
-                          {device.rssi}dBm
-                        </span>
-                      </div>
                     </div>
                     <button
                       onClick={(e) =>
@@ -495,13 +483,6 @@ const ScanDataPage = () => {
             )}
           </div>
         </main>
-
-        <button
-          onClick={startQrCodeScan}
-          className="fixed bottom-20 right-3 w-16 h-16 bg-oves-blue rounded-full shadow-lg flex items-center justify-center"
-        >
-          <IoQrCodeOutline className="text-2xl text-white" />
-        </button>
       </div>
       {isAnyDeviceLoading() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
