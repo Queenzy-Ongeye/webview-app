@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useStore } from "../../service/store";
 import { IoQrCodeOutline } from "react-icons/io5";
-import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import Notification from "../notification/Notification";
 import PopupNotification from "../notification/PopUp";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Wifi, WifiOff } from "lucide-react";
+import { Camera, Loader2, Wifi, WifiOff, ChevronDown } from 'lucide-react';
+import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenu } from "@radix-ui/react-dropdown-menu";
+import  { Button } from "../reusableCards/Buttons";
 
 const ScanDataPage = () => {
   const { state, dispatch } = useStore();
@@ -19,6 +19,7 @@ const ScanDataPage = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
   const navigate = useNavigate();
+  const [currentFilter, setCurrentFilter] = useState("all");
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -119,7 +120,6 @@ const ScanDataPage = () => {
         .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       connectToNextDevice(); // Start the pairing process
-
     } else {
       console.warn("No BLE devices detected.");
     }
@@ -178,8 +178,7 @@ const ScanDataPage = () => {
         setInitSuccessMac(macAddress);
         setTimeout(() => {
           searchForMatch();
-        }, 40000)
-
+        }, 40000);
 
         // Clear success states after another delay
         setTimeout(() => {
@@ -340,8 +339,39 @@ const ScanDataPage = () => {
   const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
     (a, b) => b.rssi - a.rssi
   );
+
+  // Filter and sort devices based on the current filter
+  const filteredAndSortedDevices = useMemo(() => {
+    let devices = Array.from(uniqueDevicesMap.values());
+
+    switch (currentFilter) {
+      case "strong":
+        return devices
+          .filter((device) => device.rssi > -70)
+          .sort((a, b) => b.rssi - a.rssi);
+      case "medium":
+        return devices
+          .filter((device) => device.rssi <= -70 && device.rssi > -90)
+          .sort((a, b) => b.rssi - a.rssi);
+      case "weak":
+        return devices
+          .filter((device) => device.rssi <= -90)
+          .sort((a, b) => b.rssi - a.rssi);
+      default:
+        return devices.sort((a, b) => b.rssi - a.rssi);
+    }
+  }, [uniqueDevicesMap, currentFilter]);
+
+  const handleFilterChange = (filter) => {
+    setCurrentFilter(filter);
+  };
+
   useEffect(() => {
-    if (state.detectedDevices && state.detectedDevices.length > 0 && state.scannedData) {
+    if (
+      state.detectedDevices &&
+      state.detectedDevices.length > 0 &&
+      state.scannedData
+    ) {
       initiateDeviceQueue(); // Automatically start device queue and connection process
     } else if (!state.detectedDevices || state.detectedDevices.length === 0) {
       scanBleDevices(); // Scan for devices if no devices are detected
@@ -356,60 +386,108 @@ const ScanDataPage = () => {
   return (
     <div className="scan-data-page flex flex-col h-screen mt-2">
       <div className="mt-10">
-        <h2 className="text-2xl font-bold text-left">Scanned Data</h2>
-        {state.scannedData && (
-          <p className="text-left mt-2">Barcode Number: {state.scannedData}</p>
-        )}
+        {/* Top Navigation */}
+        <header className="fixed top-0 left-0 right-0 bg-[#1a2942] text-white z-50">
+          <div className="flex items-center justify-between px-4 py-3">
+            <button className="p-2">
+              <div className="w-6 h-0.5 bg-white mb-1"></div>
+              <div className="w-6 h-0.5 bg-white mb-1"></div>
+              <div className="w-6 h-0.5 bg-white"></div>
+            </button>
+            <button
+              onClick={startQrCodeScan}
+              className="flex items-center space-x-4"
+            >
+              <Camera className="h-6 w-6" />
+            </button>
+          </div>
+        </header>
 
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold text-left">
-            Detected BLE Devices:
-          </h3>
-          {uniqueDevice.length > 0 ? (
-            <ul className="text-left">
-              {uniqueDevice.map((device) => (
-                <li
-                  key={device.macAddress}
-                  className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-gray-700">
+        {/* Main Content */}
+        <main className="flex-1 mt-16 px-4 pb-20">
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-xl font-semibold">Devices</h1>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-gray-600 border-gray-300"
+                  >
+                    <span className="mr-1">↑↓</span>
+                    Filter
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                    All Signals
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleFilterChange("strong")}
+                  >
+                    Strong Signal (-70 dBm)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleFilterChange("medium")}
+                  >
+                    Medium Signal (-90 to -70 dBm)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("weak")}>
+                    Weak Signal (-90 dBm)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {/* Device List */}
+          <div className="space-y-3">
+            {filteredAndSortedDevices.map((device) => (
+              <div
+                key={device.macAddress}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="space-y-1">
+                    <h3 className="font-medium text-gray-900">
                       {device.name || "Unknown Device"}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {device.macAddress.toLowerCase()}
                     </p>
-                    <p className="text-gray-700">{device.macAddress}</p>
-                    <div className="flex items-left">
+                    <div className="flex items-center text-sm text-gray-500">
                       {device.rssi > -50 ? (
-                        <Wifi className="text-green-500" />
+                        <Wifi className="h-4 w-4 text-green-500 mr-1" />
                       ) : device.rssi > -70 ? (
-                        <Wifi className="text-yellow-500" />
+                        <Wifi className="h-4 w-4 text-yellow-500 mr-1" />
                       ) : (
-                        <WifiOff className="text-red-500" />
+                        <WifiOff className="h-4 w-4 text-red-500 mr-1" />
                       )}
-                      <span className="text-sm text-gray-500">
-                        {device.rssi}dBm
-                      </span>
+                      {device.rssi}dBm
                     </div>
                   </div>
-                  <button
+                  <Button
                     onClick={(e) => handleConnectAndInit(e, device.macAddress)}
-                    className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                      loadingMap.get(device.macAddress)
-                        ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                        : "bg-cyan-700 text-white"
-                    }`}
                     disabled={loadingMap.get(device.macAddress)}
+                    className={`min-w-[100px] ${
+                      loadingMap.get(device.macAddress)
+                        ? "bg-gray-400"
+                        : "bg-[#008080] hover:bg-[#006666]"
+                    }`}
                   >
-                    {loadingMap.get(device.macAddress)
-                      ? "Processing..."
-                      : "Connect"}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">No BLE devices detected.</p>
-          )}
-        </div>
+                    {loadingMap.get(device.macAddress) ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Connect"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
 
         <button
           onClick={startQrCodeScan}
