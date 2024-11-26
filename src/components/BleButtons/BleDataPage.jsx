@@ -140,7 +140,7 @@ const BleDataPage = () => {
 //   }
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 mt-4">
       <h1 className="text-3xl font-bold mb-6">Device Data</h1>
 
       <Button
