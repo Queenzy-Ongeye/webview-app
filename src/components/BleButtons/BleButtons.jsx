@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Wifi, WifiOff } from "lucide-react";
+import { Camera, Loader2, Wifi, WifiOff, ChevronDown } from "lucide-react";
 import BleDataPage from "./BleDataPage";
+import { Button } from "../reusableCards/Buttons";
+import { Input } from "../reusableCards/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../reusableCards/select";
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
@@ -14,7 +23,28 @@ const BleButtons = () => {
   const [error, setError] = useState(null);
   const [showBleDataPage, setShowBleDataPage] = useState(false); // Control rendering of BleDataPage
   const [isNavigating, setIsNavigating] = useState(false);
-  const [currentFilter, setCurrentFilter] = useState("all");
+  const [isPopupVisible, setPopupVisible] = useState(false);
+  const [matchFound, setMatchFound] = useState(null);
+  const [devices, setDevices] = useState([]);
+  const [sortBy, setSortBy] = useState("rssi");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleMatchResult = (found) => {
+    setMatchFound(found);
+    setPopupVisible(true);
+  };
+
+  // Function to handle "View Device Data" button click when match is found
+  const handleContinue = () => {
+    if (matchFound && state.initBleData) {
+      navigate("/ble-data", {
+        state: { deviceData: state.initBleData.dataList },
+      }); // Pass data to new page
+    }
+    setPopupVisible(false); // Close the popup
+  };
 
   // Helper to check if any device is loading
   const isAnyDeviceLoading = () => {
@@ -32,30 +62,27 @@ const BleButtons = () => {
   );
 
   // Filter and sort devices based on the current filter
-  const filteredAndSortedDevices = useMemo(() => {
-    let devices = Array.from(uniqueDevicesMap.values());
+  const sortedAndFilteredDevices = useMemo(() => {
+    return devices
+      .filter(
+        (device) =>
+          device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          device.macAddress.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (sortBy === "rssi") {
+          return sortOrder === "desc" ? b.rssi - a.rssi : a.rssi - b.rssi;
+        } else {
+          return sortOrder === "desc"
+            ? b.name.localeCompare(a.name)
+            : a.name.localeCompare(b.name);
+        }
+      });
+  }, [devices, sortBy, sortOrder, searchTerm]);
 
-    switch (currentFilter) {
-      case "strong":
-        return devices
-          .filter((device) => device.rssi > -70)
-          .sort((a, b) => b.rssi - a.rssi);
-      case "medium":
-        return devices
-          .filter((device) => device.rssi <= -70 && device.rssi > -90)
-          .sort((a, b) => b.rssi - a.rssi);
-      case "weak":
-        return devices
-          .filter((device) => device.rssi <= -90)
-          .sort((a, b) => b.rssi - a.rssi);
-      default:
-        return devices.sort((a, b) => b.rssi - a.rssi);
-    }
-  }, [uniqueDevicesMap, currentFilter]);
-
-  const handleFilterChange = (filter) => {
-    setCurrentFilter(filter);
-  };
+  // const handleFilterChange = (filter) => {
+  //   setCurrentFilter(filter);
+  // };
 
   useEffect(() => {
     if (window.WebViewJavascriptBridge) {
@@ -325,34 +352,33 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2">
-          <div className="flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-gray-600 border-gray-300"
-                >
-                  <span className="mr-1">↑↓</span>
-                  Filter
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleFilterChange("all")}>
-                  All Signals
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("strong")}>
-                  Strong Signal (-70 dBm)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("medium")}>
-                  Medium Signal (-90 to -70 dBm)
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFilterChange("weak")}>
-                  Weak Signal ( -90 dBm)
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="mt-2 mb-2">
+            <Input
+              type="text"
+              placeholder="Search devices..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-200"
+            />
+          </div>
+
+          <div className="flex justify-between mb-4">
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
+                <SelectItem value="rssi">Signal Strength</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="outline"
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            >
+              {sortOrder === "asc" ? "↑" : "↓"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -362,9 +388,9 @@ const BleButtons = () => {
               <Camera className="h-4 w-4" />
             </Button>
           </div>
-          {filteredAndSortedDevices.length > 0 ? (
+          {sortedAndFilteredDevices.length > 0 ? (
             <ul className="text-left">
-              {filteredAndSortedDevices.map((device) => (
+              {sortedAndFilteredDevices.map((device) => (
                 <li
                   key={device.macAddress}
                   className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
