@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { FaHome, FaQrcode, FaUserAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { SiGooglemaps } from "react-icons/si";
 
 const BottomNav = () => {
   const [active, setActive] = useState("home"); // Track active button
@@ -22,8 +23,8 @@ const BottomNav = () => {
         {/* Scan QR Code Button */}
         <Link to="/scan-data">
           <NavItem
-            icon={<FaQrcode />}
-            label="Scan QR"
+            icon={<SiGooglemaps />}
+            label="Tracker"
             active={active === "scanqr"}
             onClick={() => setActive("scanqr")}
           />
