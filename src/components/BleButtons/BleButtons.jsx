@@ -14,6 +14,7 @@ const BleButtons = () => {
   const [error, setError] = useState(null);
   const [showBleDataPage, setShowBleDataPage] = useState(false); // Control rendering of BleDataPage
   const [isNavigating, setIsNavigating] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState("all");
 
   // Helper to check if any device is loading
   const isAnyDeviceLoading = () => {
@@ -29,6 +30,32 @@ const BleButtons = () => {
   const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
     (a, b) => b.rssi - a.rssi
   );
+
+  // Filter and sort devices based on the current filter
+  const filteredAndSortedDevices = useMemo(() => {
+    let devices = Array.from(uniqueDevicesMap.values());
+
+    switch (currentFilter) {
+      case "strong":
+        return devices
+          .filter((device) => device.rssi > -70)
+          .sort((a, b) => b.rssi - a.rssi);
+      case "medium":
+        return devices
+          .filter((device) => device.rssi <= -70 && device.rssi > -90)
+          .sort((a, b) => b.rssi - a.rssi);
+      case "weak":
+        return devices
+          .filter((device) => device.rssi <= -90)
+          .sort((a, b) => b.rssi - a.rssi);
+      default:
+        return devices.sort((a, b) => b.rssi - a.rssi);
+    }
+  }, [uniqueDevicesMap, currentFilter]);
+
+  const handleFilterChange = (filter) => {
+    setCurrentFilter(filter);
+  };
 
   useEffect(() => {
     if (window.WebViewJavascriptBridge) {
@@ -210,6 +237,35 @@ const BleButtons = () => {
     });
   };
 
+  // Function to initiate the QR/barcode scan
+  const startQrCodeScan = () => {
+    if (window.WebViewJavascriptBridge) {
+      try {
+        window.WebViewJavascriptBridge.callHandler(
+          "startQrCodeScan",
+          999,
+          (responseData) => {
+            const parsedResponse = JSON.parse(responseData);
+            // Check if the scan initiation was successful
+            if (
+              parsedResponse.respCode === "200" &&
+              parsedResponse.respData === true
+            ) {
+              console.log("Scan started successfully.");
+            } else {
+              console.error("Failed to start scan:", parsedResponse.respDesc);
+              alert("Failed to start scan. Please try again.");
+            }
+          }
+        );
+      } catch (error) {
+        console.error("Error starting QR code scan:", error.message);
+      }
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+    }
+  };
+
   return (
     <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
       {/* Background with BleDataPage when loading */}
@@ -231,9 +287,46 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2">
-          {uniqueDevice.length > 0 ? (
+          <div className="flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-600 border-gray-300"
+                >
+                  <span className="mr-1">↑↓</span>
+                  Filter
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleFilterChange("all")}>
+                  All Signals
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("strong")}>
+                  Strong Signal (-70 dBm)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("medium")}>
+                  Medium Signal (-90 to -70 dBm)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleFilterChange("weak")}>
+                  Weak Signal ( -90 dBm)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-gray-600 border-gray-300"
+              onClick={startQrCodeScan}
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+          </div>
+          {filteredAndSortedDevices.length > 0 ? (
             <ul className="text-left">
-              {uniqueDevice.map((device) => (
+              {filteredAndSortedDevices.map((device) => (
                 <li
                   key={device.macAddress}
                   className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
