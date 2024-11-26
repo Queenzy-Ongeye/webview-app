@@ -266,6 +266,44 @@ const BleButtons = () => {
     }
   };
 
+  // Search for a match in the BLE data once initialized
+  const searchForMatch = () => {
+    const { initBleData, scannedData } = state;
+
+    if (!initBleData || !scannedData) {
+      handleMatchResult(false);
+      return;
+    }
+
+    let match = false;
+    let foundDeviceData = null;
+    for (const item of initBleData.dataList || []) {
+      for (const characteristic of Object.values(item.characterMap || {})) {
+        const { realVal, desc } = characteristic;
+        if (
+          (realVal && realVal.toString().includes(scannedData)) ||
+          (desc && desc.includes(scannedData))
+        ) {
+          match = true;
+          foundDeviceData = item; // Store matched device data
+          console.log("Match:", characteristic);
+          break;
+        }
+      }
+      if (match) break;
+    }
+
+    handleMatchResult(match, foundDeviceData);
+  };
+
+  // useEffect hook to monitor initBleData and scannedData changes
+  useEffect(() => {
+    if (state.initBleData && state.scannedData && isPopupVisible) {
+      // Run the search only when both initBleData and scannedData are available
+      searchForMatch();
+    }
+  }, [state.initBleData, state.scannedData]);
+
   return (
     <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
       {/* Background with BleDataPage when loading */}
