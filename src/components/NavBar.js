@@ -61,7 +61,7 @@ const NavigationBar = () => {
         </button>
 
         {/* New Buttons */}
-        <div className="flex items-center space-x-2">
+        {/* <div className="flex items-center space-x-2">
           <Link
             to="/home"
             className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 rounded text-white text-xs sm:text-sm"
@@ -74,7 +74,7 @@ const NavigationBar = () => {
           >
             Scan to Bind
           </Link>
-        </div>
+        </div> */}
 
         {/* Cloud Icon for MQTT Status */}
         <div className={`${isConnected ? "text-green-500" : "text-gray-500"}`}>
