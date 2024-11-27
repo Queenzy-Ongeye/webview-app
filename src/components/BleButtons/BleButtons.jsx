@@ -25,7 +25,7 @@ const BleButtons = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
-  const [sortBy, setSortBy] = useState("name");
+  const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
