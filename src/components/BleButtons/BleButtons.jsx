@@ -349,54 +349,52 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2">
-          <div className="sticky top-0 z-10 bg-white w-full">
-            <div className="container mx-auto px-auto">
-              <div className="mb-4">
-                <Input
-                  type="text"
-                  placeholder="Search devices..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-gray-200"
-                />
-              </div>
+          <div className="container mx-auto px-auto sticky top-0 z-10 bg-white w-full">
+            <div className="mb-4">
+              <Input
+                type="text"
+                placeholder="Search devices..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-gray-200"
+              />
+            </div>
 
-              <div className="flex flex-wrap justify-between items-center gap-2">
-                <Select
-                  value={sortBy}
-                  onValueChange={(value) => setSortBy(value)}
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <Select
+                value={sortBy}
+                onValueChange={(value) => setSortBy(value)}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="rssi">Signal Strength</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                  }
+                  aria-label={
+                    sortOrder === "asc" ? "Sort ascending" : "Sort descending"
+                  }
                 >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="rssi">Signal Strength</SelectItem>
-                    <SelectItem value="name">Name</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-                    }
-                    aria-label={
-                      sortOrder === "asc" ? "Sort ascending" : "Sort descending"
-                    }
-                  >
-                    {sortOrder === "asc" ? "↑" : "↓"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="text-gray-600 border-gray-300"
-                    onClick={startQrCodeScan}
-                    aria-label="Scan QR Code"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                </div>
+                  {sortOrder === "asc" ? "↑" : "↓"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="text-gray-600 border-gray-300"
+                  onClick={startQrCodeScan}
+                  aria-label="Scan QR Code"
+                >
+                  <Camera className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
