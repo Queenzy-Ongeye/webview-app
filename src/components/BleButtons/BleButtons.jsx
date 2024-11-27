@@ -28,7 +28,8 @@ const BleButtons = () => {
   const [sortBy, setSortBy] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isQrScanConnection, setIsQrScanConnection] = useState(false);
+
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -156,50 +157,42 @@ const BleButtons = () => {
       setIsQrScanConnection(false);
     }
   };
+ // Modify handleConnectAndInit to differentiate manual and QR scan connections
+ const handleConnectAndInit = async (e, macAddress) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setError(null);
+  setShowBleDataPage(false);
 
-  const handleConnectAndInit = async (e, macAddress) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setError(null);
-    setShowBleDataPage(false); // Hide BleDataPage initially
+  // Reset QR scan connection flag for manual connections
+  setIsQrScanConnection(false);
 
-    // Mark the device as loading
-    setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
-    setConnectingMacAddress(macAddress);
+  setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
+  setConnectingMacAddress(macAddress);
 
-    try {
-      console.log("Starting connection process for:", macAddress);
-      const connectionResult = await connectToBluetoothDevice(macAddress);
-      console.log("Connection result:", connectionResult);
+  try {
+    const connectionResult = await connectToBluetoothDevice(macAddress);
+    await new Promise((resolve) => setTimeout(resolve, 25000));
 
-      // Simulate stabilization time
-      await new Promise((resolve) => setTimeout(resolve, 25000));
-
-      console.log("Starting BLE data initialization");
-      const response = await initBleData(macAddress);
-      console.log("BLE initialization response:", response);
-
-      dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
-      setConnectionSuccessMac(macAddress);
-      setInitSuccessMac(macAddress);
-
-      // Show BleDataPage after successful initialization
-      setShowBleDataPage(true);
-    } catch (error) {
-      console.error("Connection/initialization error:", error);
-      setError(error.message || "Failed to connect and initialize BLE data");
-    } finally {
-      // Clean up loading states after a delay
-      setTimeout(() => {
-        setConnectingMacAddress(null);
-        setLoadingMap((prevMap) => {
-          const newMap = new Map(prevMap);
-          newMap.delete(macAddress);
-          return newMap;
-        });
-      }, 50000);
-    }
-  };
+    const response = await initBleData(macAddress);
+    dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
+    setConnectionSuccessMac(macAddress);
+    setInitSuccessMac(macAddress);
+    setShowBleDataPage(true);
+  } catch (error) {
+    console.error("Connection/initialization error:", error);
+    setError(error.message || "Failed to connect and initialize BLE data");
+  } finally {
+    setTimeout(() => {
+      setConnectingMacAddress(null);
+      setLoadingMap((prevMap) => {
+        const newMap = new Map(prevMap);
+        newMap.delete(macAddress);
+        return newMap;
+      });
+    }, 50000);
+  }
+};
 
   const connectToBluetoothDevice = (macAddress) => {
     return new Promise((resolve, reject) => {
