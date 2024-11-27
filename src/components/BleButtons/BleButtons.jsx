@@ -25,7 +25,6 @@ const BleButtons = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
-  const [devices, setDevices] = useState([]);
   const [sortBy, setSortBy] = useState("rssi");
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,12 +62,7 @@ const BleButtons = () => {
 
   // Filter and sort devices based on the current filter
   const sortedAndFilteredDevices = useMemo(() => {
-    return devices
-      .filter(
-        (device) =>
-          device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          device.macAddress.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+    return Array.from(uniqueDevicesMap.values())
       .sort((a, b) => {
         if (sortBy === "rssi") {
           return sortOrder === "desc" ? b.rssi - a.rssi : a.rssi - b.rssi;
@@ -78,7 +72,7 @@ const BleButtons = () => {
             : a.name.localeCompare(b.name);
         }
       });
-  }, [devices, sortBy, sortOrder, searchTerm]);
+  }, [sortBy, sortOrder, searchTerm]);
 
   // const handleFilterChange = (filter) => {
   //   setCurrentFilter(filter);
