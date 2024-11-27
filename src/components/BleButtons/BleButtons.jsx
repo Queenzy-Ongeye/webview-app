@@ -105,30 +105,23 @@ const BleButtons = () => {
     console.log("Attempting navigation with data:", {
       initBleData: state.initBleData,
       dataList: state.initBleData?.dataList,
-      isQrScanConnection: isQrScanConnection,
-      matchFound: matchFound,
     });
 
     setIsNavigating(true);
 
     try {
-      // For standard BLE connections, always navigate
-      if (!isQrScanConnection && state.initBleData?.dataList) {
+      if (state.initBleData?.dataList) {
+        // Ensure we have the data before navigating
         const deviceData = state.initBleData.dataList;
-
+        // Use a short timeout to ensure state updates have completed
         setTimeout(() => {
-          console.log(
-            "Navigating to /ble-data with standard BLE data:",
-            deviceData
-          );
+          console.log("Navigating to /ble-data with data:", deviceData);
           navigate("/ble-data", {
             state: { deviceData },
-            replace: true,
+            replace: true, // Use replace to prevent back navigation issues
           });
         }, 3000);
-      }
-      // For QR scan connections, only navigate if a match is found
-      else if (
+      } else if (
         isQrScanConnection &&
         matchFound &&
         state.initBleData?.dataList
@@ -144,19 +137,17 @@ const BleButtons = () => {
             state: { deviceData },
             replace: true,
           });
-        }, 3000);
+        })
       } else {
-        throw new Error("Navigation attempted without valid data or match");
+        throw new Error("Navigation attempted without valid data");
       }
     } catch (error) {
       console.error("Navigation error:", error);
-      setError(`Failed to navigate: ${error.message}`);
+      setError("Failed to navigate: ${error.message}");
       setIsNavigating(false);
-    } finally {
-      // Reset QR scan connection flag after navigation attempt
-      setIsQrScanConnection(false);
     }
   };
+
   // Modify handleConnectAndInit to differentiate manual and QR scan connections
   const handleConnectAndInit = async (e, macAddress) => {
     e.preventDefault();
@@ -361,7 +352,7 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2">
-          <div className="container mx-auto px-auto sticky top-0 z-10 bg-white w-full">
+          <div className="container mx-auto px-auto sticky top-0 z-10 w-full mt-2">
             <div className="mb-4">
               <Input
                 type="text"
