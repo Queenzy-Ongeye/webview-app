@@ -63,6 +63,9 @@ const BleButtons = () => {
   // Filter and sort devices based on the current filter
   const sortedAndFilteredDevices = useMemo(() => {
     return Array.from(uniqueDevicesMap.values())
+      .filter((device) =>
+        device.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
       .sort((a, b) => {
         if (sortBy === "rssi") {
           return sortOrder === "desc" ? b.rssi - a.rssi : a.rssi - b.rssi;
