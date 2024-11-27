@@ -35,16 +35,9 @@ const BleButtons = () => {
     setPopupVisible(true);
   };
 
-  // Function to handle "View Device Data" button click when match is found
   const handleContinue = () => {
-    if (matchFound && state.initBleData) {
-      navigate("/ble-data", {
-        state: { deviceData: state.initBleData.dataList },
-      }); // Pass data to new page
-    }
     setPopupVisible(false); // Close the popup
   };
-
   // Helper to check if any device is loading
   const isAnyDeviceLoading = () => {
     return Array.from(loadingMap.values()).some((isLoading) => isLoading);
@@ -55,10 +48,6 @@ const BleButtons = () => {
   state.detectedDevices.forEach((device) => {
     uniqueDevicesMap.set(device.macAddress, device);
   });
-
-  const uniqueDevice = Array.from(uniqueDevicesMap.values()).sort(
-    (a, b) => b.rssi - a.rssi
-  );
 
   // Filter and sort devices based on the current filter
   const sortedAndFilteredDevices = useMemo(() => {
@@ -115,30 +104,56 @@ const BleButtons = () => {
     console.log("Attempting navigation with data:", {
       initBleData: state.initBleData,
       dataList: state.initBleData?.dataList,
+      isQrScanConnection: isQrScanConnection,
+      matchFound: matchFound,
     });
 
     setIsNavigating(true);
 
     try {
-      if (state.initBleData?.dataList) {
-        // Ensure we have the data before navigating
+      // For standard BLE connections, always navigate
+      if (!isQrScanConnection && state.initBleData?.dataList) {
         const deviceData = state.initBleData.dataList;
 
-        // Use a short timeout to ensure state updates have completed
         setTimeout(() => {
-          console.log("Navigating to /ble-data with data:", deviceData);
+          console.log(
+            "Navigating to /ble-data with standard BLE data:",
+            deviceData
+          );
           navigate("/ble-data", {
             state: { deviceData },
-            replace: true, // Use replace to prevent back navigation issues
+            replace: true,
+          });
+        }, 3000);
+      }
+      // For QR scan connections, only navigate if a match is found
+      else if (
+        isQrScanConnection &&
+        matchFound &&
+        state.initBleData?.dataList
+      ) {
+        const deviceData = state.initBleData.dataList;
+
+        setTimeout(() => {
+          console.log(
+            "Navigating to /ble-data with matched scan data:",
+            deviceData
+          );
+          navigate("/ble-data", {
+            state: { deviceData },
+            replace: true,
           });
         }, 3000);
       } else {
-        throw new Error("Navigation attempted without valid data");
+        throw new Error("Navigation attempted without valid data or match");
       }
     } catch (error) {
       console.error("Navigation error:", error);
       setError(`Failed to navigate: ${error.message}`);
       setIsNavigating(false);
+    } finally {
+      // Reset QR scan connection flag after navigation attempt
+      setIsQrScanConnection(false);
     }
   };
 
@@ -320,13 +335,17 @@ const BleButtons = () => {
     handleMatchResult(match, foundDeviceData);
   };
 
-  // useEffect hook to monitor initBleData and scannedData changes
+  // Effect to trigger search only for QR scan connections
   useEffect(() => {
-    if (state.initBleData && state.scannedData && isPopupVisible) {
-      // Run the search only when both initBleData and scannedData are available
+    if (state.initBleData && state.scannedData && isQrScanConnection) {
       searchForMatch();
     }
-  }, [state.initBleData, state.scannedData]);
+  }, [
+    state.initBleData,
+    state.scannedData,
+    isQrScanConnection,
+    searchForMatch,
+  ]);
 
   return (
     <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
@@ -455,6 +474,13 @@ const BleButtons = () => {
             <p className="text-gray-700">Loading data...</p>
           </div>
         </div>
+      )}
+      {isPopupVisible && (
+        <PopupNotification
+          matchFound={matchFound}
+          onClose={() => setPopupVisible(false)}
+          onContinue={handleContinue}
+        />
       )}
     </div>
   );
