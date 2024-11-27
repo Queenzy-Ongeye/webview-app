@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useStore } from "../../service/store";
 import { useNavigate } from "react-router-dom";
 import { Camera, Loader2, Wifi, WifiOff, ChevronDown } from "lucide-react";
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../reusableCards/select";
+import PopupNotification from "../notification/PopUp";
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
