@@ -349,41 +349,56 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2">
-          <div className="mt-2 mb-2">
-            <Input
-              type="text"
-              placeholder="Search devices..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-gray-200"
-            />
-          </div>
+          <div className="sticky top-0 z-10 bg-white shadow-md">
+            <div className="container mx-auto px-4 py-4">
+              <div className="mb-4">
+                <Input
+                  type="text"
+                  placeholder="Search devices..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-gray-200"
+                />
+              </div>
 
-          <div className="flex justify-between mb-4">
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="rssi">Signal Strength</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-              </SelectContent>
-            </Select>
+              <div className="flex flex-wrap justify-between items-center gap-2">
+                <Select
+                  value={sortBy}
+                  onValueChange={(value) => setSortBy(value)}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="rssi">Signal Strength</SelectItem>
+                    <SelectItem value="name">Name</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <Button
-              variant="outline"
-              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            >
-              {sortOrder === "asc" ? "↑" : "↓"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-gray-600 border-gray-300"
-              onClick={startQrCodeScan}
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                    }
+                    aria-label={
+                      sortOrder === "asc" ? "Sort ascending" : "Sort descending"
+                    }
+                  >
+                    {sortOrder === "asc" ? "↑" : "↓"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="text-gray-600 border-gray-300"
+                    onClick={startQrCodeScan}
+                    aria-label="Scan QR Code"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
           {sortedAndFilteredDevices.length > 0 ? (
             <ul className="text-left">
