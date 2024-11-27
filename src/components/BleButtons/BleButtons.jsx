@@ -25,7 +25,7 @@ const BleButtons = () => {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [matchFound, setMatchFound] = useState(null);
-  const [sortBy, setSortBy] = useState("rssi");
+  const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -349,8 +349,8 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2">
-          <div className="sticky top-0 z-10 bg-white shadow-md">
-            <div className="container mx-auto px-4 py-4">
+          <div className="sticky top-0 z-10 bg-white w-full">
+            <div className="container mx-auto px-auto">
               <div className="mb-4">
                 <Input
                   type="text"
