@@ -30,7 +30,6 @@ const BleButtons = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isQrScanConnection, setIsQrScanConnection] = useState(false);
 
-
   const handleMatchResult = (found) => {
     setMatchFound(found);
     setPopupVisible(true);
@@ -157,42 +156,42 @@ const BleButtons = () => {
       setIsQrScanConnection(false);
     }
   };
- // Modify handleConnectAndInit to differentiate manual and QR scan connections
- const handleConnectAndInit = async (e, macAddress) => {
-  e.preventDefault();
-  e.stopPropagation();
-  setError(null);
-  setShowBleDataPage(false);
+  // Modify handleConnectAndInit to differentiate manual and QR scan connections
+  const handleConnectAndInit = async (e, macAddress) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setError(null);
+    setShowBleDataPage(false);
 
-  // Reset QR scan connection flag for manual connections
-  setIsQrScanConnection(false);
+    // Reset QR scan connection flag for manual connections
+    setIsQrScanConnection(false);
 
-  setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
-  setConnectingMacAddress(macAddress);
+    setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
+    setConnectingMacAddress(macAddress);
 
-  try {
-    const connectionResult = await connectToBluetoothDevice(macAddress);
-    await new Promise((resolve) => setTimeout(resolve, 25000));
+    try {
+      const connectionResult = await connectToBluetoothDevice(macAddress);
+      await new Promise((resolve) => setTimeout(resolve, 25000));
 
-    const response = await initBleData(macAddress);
-    dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
-    setConnectionSuccessMac(macAddress);
-    setInitSuccessMac(macAddress);
-    setShowBleDataPage(true);
-  } catch (error) {
-    console.error("Connection/initialization error:", error);
-    setError(error.message || "Failed to connect and initialize BLE data");
-  } finally {
-    setTimeout(() => {
-      setConnectingMacAddress(null);
-      setLoadingMap((prevMap) => {
-        const newMap = new Map(prevMap);
-        newMap.delete(macAddress);
-        return newMap;
-      });
-    }, 50000);
-  }
-};
+      const response = await initBleData(macAddress);
+      dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
+      setConnectionSuccessMac(macAddress);
+      setInitSuccessMac(macAddress);
+      setShowBleDataPage(true);
+    } catch (error) {
+      console.error("Connection/initialization error:", error);
+      setError(error.message || "Failed to connect and initialize BLE data");
+    } finally {
+      setTimeout(() => {
+        setConnectingMacAddress(null);
+        setLoadingMap((prevMap) => {
+          const newMap = new Map(prevMap);
+          newMap.delete(macAddress);
+          return newMap;
+        });
+      }, 50000);
+    }
+  };
 
   const connectToBluetoothDevice = (macAddress) => {
     return new Promise((resolve, reject) => {
@@ -298,11 +297,11 @@ const BleButtons = () => {
     }
   };
 
-  // Search for a match in the BLE data once initialized
-  const searchForMatch = () => {
+  // Modify searchForMatch to use isQrScanConnection
+  const searchForMatch = useCallback(() => {
     const { initBleData, scannedData } = state;
 
-    if (!initBleData || !scannedData) {
+    if (!initBleData || !scannedData || !isQrScanConnection) {
       handleMatchResult(false);
       return;
     }
@@ -317,7 +316,7 @@ const BleButtons = () => {
           (desc && desc.includes(scannedData))
         ) {
           match = true;
-          foundDeviceData = item; // Store matched device data
+          foundDeviceData = item;
           console.log("Match:", characteristic);
           break;
         }
@@ -326,7 +325,7 @@ const BleButtons = () => {
     }
 
     handleMatchResult(match, foundDeviceData);
-  };
+  }, [state.initBleData, state.scannedData, isQrScanConnection]);
 
   // Effect to trigger search only for QR scan connections
   useEffect(() => {
