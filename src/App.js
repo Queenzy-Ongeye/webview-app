@@ -1,9 +1,9 @@
-import React, { Suspense, lazy, useEffect, useState } from "react";
-import { HashRouter as Router, Route, Routes } from "react-router-dom";
+import React, { Suspense, lazy } from "react";
+import { HashRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import ThemeProvider from "./utility/ThemeContext";
-import Layout from "./components/Layout"; // Import Layout Component
+import Layout from "./components/Layout";
 import { UserProvider } from "./components/profile/userContex";
 
 // Lazy load the components
@@ -14,7 +14,6 @@ const CMDPage = lazy(() => import("./components/DeviceDetails/CMDPage"));
 const DTAPage = lazy(() => import("./components/DeviceDetails/DTAPage"));
 const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanDataPage"));
-const Header = lazy(() => import("./components/Header/Header")); // Lazy load Header
 const Login = lazy(() => import("./components/auth/loginPage"));
 const BlePage = lazy(() => import("./components/BleButtons/BlePage"));
 const DeviceData = lazy(() =>
@@ -25,13 +24,19 @@ const EditProfile = lazy(() => import("./components/profile/EditProfilePage"));
 const BleData = lazy(() => import("./components/BleButtons/BleDataPage"));
 const BleContainer = lazy(() => import("./components/BleButtons/BleContainer"));
 
-const App = () => {
-  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const location = useLocation();
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
-  // useEffect(() => {
-  //   const authStatus = Boolean(localStorage.getItem(isAuthenticated));
-  //   setIsAuthenticated(authStatus);
-  // }, [])
+  if (!isLoggedIn) {
+    return <Navigate to="/" state={{ from: location }} replace />;
+  }
+
+  return <Layout>{children}</Layout>;
+};
+
+const App = () => {
   return (
     <UserProvider>
       <StoreProvider>
@@ -45,109 +50,110 @@ const App = () => {
           >
             <Routes>
               <Route path="/" element={<Login />} />
-              {/* Use Layout for all routes to ensure NavigationBar is included */}
+              
+              {/* Protected Routes */}
               <Route
                 path="/home"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <Home />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/att"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <AttPage />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/cmd"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <CMDPage />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/sts"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <StsPage />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/dta"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <DTAPage />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/dia"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <DIAPage />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/ble"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <BlePage />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/scan-data"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <ScanData />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/device-data"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <DeviceData />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/profile"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <Profile />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/edit-profile"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <EditProfile />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/ble-data"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <BleData />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/ble-container"
                 element={
-                  <Layout>
+                  <ProtectedRoute>
                     <BleContainer />
-                  </Layout>
+                  </ProtectedRoute>
                 }
               />
             </Routes>
