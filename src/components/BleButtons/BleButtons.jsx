@@ -136,7 +136,7 @@ const BleButtons = () => {
             state: { deviceData },
             replace: true, // Use replace to prevent back navigation issues
           });
-        }, 3000);
+        }, 5000);
       } else {
         throw new Error("Navigation attempted without valid data");
       }
@@ -185,7 +185,7 @@ const BleButtons = () => {
         });
         setShowProgressBar(false);
         setProgress(0); // Reset progress
-      }, 50000);
+      }, 55000);
     }
   };
 
@@ -578,7 +578,7 @@ const BleButtons = () => {
             <ProgressBar progress={progress} />
             <p className="text-gray-700 mt-4">
               {progress < 100
-                ? `Connecting... ${progress}%`
+                ? `Loading data... ${progress}%`
                 : "Finishing up..."}
             </p>
           </div>
