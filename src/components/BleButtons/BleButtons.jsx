@@ -16,7 +16,6 @@ import PopupNotification from "../notification/PopUp";
 import { ProgressBar } from "../reusableCards/progresBar";
 import { MdOutlineTouchApp } from "react-icons/md";
 
-
 const BleButtons = () => {
   const { dispatch, state } = useStore();
   const navigate = useNavigate();
@@ -34,6 +33,8 @@ const BleButtons = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isQrScanConnection, setIsQrScanConnection] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isAutoConnecting, setIsAutoConnecting] = useState(false);
+  const [currentAutoConnectIndex, setCurrentAutoConnectIndex] = useState(0);
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -141,23 +142,6 @@ const BleButtons = () => {
             replace: true, // Use replace to prevent back navigation issues
           });
         }, 3000);
-      } else if (
-        isQrScanConnection &&
-        matchFound &&
-        state.initBleData?.dataList
-      ) {
-        const deviceData = state.initBleData.dataList;
-
-        setTimeout(() => {
-          console.log(
-            "Navigating to /ble-data with matched scan data:",
-            deviceData
-          );
-          navigate("/ble-data", {
-            state: { deviceData },
-            replace: true,
-          });
-        });
       } else {
         throw new Error("Navigation attempted without valid data");
       }
@@ -182,7 +166,7 @@ const BleButtons = () => {
     setConnectingMacAddress(macAddress);
 
     try {
-      const connectionResult = await connectToBluetoothDevice(macAddress);
+      await connectToBluetoothDevice(macAddress);
       await new Promise((resolve) => setTimeout(resolve, 25000));
 
       const response = await initBleData(macAddress);
@@ -283,31 +267,127 @@ const BleButtons = () => {
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
-      try {
-        window.WebViewJavascriptBridge.callHandler(
-          "startQrCodeScan",
-          999,
-          (responseData) => {
-            const parsedResponse = JSON.parse(responseData);
-            // Check if the scan initiation was successful
-            if (
-              parsedResponse.respCode === "200" &&
-              parsedResponse.respData === true
-            ) {
-              console.log("Scan started successfully.");
-            } else {
-              console.error("Failed to start scan:", parsedResponse.respDesc);
-              alert("Failed to start scan. Please try again.");
-            }
+      window.WebViewJavascriptBridge.callHandler(
+        "startQrCodeScan",
+        999,
+        (responseData) => {
+          const parsedResponse = JSON.parse(responseData);
+          if (
+            parsedResponse.respCode === "200" &&
+            parsedResponse.respData === true
+          ) {
+            // Reset auto-connection when starting a new scan
+            setIsAutoConnecting(true);
+            setCurrentAutoConnectIndex(0);
+            console.log("Scan started, preparing auto-connection");
+          } else {
+            console.error("Failed to start scan:", parsedResponse.respDesc);
+            alert("Failed to start scan. Please try again.");
           }
-        );
-      } catch (error) {
-        console.error("Error starting QR code scan:", error.message);
-      }
+        }
+      );
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
+
+  // Device matching function
+  const checkDeviceMatch = () => {
+    const { initBleData, scannedData } = state;
+
+    if (!initBleData || !scannedData || !initBleData.dataList) return false;
+
+    for (const item of initBleData.dataList) {
+      // Check if the item has a characterMap
+      if (item.characterMap) {
+        for (const characteristic of Object.values(item.characterMap)) {
+          const { realVal, desc } = characteristic;
+
+          // Check if scanned data matches either realVal or desc
+          if (
+            (realVal && realVal.toString().includes(scannedData)) ||
+            (desc && desc.includes(scannedData))
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+
+  // Automatic connection logic
+  const autoConnectNextDevice = useCallback(async () => {
+    const devices = sortedAndFilteredDevices;
+
+    if (currentAutoConnectIndex >= devices.length) {
+      setIsAutoConnecting(false);
+      setCurrentAutoConnectIndex(0);
+      return;
+    }
+
+    const deviceToConnect = devices[currentAutoConnectIndex];
+
+    try {
+      await connectToBluetoothDevice(deviceToConnect.macAddress);
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Short delay
+
+      await initBleData(deviceToConnect.macAddress);
+
+      // Wait for state to update with dataList
+      const checkMatch = () => {
+        return new Promise((resolve) => {
+          // Use a timeout to give some time for state to update
+          const checkInterval = setInterval(() => {
+            if (state.initBleData?.dataList) {
+              clearInterval(checkInterval);
+              resolve(checkDeviceMatch());
+            }
+          }, 500); // Check every 500ms
+
+          // Prevent infinite waiting
+          setTimeout(() => {
+            clearInterval(checkInterval);
+            resolve(false);
+          }, 10000); // 10 seconds timeout
+        });
+      };
+
+      const matchFound = await checkMatch();
+
+      if (matchFound) {
+        navigate("/ble-data", {
+          state: { deviceData: state.initBleData.dataList },
+          replace: true,
+        });
+        setIsAutoConnecting(false);
+      } else {
+        // Move to next device
+        setCurrentAutoConnectIndex((prev) => prev + 1);
+        // Recursively try next device
+        autoConnectNextDevice();
+      }
+    } catch (error) {
+      console.error("Auto-connection error:", error);
+      // Move to next device on failure
+      setCurrentAutoConnectIndex((prev) => prev + 1);
+      autoConnectNextDevice();
+    }
+  }, [sortedAndFilteredDevices, currentAutoConnectIndex, state.scannedData]);
+
+  // Add an effect to watch for dataList updates during auto-connection
+  useEffect(() => {
+    if (isAutoConnecting && state.initBleData?.dataList) {
+      const matchFound = checkDeviceMatch();
+      if (matchFound) {
+        navigate("/ble-data", {
+          state: { deviceData: state.initBleData.dataList },
+          replace: true,
+        });
+        setIsAutoConnecting(false);
+      }
+    }
+  }, [state.initBleData, isAutoConnecting, state.scannedData]);
 
   // Modify searchForMatch to use isQrScanConnection
   const searchForMatch = useCallback(() => {
