@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AtSign, Lock, Eye, EyeOff } from "lucide-react";
 import { Alert, AlertDescription } from "../reusableCards/alert";
 import {
@@ -10,23 +10,22 @@ import {
   CardTitle,
   CardContent,
   CardDescription,
-  CardFooter,
+  CardFooter
 } from "../reusableCards/cards";
 import { Button } from "../reusableCards/Buttons";
 import { Input } from "../reusableCards/input";
 import { Label } from "../reusableCards/lable";
-import { useAuth } from "./authContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/home";
   const navigate = useNavigate();
-  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -36,8 +35,7 @@ export default function LoginPage() {
 
     if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
       setError("");
-      login(); // Update authentication state
-      navigate("/home", { replace: true }); // Redirect to home
+      navigate(from, { replace: true });
     } else {
       setError("Invalid email or password");
     }
@@ -45,7 +43,7 @@ export default function LoginPage() {
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <a
+      <Link
         href="/"
         className="mb-8 flex items-center text-2xl font-semibold text-primary"
       >
@@ -57,7 +55,7 @@ export default function LoginPage() {
           className="mr-2"
         />
         Omnivoltaic
-      </a>
+      </Link>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
@@ -122,12 +120,12 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <a
+          <Link
             href="/forgot-password"
             className="text-sm text-muted-foreground hover:underline"
           >
             Forgot password?
-          </a>
+          </Link>
         </CardFooter>
       </Card>
     </div>
