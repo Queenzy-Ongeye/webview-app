@@ -36,6 +36,7 @@ const BleButtons = () => {
   const [isAutoConnecting, setIsAutoConnecting] = useState(false);
   const [currentAutoConnectIndex, setCurrentAutoConnectIndex] = useState(0);
   const [showProgressBar, setShowProgressBar] = useState(false);
+  const [progressStage, setProgressStage] = useState("");
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -49,7 +50,7 @@ const BleButtons = () => {
   const isAnyDeviceLoading = () => {
     return Array.from(loadingMap.values()).some((isLoading) => isLoading);
   };
-  
+
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
   state.detectedDevices.forEach((device) => {
@@ -386,8 +387,17 @@ const BleButtons = () => {
         });
         setIsAutoConnecting(false);
       }
+      setShowProgressBar(true);
+      setProgressStage(
+        `Auto-connecting: Device ${currentAutoConnectIndex + 1}`
+      );
     }
-  }, [state.initBleData, isAutoConnecting, state.scannedData]);
+  }, [
+    state.initBleData,
+    isAutoConnecting,
+    state.scannedData,
+    currentAutoConnectIndex,
+  ]);
 
   // Modify searchForMatch to use isQrScanConnection
   const searchForMatch = useCallback(() => {
@@ -438,15 +448,23 @@ const BleButtons = () => {
     if (isAnyDeviceLoading()) {
       interval = setInterval(() => {
         setProgress((prevProgress) => {
+          if (prevProgress < 30) {
+            setProgressStage("Connecting to device");
+          } else if (prevProgress < 60) {
+            setProgressStage("Initializing BLE data");
+          } else {
+            setProgressStage("Finalizing connection");
+          }
           if (prevProgress >= 60) {
-            clearInterval(interval); // Stop at 90%, wait for completion
+            clearInterval(interval);
             return 60;
           }
-          return prevProgress + 5; // Increment by 5%
+          return prevProgress + 5;
         });
-      }, 500); // Update every 500ms
+      }, 500);
     } else {
-      setProgress(0); // Reset progress when no device is loading
+      setProgress(0);
+      setProgressStage("");
     }
 
     return () => clearInterval(interval);
@@ -572,7 +590,7 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {(isAnyDeviceLoading() && showProgressBar) && (
+      {isAnyDeviceLoading() && showProgressBar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <ProgressBar progress={progress} />
