@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AtSign, Lock, Eye, EyeOff } from "lucide-react";
 import { Alert, AlertDescription } from "../reusableCards/alert";
 import {
@@ -9,10 +10,9 @@ import {
   CardTitle,
   CardContent,
   CardDescription,
-  CardFooter
+  CardFooter,
 } from "../reusableCards/cards";
 import { Button } from "../reusableCards/Buttons";
-import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Input } from "../reusableCards/input";
 import { Label } from "../reusableCards/lable";
 
@@ -21,71 +21,34 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Predefined valid credentials
-  const VALID_EMAIL = "oves.altec@omnivoltaic.com";
-
-  useEffect(() => {
-    // Check if user is already logged in
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    if (isLoggedIn) {
-      // If logged in, try to go back to the previous page or home
-      const from = location.state?.from?.pathname || '/home';
-      navigate(from, { replace: true });
-    }
-  }, [location, navigate]);
+  // Extract the previous location from the state or default to "/home"
+  const from = location.state?.from?.pathname || "/home";
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Clear previous errors
-    setError("");
-
-    // Validate email and password separately
-    if (!email) {
-      setError("Email is required");
+    if (!email || !password) {
+      setError("Please enter both email and password");
       return;
     }
 
-    if (!password) {
-      setError("Password is required");
-      return;
+    if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
+      setError("");
+      localStorage.setItem("isLoggedIn", "true"); // Set the login state
+      navigate(from, { replace: true }); // Navigate to the previous page or home
+    } else {
+      setError("Invalid email or password");
     }
-
-    // Check email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Invalid email format");
-      return;
-    }
-
-    // Email-specific validation
-    if (email !== VALID_EMAIL) {
-      setError("Email not found");
-      return;
-    }
-
-    // Password-specific validation
-    if (password !== "Altec1234") {
-      setError("Incorrect password");
-      return;
-    }
-
-    // If all validations pass
-    setError("");
-    localStorage.setItem('isLoggedIn', 'true');
-    
-    // Navigate to the page user was trying to access or home
-    const from = location.state?.from?.pathname || '/home';
-    navigate(from, { replace: true });
   };
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <Link
-        to="/"
+      <a
+        href="/"
         className="mb-8 flex items-center text-2xl font-semibold text-primary"
       >
         <img
@@ -96,7 +59,7 @@ export default function LoginPage() {
           className="mr-2"
         />
         Omnivoltaic
-      </Link>
+      </a>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
@@ -117,6 +80,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
+                  required
                 />
               </div>
             </div>
@@ -131,6 +95,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
+                  required
                 />
                 <Button
                   type="button"
@@ -159,12 +124,12 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Link
-            to="/forgot-password"
+          <a
+            href="/forgot-password"
             className="text-sm text-muted-foreground hover:underline"
           >
             Forgot password?
-          </Link>
+          </a>
         </CardFooter>
       </Card>
     </div>
