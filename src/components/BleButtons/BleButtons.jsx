@@ -458,7 +458,7 @@ const BleButtons = () => {
                     {loadingMap.get(device.macAddress) ? (
                       <Loader2 className="animate-spin mr-2" />
                     ) : (
-                      "<MdOutlineTouchApp />"
+                      <MdOutlineTouchApp />
                     )}
                   </button>
                 </li>
