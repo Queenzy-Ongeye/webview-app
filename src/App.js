@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
-import { HashRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import { HashRouter as Router, Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import ThemeProvider from "./utility/ThemeContext";
@@ -58,16 +58,6 @@ const App = () => {
                     <ProtectedRoute>
                       <Layout>
                         <Home />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/ble"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <BlePage />
                       </Layout>
                     </ProtectedRoute>
                   }
