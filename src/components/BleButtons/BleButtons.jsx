@@ -35,6 +35,7 @@ const BleButtons = () => {
   const [progress, setProgress] = useState(0);
   const [isAutoConnecting, setIsAutoConnecting] = useState(false);
   const [currentAutoConnectIndex, setCurrentAutoConnectIndex] = useState(0);
+  const [showProgressBar, setShowProgressBar] = useState(false);
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -47,7 +48,7 @@ const BleButtons = () => {
   // Helper to check if any device is loading
   useEffect(() => {
     let interval;
-    if (isAnyDeviceLoading()) {
+    if (showProgressBar) {
       interval = setInterval(() => {
         setProgress((prevProgress) => {
           if (prevProgress >= 90) {
@@ -57,7 +58,7 @@ const BleButtons = () => {
         });
       }, 500);
     } else {
-      // When no devices are loading, quickly fill to 100%
+      // When loading is complete, quickly fill to 100%
       interval = setInterval(() => {
         setProgress((prevProgress) => {
           if (prevProgress >= 100) {
@@ -70,7 +71,7 @@ const BleButtons = () => {
     }
 
     return () => clearInterval(interval);
-  }, [loadingMap]);
+  }, [showProgressBar]);
 
   const isAnyDeviceLoading = () => {
     return Array.from(loadingMap.values()).some((isLoading) => isLoading);
@@ -83,19 +84,27 @@ const BleButtons = () => {
 
   // Filter and sort devices based on the current filter
   const sortedAndFilteredDevices = useMemo(() => {
-    return Array.from(uniqueDevicesMap.values())
-      .filter((device) =>
+    let devices = Array.from(uniqueDevicesMap.values());
+
+    // Apply search filter
+    if (searchTerm) {
+      devices = devices.filter((device) =>
         device.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .sort((a, b) => {
+      );
+    }
+    // Apply sorting only if a sort option is selected
+    if (sortBy) {
+      devices.sort((a, b) => {
         if (sortBy === "rssi") {
           return sortOrder === "desc" ? b.rssi - a.rssi : a.rssi - b.rssi;
-        } else {
+        } else if (sortBy === "name") {
           return sortOrder === "desc"
             ? b.name.localeCompare(a.name)
             : a.name.localeCompare(b.name);
         }
+        return 0;
       });
+    }
   }, [sortBy, sortOrder, searchTerm]);
 
   // const handleFilterChange = (filter) => {
@@ -168,9 +177,9 @@ const BleButtons = () => {
     e.stopPropagation();
     setError(null);
     setShowBleDataPage(false);
-
-    // Reset QR scan connection flag for manual connections
     setIsQrScanConnection(false);
+    setShowProgressBar(true);
+    setProgress(0);
 
     setLoadingMap((prevMap) => new Map(prevMap.set(macAddress, true)));
     setConnectingMacAddress(macAddress);
@@ -195,6 +204,8 @@ const BleButtons = () => {
           newMap.delete(macAddress);
           return newMap;
         });
+        setShowProgressBar(false);
+        setProgress(0);
       }, 50000);
     }
   };
@@ -444,7 +455,7 @@ const BleButtons = () => {
   return (
     <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
       {/* Background with BleDataPage when loading */}
-      {isAnyDeviceLoading() && (
+      {showProgressBar && (
         <div className="absolute inset-0 z-10 opacity-75">
           <BleDataPage />
         </div>
@@ -453,7 +464,7 @@ const BleButtons = () => {
       {/* Device List */}
       <div
         className={`${
-          isAnyDeviceLoading() ? "hidden" : "block"
+          showProgressBar ? "hidden" : "block"
         } min-h-screen bg-gray-100 w-full relative z-0`}
       >
         {error && (
@@ -561,12 +572,12 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {(isAnyDeviceLoading() || progress > 0) && (
+      {(showProgressBar || progress > 0) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <ProgressBar progress={progress} />
             <p className="text-gray-700 mt-4">
-              {isAnyDeviceLoading()
+              {showProgressBar
                 ? `Loading data... ${progress}%`
                 : "Finishing up..."}
             </p>
