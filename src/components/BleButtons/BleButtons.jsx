@@ -14,6 +14,8 @@ import {
 } from "../reusableCards/select";
 import PopupNotification from "../notification/PopUp";
 import { ProgressBar } from "../reusableCards/progresBar";
+import { MdOutlineTouchApp } from "react-icons/md";
+
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
@@ -456,7 +458,7 @@ const BleButtons = () => {
                     {loadingMap.get(device.macAddress) ? (
                       <Loader2 className="animate-spin mr-2" />
                     ) : (
-                      "Connect"
+                      "<MdOutlineTouchApp />"
                     )}
                   </button>
                 </li>
