@@ -6,7 +6,6 @@ import ThemeProvider from "./utility/ThemeContext";
 import Layout from "./components/Layout"; // Import Layout Component
 import { UserProvider } from "./components/profile/userContex";
 import { AuthProvider } from "./components/auth/authContext";
-import ProtectedRoute from "./protectedRoute";
 
 // Lazy load the components
 const Home = lazy(() => import("./components/home/Home"));
