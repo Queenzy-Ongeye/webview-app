@@ -30,20 +30,23 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     if (!email || !password) {
       setError("Please enter both email and password");
       return;
     }
-
+  
     if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
       setError("");
       localStorage.setItem("isLoggedIn", "true"); // Set the login state
-      navigate(from, { replace: true }); // Navigate to the previous page or home
+  
+      // Replace login page in history and navigate to home
+      navigate("/home", { replace: true });
     } else {
       setError("Invalid email or password");
     }
   };
+  
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">

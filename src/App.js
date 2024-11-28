@@ -1,5 +1,11 @@
 import React, { Suspense, lazy } from "react";
-import { HashRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import {
+  HashRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import ThemeProvider from "./utility/ThemeContext";
@@ -27,15 +33,15 @@ const BleContainer = lazy(() => import("./components/BleButtons/BleContainer"));
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const location = useLocation();
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
   if (!isLoggedIn) {
+    // Redirect to login and preserve the current location in `state.from`
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return <Layout>{children}</Layout>;
 };
-
 const App = () => {
   return (
     <UserProvider>
@@ -50,7 +56,7 @@ const App = () => {
           >
             <Routes>
               <Route path="/" element={<Login />} />
-              
+
               {/* Protected Routes */}
               <Route
                 path="/home"
