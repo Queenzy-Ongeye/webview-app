@@ -15,13 +15,13 @@ import {
 import { Button } from "../reusableCards/Buttons";
 import { Input } from "../reusableCards/input";
 import { Label } from "../reusableCards/lable";
-import React, { useState } from "react";
 import { useAuth } from "./authContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
   const { login } = useAuth();
