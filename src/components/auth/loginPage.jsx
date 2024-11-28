@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AtSign, Lock, Eye, EyeOff } from "lucide-react";
 import { Alert, AlertDescription } from "../reusableCards/alert";
 import {
@@ -12,7 +12,7 @@ import {
   CardFooter
 } from "../reusableCards/cards";
 import { Button } from "../reusableCards/Buttons";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Input } from "../reusableCards/input";
 import { Label } from "../reusableCards/lable";
 
@@ -21,7 +21,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const router = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check if user is already logged in (you might want to replace this with actual auth check)
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (isLoggedIn) {
+      // If logged in, try to go back to the previous page or home
+      const from = location.state?.from?.pathname || '/home';
+      navigate(from, { replace: true });
+    }
+  }, [location, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -33,7 +44,12 @@ export default function LoginPage() {
 
     if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
       setError("");
-      router("/home");
+      // Store login state (replace with proper authentication later)
+      localStorage.setItem('isLoggedIn', 'true');
+      
+      // Navigate to the page user was trying to access or home
+      const from = location.state?.from?.pathname || '/home';
+      navigate(from, { replace: true });
     } else {
       setError("Invalid email or password");
     }
@@ -42,7 +58,7 @@ export default function LoginPage() {
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">
       <Link
-        href="/"
+        to="/"
         className="mb-8 flex items-center text-2xl font-semibold text-primary"
       >
         <img
@@ -119,7 +135,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex justify-center">
           <Link
-            href="/forgot-password"
+            to="/forgot-password"
             className="text-sm text-muted-foreground hover:underline"
           >
             Forgot password?
