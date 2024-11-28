@@ -1,16 +1,16 @@
 import React, { Suspense, lazy, useEffect, useState } from "react";
-import { HashRouter as Router, Route, Routes, useLocation, Navigate } from "react-router-dom";
+import { HashRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import { StoreProvider } from "./service/store";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import ThemeProvider from "./utility/ThemeContext";
 import Layout from "./components/Layout"; // Import Layout Component
 import { UserProvider } from "./components/profile/userContex";
 import { AuthProvider } from "./components/auth/authContext";
+import ProtectedRoute from "./protectedRoute";
 
 // Lazy load the components
 const Home = lazy(() => import("./components/home/Home"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanDataPage"));
-const Header = lazy(() => import("./components/Header/Header")); // Lazy load Header
 const Login = lazy(() => import("./components/auth/loginPage"));
 const DeviceData = lazy(() =>
   import("./components/scanQr-Barcode/DeviceDataPage")
@@ -68,7 +68,7 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <Layout>
-                        <BleData />
+                        <BlePage />
                       </Layout>
                     </ProtectedRoute>
                   }
@@ -97,20 +97,40 @@ const App = () => {
                   path="/profile"
                   element={
                     <ProtectedRoute>
-                    <Layout>
-                      <Profile />
-                    </Layout>
+                      <Layout>
+                        <Profile />
+                      </Layout>
                     </ProtectedRoute>
                   }
                 />
                 <Route
                   path="/edit-profile"
                   element={
-                    <ProtectedRoute>
+                  <ProtectedRoute>
                     <Layout>
                       <EditProfile />
                     </Layout>
+                  </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ble-data"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <BleData />
+                      </Layout>
                     </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ble-container"
+                  element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <BleContainer />
+                    </Layout>
+                  </ProtectedRoute>
                   }
                 />
               </Routes>
