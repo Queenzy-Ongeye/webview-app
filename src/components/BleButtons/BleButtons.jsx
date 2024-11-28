@@ -45,37 +45,11 @@ const BleButtons = () => {
   const handleContinue = () => {
     setPopupVisible(false); // Close the popup
   };
-  // Helper to check if any device is loading
-  useEffect(() => {
-    let interval;
-    if (showProgressBar) {
-      interval = setInterval(() => {
-        setProgress((prevProgress) => {
-          if (prevProgress >= 90) {
-            return 90; // Cap at 90% until fully loaded
-          }
-          return Math.min(prevProgress + 10, 90);
-        });
-      }, 500);
-    } else {
-      // When loading is complete, quickly fill to 100%
-      interval = setInterval(() => {
-        setProgress((prevProgress) => {
-          if (prevProgress >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          return prevProgress + 10;
-        });
-      }, 100);
-    }
-
-    return () => clearInterval(interval);
-  }, [showProgressBar]);
 
   const isAnyDeviceLoading = () => {
     return Array.from(loadingMap.values()).some((isLoading) => isLoading);
   };
+  
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
   state.detectedDevices.forEach((device) => {
@@ -457,10 +431,31 @@ const BleButtons = () => {
     searchForMatch,
   ]);
 
+  // Effect to increment progress when loading a device
+  useEffect(() => {
+    let interval;
+
+    if (isAnyDeviceLoading()) {
+      interval = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress >= 90) {
+            clearInterval(interval); // Stop at 90%, wait for completion
+            return 90;
+          }
+          return prevProgress + 5; // Increment by 5%
+        });
+      }, 500); // Update every 500ms
+    } else {
+      setProgress(0); // Reset progress when no device is loading
+    }
+
+    return () => clearInterval(interval);
+  }, [isAnyDeviceLoading]);
+
   return (
     <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
       {/* Background with BleDataPage when loading */}
-      {showProgressBar && (
+      {isAnyDeviceLoading() && (
         <div className="absolute inset-0 z-10 opacity-75">
           <BleDataPage />
         </div>
@@ -469,7 +464,7 @@ const BleButtons = () => {
       {/* Device List */}
       <div
         className={`${
-          showProgressBar ? "hidden" : "block"
+          isAnyDeviceLoading() ? "hidden" : "block"
         } min-h-screen bg-gray-100 w-full relative z-0`}
       >
         {error && (
@@ -577,14 +572,19 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {isAnyDeviceLoading() && (
+      {(isAnyDeviceLoading() && showProgressBar) && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">Connecting to device...</p>
+            <ProgressBar progress={progress} />
+            <p className="text-gray-700 mt-4">
+              {progress < 100
+                ? `Connecting... ${progress}%`
+                : "Finishing up..."}
+            </p>
           </div>
         </div>
       )}
+
       {isPopupVisible && (
         <PopupNotification
           matchFound={matchFound}
