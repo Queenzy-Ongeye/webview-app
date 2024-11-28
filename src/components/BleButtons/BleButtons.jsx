@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "../reusableCards/select";
 import PopupNotification from "../notification/PopUp";
+import { ProgressBar } from "../reusableCards/progresBar";
 
 const BleButtons = () => {
   const { dispatch, state } = useStore();
@@ -30,6 +31,7 @@ const BleButtons = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [isQrScanConnection, setIsQrScanConnection] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -41,7 +43,23 @@ const BleButtons = () => {
   };
   // Helper to check if any device is loading
   const isAnyDeviceLoading = () => {
-    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
+    Array.from(loadingMap.values()).some((isLoading) => {
+      if (isLoading) {
+        const interval = setInterval(() => {
+          setProgress((prevProgress) => {
+            if (prevProgress >= 100) {
+              clearInterval(interval);
+              return 100;
+            }
+            return Math.min(prevProgress + 10, 100);
+          });
+        }, 500);
+
+        return () => clearInterval(interval);
+      } else {
+        setProgress(0);
+      }
+    });
   };
 
   // Create a Map to ensure uniqueness based on MAC Address
@@ -137,7 +155,7 @@ const BleButtons = () => {
             state: { deviceData },
             replace: true,
           });
-        })
+        });
       } else {
         throw new Error("Navigation attempted without valid data");
       }
@@ -454,8 +472,8 @@ const BleButtons = () => {
       {isAnyDeviceLoading() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-            <p className="text-gray-700">Loading data...</p>
+            <ProgressBar progress={progress} />
+            <p className="text-gray-700 mt-4">Loading data... {progress}%</p>
           </div>
         </div>
       )}
