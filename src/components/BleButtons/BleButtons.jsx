@@ -84,28 +84,30 @@ const BleButtons = () => {
 
   // Filter and sort devices based on the current filter
   const sortedAndFilteredDevices = useMemo(() => {
+    if (!uniqueDevicesMap || uniqueDevicesMap.size === 0) return [];
     let devices = Array.from(uniqueDevicesMap.values());
 
-    // Apply search filter
     if (searchTerm) {
       devices = devices.filter((device) =>
-        device.name.toLowerCase().includes(searchTerm.toLowerCase())
+        device.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    // Apply sorting only if a sort option is selected
+
     if (sortBy) {
       devices.sort((a, b) => {
         if (sortBy === "rssi") {
           return sortOrder === "desc" ? b.rssi - a.rssi : a.rssi - b.rssi;
         } else if (sortBy === "name") {
           return sortOrder === "desc"
-            ? b.name.localeCompare(a.name)
-            : a.name.localeCompare(b.name);
+            ? b.name?.localeCompare(a.name)
+            : a.name?.localeCompare(b.name);
         }
         return 0;
       });
     }
-  }, [sortBy, sortOrder, searchTerm]);
+
+    return devices;
+  }, [uniqueDevicesMap, searchTerm, sortBy, sortOrder]);
 
   // const handleFilterChange = (filter) => {
   //   setCurrentFilter(filter);
@@ -178,6 +180,8 @@ const BleButtons = () => {
     setError(null);
     setShowBleDataPage(false);
     setIsQrScanConnection(false);
+
+    // Show the progress bar when the connection starts
     setShowProgressBar(true);
     setProgress(0);
 
@@ -197,6 +201,7 @@ const BleButtons = () => {
       console.error("Connection/initialization error:", error);
       setError(error.message || "Failed to connect and initialize BLE data");
     } finally {
+      // Reset progress bar and loading state after connection process finishes
       setTimeout(() => {
         setConnectingMacAddress(null);
         setLoadingMap((prevMap) => {
@@ -205,7 +210,7 @@ const BleButtons = () => {
           return newMap;
         });
         setShowProgressBar(false);
-        setProgress(0);
+        setProgress(0); // Reset progress
       }, 50000);
     }
   };
@@ -572,15 +577,11 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {(showProgressBar || progress > 0) && (
+      {isAnyDeviceLoading() && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-            <ProgressBar progress={progress} />
-            <p className="text-gray-700 mt-4">
-              {showProgressBar
-                ? `Loading data... ${progress}%`
-                : "Finishing up..."}
-            </p>
+            <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+            <p className="text-gray-700">Connecting to device...</p>
           </div>
         </div>
       )}
