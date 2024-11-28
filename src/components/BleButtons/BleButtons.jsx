@@ -45,26 +45,36 @@ const BleButtons = () => {
     setPopupVisible(false); // Close the popup
   };
   // Helper to check if any device is loading
+  useEffect(() => {
+    let interval;
+    if (isAnyDeviceLoading()) {
+      interval = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress >= 90) {
+            return 90; // Cap at 90% until fully loaded
+          }
+          return Math.min(prevProgress + 10, 90);
+        });
+      }, 500);
+    } else {
+      // When no devices are loading, quickly fill to 100%
+      interval = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prevProgress + 10;
+        });
+      }, 100);
+    }
+
+    return () => clearInterval(interval);
+  }, [loadingMap]);
+
   const isAnyDeviceLoading = () => {
-    Array.from(loadingMap.values()).some((isLoading) => {
-      if (isLoading) {
-        const interval = setInterval(() => {
-          setProgress((prevProgress) => {
-            if (prevProgress >= 100) {
-              clearInterval(interval);
-              return 100;
-            }
-            return Math.min(prevProgress + 10, 100);
-          });
-        }, 500);
-
-        return () => clearInterval(interval);
-      } else {
-        setProgress(0);
-      }
-    });
+    return Array.from(loadingMap.values()).some((isLoading) => isLoading);
   };
-
   // Create a Map to ensure uniqueness based on MAC Address
   const uniqueDevicesMap = new Map();
   state.detectedDevices.forEach((device) => {
@@ -551,11 +561,15 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {isAnyDeviceLoading() && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+      {(isAnyDeviceLoading() || progress > 0) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <ProgressBar progress={progress} />
-            <p className="text-gray-700 mt-4">Loading data... {progress}%</p>
+            <p className="text-gray-700 mt-4">
+              {isAnyDeviceLoading()
+                ? `Loading data... ${progress}%`
+                : "Finishing up..."}
+            </p>
           </div>
         </div>
       )}
