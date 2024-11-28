@@ -15,38 +15,33 @@ import {
 import { Button } from "../reusableCards/Buttons";
 import { Input } from "../reusableCards/input";
 import { Label } from "../reusableCards/lable";
+import React, { useState } from "react";
+import { useAuth } from "./authContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
+  const { login } = useAuth();
 
-  // Extract the previous location from the state or default to "/home"
-  const from = location.state?.from?.pathname || "/home";
-
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-  
+
     if (!email || !password) {
       setError("Please enter both email and password");
       return;
     }
-  
+
     if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
       setError("");
-      localStorage.setItem("isLoggedIn", "true"); // Set the login state
-  
-      // Replace login page in history and navigate to home
-      navigate("/home", { replace: true });
+      login(); // Update authentication state
+      navigate("/home", { replace: true }); // Redirect to home
     } else {
       setError("Invalid email or password");
     }
   };
-  
 
   return (
     <div className="container flex h-screen w-screen flex-col items-center justify-center">

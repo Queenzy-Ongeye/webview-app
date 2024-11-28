@@ -11,14 +11,11 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import ThemeProvider from "./utility/ThemeContext";
 import Layout from "./components/Layout";
 import { UserProvider } from "./components/profile/userContex";
+import { AuthProvider } from "./components/auth/authContext";
+import ProtectedRoute from "./protectedRoute";
 
 // Lazy load the components
 const Home = lazy(() => import("./components/home/Home"));
-const AttPage = lazy(() => import("./components/DeviceDetails/ATTPage"));
-const StsPage = lazy(() => import("./components/DeviceDetails/STSPage"));
-const CMDPage = lazy(() => import("./components/DeviceDetails/CMDPage"));
-const DTAPage = lazy(() => import("./components/DeviceDetails/DTAPage"));
-const DIAPage = lazy(() => import("./components/DeviceDetails/DIAPage"));
 const ScanData = lazy(() => import("./components/scanQr-Barcode/ScanDataPage"));
 const Login = lazy(() => import("./components/auth/loginPage"));
 const BlePage = lazy(() => import("./components/BleButtons/BlePage"));
@@ -30,21 +27,9 @@ const EditProfile = lazy(() => import("./components/profile/EditProfilePage"));
 const BleData = lazy(() => import("./components/BleButtons/BleDataPage"));
 const BleContainer = lazy(() => import("./components/BleButtons/BleContainer"));
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const location = useLocation();
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-
-  if (!isLoggedIn) {
-    // Redirect to login and preserve the current location in `state.from`
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
-
-  return <Layout>{children}</Layout>;
-};
 const App = () => {
   return (
-    <UserProvider>
+    <AuthProvider>
       <StoreProvider>
         <Router>
           <Suspense
@@ -63,46 +48,6 @@ const App = () => {
                 element={
                   <ProtectedRoute>
                     <Home />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/att"
-                element={
-                  <ProtectedRoute>
-                    <AttPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/cmd"
-                element={
-                  <ProtectedRoute>
-                    <CMDPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/sts"
-                element={
-                  <ProtectedRoute>
-                    <StsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dta"
-                element={
-                  <ProtectedRoute>
-                    <DTAPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dia"
-                element={
-                  <ProtectedRoute>
-                    <DIAPage />
                   </ProtectedRoute>
                 }
               />
@@ -166,7 +111,7 @@ const App = () => {
           </Suspense>
         </Router>
       </StoreProvider>
-    </UserProvider>
+    </AuthProvider>
   );
 };
 
