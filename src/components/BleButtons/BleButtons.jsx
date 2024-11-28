@@ -438,9 +438,9 @@ const BleButtons = () => {
     if (isAnyDeviceLoading()) {
       interval = setInterval(() => {
         setProgress((prevProgress) => {
-          if (prevProgress >= 90) {
+          if (prevProgress >= 60) {
             clearInterval(interval); // Stop at 90%, wait for completion
-            return 90;
+            return 60;
           }
           return prevProgress + 5; // Increment by 5%
         });
