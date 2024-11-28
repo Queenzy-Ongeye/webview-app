@@ -24,8 +24,11 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Predefined valid credentials
+  const VALID_EMAIL = "oves.altec@omnivoltaic.com";
+
   useEffect(() => {
-    // Check if user is already logged in (you might want to replace this with actual auth check)
+    // Check if user is already logged in
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     if (isLoggedIn) {
       // If logged in, try to go back to the previous page or home
@@ -37,22 +40,46 @@ export default function LoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      setError("Please enter both email and password");
+    // Clear previous errors
+    setError("");
+
+    // Validate email and password separately
+    if (!email) {
+      setError("Email is required");
       return;
     }
 
-    if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
-      setError("");
-      // Store login state (replace with proper authentication later)
-      localStorage.setItem('isLoggedIn', 'true');
-      
-      // Navigate to the page user was trying to access or home
-      const from = location.state?.from?.pathname || '/home';
-      navigate(from, { replace: true });
-    } else {
-      setError("Invalid email or password");
+    if (!password) {
+      setError("Password is required");
+      return;
     }
+
+    // Check email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Invalid email format");
+      return;
+    }
+
+    // Email-specific validation
+    if (email !== VALID_EMAIL) {
+      setError("Email not found");
+      return;
+    }
+
+    // Password-specific validation
+    if (password !== "Altec1234") {
+      setError("Incorrect password");
+      return;
+    }
+
+    // If all validations pass
+    setError("");
+    localStorage.setItem('isLoggedIn', 'true');
+    
+    // Navigate to the page user was trying to access or home
+    const from = location.state?.from?.pathname || '/home';
+    navigate(from, { replace: true });
   };
 
   return (
@@ -90,7 +117,6 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10"
-                  required
                 />
               </div>
             </div>
@@ -105,7 +131,6 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 pr-10"
-                  required
                 />
                 <Button
                   type="button"
