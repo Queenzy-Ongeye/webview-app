@@ -30,87 +30,89 @@ const BleContainer = lazy(() => import("./components/BleButtons/BleContainer"));
 const App = () => {
   return (
     <AuthProvider>
-      <StoreProvider>
-        <Router>
-          <Suspense
-            fallback={
-              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
-              </div>
-            }
-          >
-            <Routes>
-              <Route path="/" element={<Login />} />
+      <UserProvider>
+        <StoreProvider>
+          <Router>
+            <Suspense
+              fallback={
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                  <AiOutlineLoading3Quarters className="animate-spin h-10 w-10 text-white" />
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<Login />} />
 
-              {/* Protected Routes */}
-              <Route
-                path="/home"
-                element={
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/ble"
-                element={
-                  <ProtectedRoute>
-                    <BlePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/scan-data"
-                element={
-                  <ProtectedRoute>
-                    <ScanData />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/device-data"
-                element={
-                  <ProtectedRoute>
-                    <DeviceData />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <Profile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/edit-profile"
-                element={
-                  <ProtectedRoute>
-                    <EditProfile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/ble-data"
-                element={
-                  <ProtectedRoute>
-                    <BleData />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/ble-container"
-                element={
-                  <ProtectedRoute>
-                    <BleContainer />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </Suspense>
-        </Router>
-      </StoreProvider>
+                {/* Protected Routes */}
+                <Route
+                  path="/home"
+                  element={
+                    <ProtectedRoute>
+                      <Home />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ble"
+                  element={
+                    <ProtectedRoute>
+                      <BlePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/scan-data"
+                  element={
+                    <ProtectedRoute>
+                      <ScanData />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/device-data"
+                  element={
+                    <ProtectedRoute>
+                      <DeviceData />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/edit-profile"
+                  element={
+                    <ProtectedRoute>
+                      <EditProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ble-data"
+                  element={
+                    <ProtectedRoute>
+                      <BleData />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ble-container"
+                  element={
+                    <ProtectedRoute>
+                      <BleContainer />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </Suspense>
+          </Router>
+        </StoreProvider>
+      </UserProvider>
     </AuthProvider>
   );
 };
