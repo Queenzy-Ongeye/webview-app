@@ -107,7 +107,7 @@ const BleButtons = () => {
       );
 
       // In the bridge setup, register the scanQrcodeResultCallBack handler
-      WebViewJavascriptBridge.registerHandler(
+      window.WebViewJavascriptBridge.registerHandler(
         "scanQrcodeResultCallBack",
         (data, responseCallback) => {
           console.log("Raw scan data received:", data);
@@ -184,6 +184,7 @@ const BleButtons = () => {
         const deviceData = state.initBleData.dataList;
         // Use a short timeout to ensure state updates have completed
         setTimeout(() => {
+          setProgress(100);
           console.log("Navigating to /ble-data with data:", deviceData);
           navigate("/ble-data", {
             state: { deviceData },
@@ -216,10 +217,14 @@ const BleButtons = () => {
     setConnectingMacAddress(macAddress);
 
     try {
+      setProgress(10);
       await connectToBluetoothDevice(macAddress);
+      setProgress(30);
       await new Promise((resolve) => setTimeout(resolve, 25000));
 
+      setProgress(50);
       const response = await initBleData(macAddress);
+      setProgress(80);
       dispatch({ type: "SET_INIT_BLE_DATA", payload: response });
       setConnectionSuccessMac(macAddress);
       setInitSuccessMac(macAddress);
@@ -492,35 +497,6 @@ const BleButtons = () => {
     isQrScanConnection,
     searchForMatch,
   ]);
-
-  // Effect to increment progress when loading a device
-  useEffect(() => {
-    let interval;
-
-    if (isAnyDeviceLoading()) {
-      interval = setInterval(() => {
-        setProgress((prevProgress) => {
-          if (prevProgress < 30) {
-            setProgressStage("Connecting to device");
-          } else if (prevProgress < 60) {
-            setProgressStage("Initializing BLE data");
-          } else {
-            setProgressStage("Finalizing connection");
-          }
-          if (prevProgress >= 60) {
-            clearInterval(interval);
-            return 60;
-          }
-          return prevProgress + 5;
-        });
-      }, 500);
-    } else {
-      setProgress(0);
-      setProgressStage("");
-    }
-
-    return () => clearInterval(interval);
-  }, [isAnyDeviceLoading]);
 
   return (
     <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
