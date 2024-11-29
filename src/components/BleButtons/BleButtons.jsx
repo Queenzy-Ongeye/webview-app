@@ -602,7 +602,7 @@ const BleButtons = () => {
                       {loadingMap.get(device.macAddress) ? (
                         <Loader2 className="animate-spin mr-2" />
                       ) : (
-                        connect
+                        "connect"
                       )}
                     </button>
                   </li>
