@@ -105,18 +105,70 @@ const BleButtons = () => {
           responseCallback(data);
         }
       );
+
+      // In the bridge setup, register the scanQrcodeResultCallBack handler
+      WebViewJavascriptBridge.registerHandler(
+        "scanQrcodeResultCallBack",
+        (data, responseCallback) => {
+          console.log("Raw scan data received:", data);
+
+          try {
+            // Add more flexible parsing
+            const parsedData =
+              typeof data === "string" ? JSON.parse(data) : data;
+
+            console.log("Parsed scan data:", parsedData);
+
+            // Dispatch with more robust payload handling
+            dispatch({
+              type: "SET_SCANNED_DATA",
+              payload: parsedData,
+            });
+
+            // Set QR scan connection flag
+            setIsQrScanConnection(true);
+
+            // Trigger auto-connection process
+            setIsAutoConnecting(true);
+            setCurrentAutoConnectIndex(0);
+
+            responseCallback({
+              success: true,
+              message: "Scan data processed successfully",
+            });
+          } catch (error) {
+            console.error(
+              "Comprehensive error parsing scan data:",
+              error.message,
+              "Original data:",
+              data
+            );
+
+            // More informative error response
+            responseCallback({
+              success: false,
+              error: error.message,
+              originalData: data,
+            });
+          }
+        }
+      );
     }
   }, []);
 
   // Watch for changes in initBleData and trigger navigation
+  const memoizedInitData = useMemo(
+    () => state.initBleData,
+    [state.initBleData]
+  );
+
   useEffect(() => {
-    if (state.initBleData?.dataList && !isNavigating) {
-      console.log("Data detected, preparing to navigate:", state.initBleData);
+    if (memoizedInitData?.dataList && !isNavigating) {
       performNavigation();
     }
-  }, [state.initBleData]);
+  }, [memoizedInitData, isNavigating]);
 
-  const performNavigation = () => {
+  const performNavigation = useCallback(() => {
     if (isNavigating) return; // Prevent multiple navigations
 
     console.log("Attempting navigation with data:", {
@@ -146,7 +198,7 @@ const BleButtons = () => {
       setError("Failed to navigate: ${error.message}");
       setIsNavigating(false);
     }
-  };
+  }, [isNavigating, state.initBleData, navigate]);
 
   // Modify handleConnectAndInit to differentiate manual and QR scan connections
   const handleConnectAndInit = async (e, macAddress) => {
@@ -473,11 +525,13 @@ const BleButtons = () => {
   return (
     <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
       {/* Background with BleDataPage when loading */}
-      {isAnyDeviceLoading() && (
-        <div className="absolute inset-0 z-10 opacity-75">
-          <BleDataPage />
-        </div>
-      )}
+      <div
+        className={`absolute inset-0 z-10 opacity-75 ${
+          isAnyDeviceLoading() ? "block" : "hidden"
+        }`}
+      >
+        <BleDataPage />
+      </div>
 
       {/* Device List */}
       <div
@@ -491,7 +545,7 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2">
-          <div className="container mx-auto px-auto sticky top-0 z-10 w-full mt-2">
+          <div className="container mx-auto px-auto sticky top-0 z-10 w-full mt-2 bg-white">
             <div className="mb-4">
               <Input
                 type="text"
@@ -502,7 +556,7 @@ const BleButtons = () => {
               />
             </div>
 
-            <div className="flex flex-wrap justify-between items-center gap-2">
+            <div className="flex flex-wrap justify-between items-center gap-2 bg-white">
               <Select
                 value={sortBy}
                 onValueChange={(value) => setSortBy(value)}
@@ -516,7 +570,7 @@ const BleButtons = () => {
                 </SelectContent>
               </Select>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 ml-2">
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -548,19 +602,14 @@ const BleButtons = () => {
                   className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
                 >
                   <div>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 font-bold">
                       {device.name || "Unknown Device"}
                     </p>
-                    <p className="text-gray-700">{device.macAddress}</p>
+                    <p className="text-gray-500 font-normal ">
+                      {device.macAddress.toLowerCase()}
+                    </p>
                     <div className="flex items-left">
-                      {device.rssi > -50 ? (
-                        <Wifi className="text-green-500" />
-                      ) : device.rssi > -70 ? (
-                        <Wifi className="text-yellow-500" />
-                      ) : (
-                        <WifiOff className="text-red-500" />
-                      )}
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-400 font-thin">
                         {device.rssi}dBm
                       </span>
                     </div>
