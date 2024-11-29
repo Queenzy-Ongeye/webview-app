@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useStore } from "../../service/store";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Camera, Loader2, Wifi, WifiOff, ChevronDown } from "lucide-react";
 import BleDataPage from "./BleDataPage";
 import { Button } from "../reusableCards/Buttons";
@@ -19,6 +19,7 @@ import { MdOutlineTouchApp } from "react-icons/md";
 const BleButtons = () => {
   const { dispatch, state } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const [connectingMacAddress, setConnectingMacAddress] = useState(null);
   const [connectionSuccessMac, setConnectionSuccessMac] = useState(null);
   const [initSuccessMac, setInitSuccessMac] = useState(null);
@@ -157,16 +158,12 @@ const BleButtons = () => {
   }, []);
 
   // Watch for changes in initBleData and trigger navigation
-  const memoizedInitData = useMemo(
-    () => state.initBleData,
-    [state.initBleData]
-  );
-
   useEffect(() => {
-    if (memoizedInitData?.dataList && !isNavigating) {
+    if (location.pathname === "/ble-buttons" && state.initBleData?.dataList && !isNavigating) {
       performNavigation();
     }
-  }, [memoizedInitData, isNavigating]);
+  }, [location.pathname, state.initBleData, isNavigating, performNavigation]);
+
 
   const performNavigation = useCallback(() => {
     if (isNavigating) return; // Prevent multiple navigations
@@ -499,7 +496,7 @@ const BleButtons = () => {
   ]);
 
   return (
-    <div className="scan-data-page flex flex-col h-screen mt-10 w-full relative">
+    <div className="scan-data-page flex flex-col h-screen">
       {/* Background with BleDataPage when loading */}
       <div
         className={`absolute inset-0 z-10 opacity-75 ${
@@ -520,19 +517,19 @@ const BleButtons = () => {
             {error}
           </div>
         )}
-        <div className="p-2">
-          <div className="container mx-auto px-auto sticky top-0 z-10 w-full mt-2 bg-white">
+        <div className="p-2 relative">
+          <div className="container mx-auto px-2 fixed top-16 left-0 right-0 z-10 w-full bg-white md:w-full">
             <div className="mb-4">
               <Input
                 type="text"
                 placeholder="Search devices..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-200"
+                className="w-full bg-gray-200 mt-2"
               />
             </div>
 
-            <div className="flex flex-wrap justify-between items-center gap-2 bg-white">
+            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 bg-white">
               <Select
                 value={sortBy}
                 onValueChange={(value) => setSortBy(value)}
@@ -570,47 +567,51 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          {sortedAndFilteredDevices.length > 0 ? (
-            <ul className="text-left">
-              {sortedAndFilteredDevices.map((device) => (
-                <li
-                  key={device.macAddress}
-                  className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-gray-700 font-bold">
-                      {device.name || "Unknown Device"}
-                    </p>
-                    <p className="text-gray-500 font-normal ">
-                      {device.macAddress.toLowerCase()}
-                    </p>
-                    <div className="flex items-left">
-                      <span className="text-sm text-gray-400 font-thin">
-                        {device.rssi}dBm
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={(e) => handleConnectAndInit(e, device.macAddress)}
-                    className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
-                      loadingMap.get(device.macAddress)
-                        ? "bg-gray-400 text-gray-800 cursor-not-allowed"
-                        : "bg-blue-500 hover:bg-blue-600 text-white"
-                    }`}
-                    disabled={loadingMap.get(device.macAddress)}
+          <div className="mt-20 w-full">
+            {sortedAndFilteredDevices.length > 0 ? (
+              <ul className="text-left">
+                {sortedAndFilteredDevices.map((device) => (
+                  <li
+                    key={device.macAddress}
+                    className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
                   >
-                    {loadingMap.get(device.macAddress) ? (
-                      <Loader2 className="animate-spin mr-2" />
-                    ) : (
-                      <MdOutlineTouchApp />
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">No BLE devices detected.</p>
-          )}
+                    <div>
+                      <p className="text-gray-700 font-bold">
+                        {device.name || "Unknown Device"}
+                      </p>
+                      <p className="text-gray-500 font-normal ">
+                        {device.macAddress.toLowerCase()}
+                      </p>
+                      <div className="flex items-left">
+                        <span className="text-sm text-gray-400 font-thin">
+                          {device.rssi}dBm
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) =>
+                        handleConnectAndInit(e, device.macAddress)
+                      }
+                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                        loadingMap.get(device.macAddress)
+                          ? "bg-gray-400 text-gray-800 cursor-not-allowed"
+                          : "bg-blue-500 hover:bg-blue-600 text-white"
+                      }`}
+                      disabled={loadingMap.get(device.macAddress)}
+                    >
+                      {loadingMap.get(device.macAddress) ? (
+                        <Loader2 className="animate-spin mr-2" />
+                      ) : (
+                        <MdOutlineTouchApp />
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No BLE devices detected.</p>
+            )}
+          </div>
         </div>
       </div>
 
