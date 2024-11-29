@@ -38,6 +38,8 @@ const BleButtons = () => {
   const [currentAutoConnectIndex, setCurrentAutoConnectIndex] = useState(0);
   const [showProgressBar, setShowProgressBar] = useState(false);
   const [progressStage, setProgressStage] = useState("");
+  const [explicitNavigationTriggered, setExplicitNavigationTriggered] = useState(false);
+
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -156,13 +158,12 @@ const BleButtons = () => {
       );
     }
   }, []);
-
-  // Watch for changes in initBleData and trigger navigation
+  
   useEffect(() => {
-    if (state.initBleData?.dataList && !isNavigating) {
+    if (state.initBleData?.dataList && explicitNavigationTriggered) {
       performNavigation();
     }
-  }, [state.initBleData]);
+  }, [state.initBleData, explicitNavigationTriggered]);
 
   const performNavigation = () => {
     if (isNavigating) return; // Prevent multiple navigations
@@ -188,6 +189,7 @@ const BleButtons = () => {
             replace: true, // Use replace to prevent back navigation issues
           });
         }, 100);
+        setExplicitNavigationTriggered(false); // Reset trigger after navigation
       } else {
         throw new Error("Navigation attempted without valid data");
       }
@@ -205,6 +207,7 @@ const BleButtons = () => {
     setError(null);
     setShowBleDataPage(false);
     setIsQrScanConnection(false);
+    setExplicitNavigationTriggered(true); // Set the trigger for navigation
 
     // Show the progress bar when the connection starts
     setShowProgressBar(true);
@@ -567,7 +570,7 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          <div className="w-full mt-36">
+          <div className="w-full mt-36 mx-auto px-auto">
             {sortedAndFilteredDevices.length > 0 ? (
               <ul className="text-left">
                 {sortedAndFilteredDevices.map((device) => (
