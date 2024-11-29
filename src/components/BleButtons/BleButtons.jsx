@@ -157,14 +157,6 @@ const BleButtons = () => {
     }
   }, []);
 
-  // Watch for changes in initBleData and trigger navigation
-  useEffect(() => {
-    if (location.pathname === "/ble-buttons" && state.initBleData?.dataList && !isNavigating) {
-      performNavigation();
-    }
-  }, [location.pathname, state.initBleData, isNavigating, performNavigation]);
-
-
   const performNavigation = useCallback(() => {
     if (isNavigating) return; // Prevent multiple navigations
 
@@ -197,6 +189,17 @@ const BleButtons = () => {
       setIsNavigating(false);
     }
   }, [isNavigating, state.initBleData, navigate]);
+
+  // Watch for changes in initBleData and trigger navigation
+  useEffect(() => {
+    if (
+      location.pathname === "/ble-buttons" &&
+      state.initBleData?.dataList &&
+      !isNavigating
+    ) {
+      performNavigation();
+    }
+  }, [location.pathname, state.initBleData, isNavigating, performNavigation]);
 
   // Modify handleConnectAndInit to differentiate manual and QR scan connections
   const handleConnectAndInit = async (e, macAddress) => {
@@ -518,8 +521,8 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2 relative">
-          <div className="container mx-auto px-2 fixed top-16 left-0 right-0 z-10 w-full bg-white md:w-full">
-            <div className="mb-4">
+          <div className="container mx-auto px-2 fixed top-16 left-0 right-0 z-10 max-w-full bg-gray-50 md:max-w-full sm:max-w-full xs:max-w-full">
+            <div className="mb-2">
               <Input
                 type="text"
                 placeholder="Search devices..."
@@ -529,7 +532,7 @@ const BleButtons = () => {
               />
             </div>
 
-            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 bg-white">
+            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 ">
               <Select
                 value={sortBy}
                 onValueChange={(value) => setSortBy(value)}
@@ -573,7 +576,7 @@ const BleButtons = () => {
                 {sortedAndFilteredDevices.map((device) => (
                   <li
                     key={device.macAddress}
-                    className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
+                    className="mt-2 p-0 border rounded-md shadow flex items-center justify-between"
                   >
                     <div>
                       <p className="text-gray-700 font-bold">
@@ -595,14 +598,14 @@ const BleButtons = () => {
                       className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
                         loadingMap.get(device.macAddress)
                           ? "bg-gray-400 text-gray-800 cursor-not-allowed"
-                          : "bg-blue-500 hover:bg-blue-600 text-white"
+                          : "bg-oves-blue hover:bg-blue-600 text-white"
                       }`}
                       disabled={loadingMap.get(device.macAddress)}
                     >
                       {loadingMap.get(device.macAddress) ? (
                         <Loader2 className="animate-spin mr-2" />
                       ) : (
-                        <MdOutlineTouchApp />
+                        `${<MdOutlineTouchApp />} connect`
                       )}
                     </button>
                   </li>
@@ -640,4 +643,4 @@ const BleButtons = () => {
   );
 };
 
-export default BleButtons;
+export default React.memo(BleButtons);
