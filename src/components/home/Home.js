@@ -108,23 +108,6 @@ const Home = () => {
           }
         );
 
-        // In the bridge setup, register the scanQrcodeResultCallBack handler
-        bridge.registerHandler(
-          "scanQrcodeResultCallBack",
-          (data, responseCallback) => {
-            try {
-              const parsedData = JSON.parse(data);
-              dispatch({type: "SET_SCANNED_DATA", payload: parsedData})
-              responseCallback(parsedData);
-            } catch (error) {
-              console.error(
-                "Error parsing JSON data from scanQrcodeResultCallBack:",
-                error
-              );
-            }
-          }
-        );
-
         // Registering MQTT handlers
         bridge.registerHandler(
           "mqttMessageReceived",
