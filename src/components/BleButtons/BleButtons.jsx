@@ -570,13 +570,13 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          <div className="w-full mt-36 mx-auto px-auto">
+          <div className="w-full mt-40 mx-auto px-auto">
             {sortedAndFilteredDevices.length > 0 ? (
               <ul className="text-left">
                 {sortedAndFilteredDevices.map((device) => (
                   <li
                     key={device.macAddress}
-                    className="mt-2 p-0 border rounded-md shadow flex items-center justify-between"
+                    className="mt-2 p-2 border rounded-md shadow flex items-center justify-between"
                   >
                     <div>
                       <p className="text-gray-700 font-bold">
