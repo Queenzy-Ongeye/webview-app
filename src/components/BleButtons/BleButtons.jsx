@@ -567,7 +567,7 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          <div className="mt-20 w-full">
+          <div className="w-full mt-36">
             {sortedAndFilteredDevices.length > 0 ? (
               <ul className="text-left">
                 {sortedAndFilteredDevices.map((device) => (
