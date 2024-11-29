@@ -19,7 +19,7 @@ import {
   DialogTrigger,
 } from "../reusableCards/dialog";
 
-const BleDataPage = () => {
+const BleDataPage = React.memo(() => {
   const { state } = useStore();
   const deviceData = state?.initBleData?.dataList || [];
 
@@ -225,6 +225,6 @@ const BleDataPage = () => {
       </Button>
     </div>
   );
-};
+});
 
 export default BleDataPage;
