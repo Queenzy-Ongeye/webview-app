@@ -157,7 +157,14 @@ const BleButtons = () => {
     }
   }, []);
 
-  const performNavigation = useCallback(() => {
+  // Watch for changes in initBleData and trigger navigation
+  useEffect(() => {
+    if (state.initBleData?.dataList && !isNavigating) {
+      performNavigation();
+    }
+  }, [state.initBleData]);
+
+  const performNavigation = () => {
     if (isNavigating) return; // Prevent multiple navigations
 
     console.log("Attempting navigation with data:", {
@@ -171,35 +178,25 @@ const BleButtons = () => {
       if (state.initBleData?.dataList) {
         // Ensure we have the data before navigating
         const deviceData = state.initBleData.dataList;
+
         // Use a short timeout to ensure state updates have completed
         setTimeout(() => {
-          setProgress(100);
           console.log("Navigating to /ble-data with data:", deviceData);
+          setProgress(100);
           navigate("/ble-data", {
             state: { deviceData },
             replace: true, // Use replace to prevent back navigation issues
           });
-        }, 5000);
+        }, 100);
       } else {
         throw new Error("Navigation attempted without valid data");
       }
     } catch (error) {
       console.error("Navigation error:", error);
-      setError("Failed to navigate: ${error.message}");
+      setError(`Failed to navigate: ${error.message}`);
       setIsNavigating(false);
     }
-  }, [isNavigating, state.initBleData, navigate]);
-
-  // Watch for changes in initBleData and trigger navigation
-  useEffect(() => {
-    if (
-      location.pathname === "/ble-buttons" &&
-      state.initBleData?.dataList &&
-      !isNavigating
-    ) {
-      performNavigation();
-    }
-  }, [location.pathname, state.initBleData, isNavigating, performNavigation]);
+  };
 
   // Modify handleConnectAndInit to differentiate manual and QR scan connections
   const handleConnectAndInit = async (e, macAddress) => {
@@ -243,7 +240,7 @@ const BleButtons = () => {
         });
         setShowProgressBar(false);
         setProgress(0); // Reset progress
-      }, 55000);
+      }, 45000);
     }
   };
 
@@ -605,7 +602,7 @@ const BleButtons = () => {
                       {loadingMap.get(device.macAddress) ? (
                         <Loader2 className="animate-spin mr-2" />
                       ) : (
-                        `${<MdOutlineTouchApp />} connect`
+                        connect
                       )}
                     </button>
                   </li>
