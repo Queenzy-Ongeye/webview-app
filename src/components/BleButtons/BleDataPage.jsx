@@ -133,14 +133,13 @@ const BleDataPage = React.memo(() => {
 
   return (
     <div className="container mx-auto py-4">
-      <div className="mb-2 flex mt-10">
+      <div className="mb-2 flex mt-12">
         <Button
           onClick={handleGoBack}
           variant="outline"
           size="sm"
-          className="bg-oves-blue"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="mr-2 h-4 w-4 bg-oves-blue text-white" />
         </Button>
       <h1 className="text-3xl font-bold mb-6">Device Data</h1>
       </div>
