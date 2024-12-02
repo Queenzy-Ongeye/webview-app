@@ -570,7 +570,7 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          <div className="w-full mt-40 mx-auto px-auto relative">
+          <div className="max-w-full xs:max-w-full sm:max-w-full md:max-w-full mt-40 mx-auto px-auto relative max-h-screen xs:max-h-screen sm:max-h-screen md:max-h-screen lg:max-h-screen">
             {sortedAndFilteredDevices.length > 0 ? (
               <ul className="text-left">
                 {sortedAndFilteredDevices.map((device) => (
