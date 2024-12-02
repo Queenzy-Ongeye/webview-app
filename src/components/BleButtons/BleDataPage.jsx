@@ -133,7 +133,7 @@ const BleDataPage = React.memo(() => {
 
   return (
     <div className="container mx-auto py-4">
-      <div className="mb-6 flex">
+      <div className="mb-2 flex mt-10">
         <Button
           onClick={handleGoBack}
           variant="outline"
