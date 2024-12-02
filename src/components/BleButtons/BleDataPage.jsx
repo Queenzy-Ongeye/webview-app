@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Send, ArrowLeft } from "lucide-react";
+import { Info, Send, ArrowLeft, ChevronLeft } from "lucide-react";
 import { useStore } from "../../service/store";
 import { toast } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../reusableCards/dialog";
+import { Tooltip, TooltipProvider, TooltipTrigger } from "../reusableCards/Tooltip";
 
 const BleDataPage = React.memo(() => {
   const { state } = useStore();
@@ -73,7 +74,7 @@ const BleDataPage = React.memo(() => {
   );
 
   const handleGoBack = useCallback(() => {
-    navigate("/ble-buttons", { replace: true });
+    navigate("/home", { replace: true });
   }, [navigate]);
 
   const publishMqttMessage = async (category) => {
@@ -150,18 +151,24 @@ const BleDataPage = React.memo(() => {
 
   return (
     <div className="container mx-auto py-4">
-      <div className="mt-6">
-        <Button
-          onClick={handleGoBack}
-          variant="outline"
-          size="sm"
-          className="bg-oves-blue text-white"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-        </Button>
+      <div className="flex items-center mb-6">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleGoBack}
+                variant="ghost"
+                size="icon"
+                className="mr-2 hover:bg-gray-100 transition-colors duration-200"
+              >
+                <ChevronLeft className="h-6 w-6 text-oves-blue" />
+                <span className="sr-only">Go back</span>
+              </Button>
+            </TooltipTrigger>
+          </Tooltip>
+        </TooltipProvider>
+        <h1 className="text-3xl font-bold">Device Data</h1>
       </div>
-
-      <h1 className="text-3xl font-bold mb-6">Device Data</h1>
 
       <Button
         onClick={() => publishMqttMessage(activeCategory)}
