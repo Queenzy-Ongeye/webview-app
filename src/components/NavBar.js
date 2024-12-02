@@ -38,7 +38,7 @@ const NavigationBar = () => {
   }, []);
 
   return (
-    <div className="relative">
+    <div className="relative max-h-screen xs:max-h-screen sm:max-h-screen md:max-h-screen lg:max-h-screen">
       {/* Top Navbar */}
       <div
         className={`fixed top-0 left-0 w-full h-16 flex items-center justify-between px-4 ${
@@ -78,14 +78,18 @@ const NavigationBar = () => {
 
         {/* Cloud Icon for MQTT Status */}
         <div className={`${isConnected ? "text-green-500" : "text-gray-500"}`}>
-          {isConnected ? <FaCloud aria-label="Connected" /> : <GoCloudOffline aria-label="Disconnected" />}
+          {isConnected ? (
+            <FaCloud aria-label="Connected" />
+          ) : (
+            <GoCloudOffline aria-label="Disconnected" />
+          )}
         </div>
       </div>
 
       {/* Overlay to close the menu when clicking outside */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-40"
+          className="fixed inset-0 bg-black opacity-20 z-40"
           onClick={toggleMenu}
         ></div>
       )}
@@ -93,11 +97,13 @@ const NavigationBar = () => {
       {/* Side Navigation Menu */}
       <nav
         className={`${
-          currentTheme === "dark" ? "bg-gray-900" : "bg-oves-blue"
-        } text-white w-64 min-h-screen py-8 fixed top-16 left-0 transform ${
+          currentTheme === "dark" ? "bg-gray-900" : "bg-oves-blue opacity-90"
+        } text-white w-56 min-h-screen py-8 fixed top-16 left-0 transform ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 ease-in-out z-50 flex flex-col justify-between`}
       >
+        <h1 className="text-white font-extrabold">Device Scanner</h1>
+        <hr className="bg-white" />
         {/* Navigation Links */}
         <div className="flex-grow">
           <Link
@@ -105,7 +111,7 @@ const NavigationBar = () => {
             className="px-4 py-2 hover:bg-cyan-600 rounded my-2 flex items-center"
             onClick={closeMenu}
           >
-            <FaHome className="mr-2" aria-hidden="true" /> Touch to Bind
+            <FaHome className="mr-2" aria-hidden="true" /> Ble Scan
           </Link>
           <Link
             to="/scan-data"
@@ -118,7 +124,7 @@ const NavigationBar = () => {
 
         {/* Theme Toggle at the Bottom */}
         <hr className="bg-white" />
-        <div className="px-4 rounded my-2">
+        <div className="px-2 rounded my-12">
           <p className="text-gray-400 font-thin font-mono my-2 ml-0.1 flex-1">
             Theme
           </p>
