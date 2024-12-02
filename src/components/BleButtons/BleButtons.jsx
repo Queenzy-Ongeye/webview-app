@@ -388,7 +388,7 @@ const BleButtons = () => {
 
     try {
       await connectToBluetoothDevice(deviceToConnect.macAddress);
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Short delay
+      await new Promise((resolve) => setTimeout(resolve, 25000)); // Short delay
 
       await initBleData(deviceToConnect.macAddress);
 
@@ -401,13 +401,13 @@ const BleButtons = () => {
               clearInterval(checkInterval);
               resolve(checkDeviceMatch());
             }
-          }, 500); // Check every 500ms
+          }, 5000); // Check every 500ms
 
           // Prevent infinite waiting
           setTimeout(() => {
             clearInterval(checkInterval);
             resolve(false);
-          }, 10000); // 10 seconds timeout
+          }, 20000); // 10 seconds timeout
         });
       };
 
