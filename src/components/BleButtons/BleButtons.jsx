@@ -38,8 +38,8 @@ const BleButtons = () => {
   const [currentAutoConnectIndex, setCurrentAutoConnectIndex] = useState(0);
   const [showProgressBar, setShowProgressBar] = useState(false);
   const [progressStage, setProgressStage] = useState("");
-  const [explicitNavigationTriggered, setExplicitNavigationTriggered] = useState(false);
-
+  const [explicitNavigationTriggered, setExplicitNavigationTriggered] =
+    useState(false);
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -158,7 +158,7 @@ const BleButtons = () => {
       );
     }
   }, []);
-  
+
   useEffect(() => {
     if (state.initBleData?.dataList && explicitNavigationTriggered) {
       performNavigation();
@@ -570,7 +570,7 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          <div className="w-full mt-40 mx-auto px-auto">
+          <div className="w-full mt-40 mx-auto px-auto relative">
             {sortedAndFilteredDevices.length > 0 ? (
               <ul className="text-left">
                 {sortedAndFilteredDevices.map((device) => (
@@ -582,14 +582,12 @@ const BleButtons = () => {
                       <p className="text-gray-700 font-bold">
                         {device.name || "Unknown Device"}
                       </p>
-                      <p className="text-gray-500 font-normal ">
+                      <p className="text-gray-500 font-normal">
                         {device.macAddress.toLowerCase()}
                       </p>
-                      <div className="flex items-left">
-                        <span className="text-sm text-gray-400 font-thin">
-                          {device.rssi}dBm
-                        </span>
-                      </div>
+                      <p className="flex items-left font-light text-gray-400">
+                        {device.rssi}dBm
+                      </p>
                     </div>
                     <button
                       onClick={(e) =>
@@ -597,16 +595,14 @@ const BleButtons = () => {
                       }
                       className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
                         loadingMap.get(device.macAddress)
-                          ? "bg-gray-400 text-gray-800 cursor-not-allowed"
-                          : "bg-oves-blue hover:bg-blue-600 text-white"
+                          ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
+                          : "bg-oves-blue text-white"
                       }`}
                       disabled={loadingMap.get(device.macAddress)}
                     >
-                      {loadingMap.get(device.macAddress) ? (
-                        <Loader2 className="animate-spin mr-2" />
-                      ) : (
-                        "connect"
-                      )}
+                      {loadingMap.get(device.macAddress)
+                        ? "Processing..."
+                        : "Connect"}
                     </button>
                   </li>
                 ))}
