@@ -108,40 +108,6 @@ const BleButtons = () => {
           responseCallback(data);
         }
       );
-      // New handlers for BLE initialization progress and completion
-      // window.WebViewJavascriptBridge.registerHandler(
-      //   "bleInitDataOnProgressCallBack",
-      //   (data, responseCallback) => {
-      //     let resp = JSON.parse(data);
-      //     const progress = Math.round((resp.progress / resp.total) * 100);
-      //     console.info(`BLE Init Progress: ${progress}%`);
-      //     setProgress(progress);
-      //     setProgressStage("Initializing BLE Data");
-      //     responseCallback(data);
-      //   }
-      // );
-
-      window.WebViewJavascriptBridge.registerHandler(
-        "bleInitDataOnCompleteCallBack",
-        (data, responseCallback) => {
-          let resp = JSON.parse(data);
-          console.info("BLE Init Data Complete", resp);
-          dispatch({ type: "SET_INIT_BLE_DATA", payload: resp });
-          setInitSuccessMac(resp.macAddress);
-          responseCallback(data);
-        }
-      );
-      window.WebViewJavascriptBridge.registerHandler(
-        "bleInitDataFailureCallBack",
-        (data, responseCallback) => {
-          console.error("BLE Init Data Failure:", data);
-          let resp = JSON.parse(data);
-          setError(
-            `BLE Initialization Failed: ${resp.message || "Unknown error"}`
-          );
-          responseCallback(data);
-        }
-      );
 
       // In the bridge setup, register the scanQrcodeResultCallBack handler
       window.WebViewJavascriptBridge.registerHandler(
