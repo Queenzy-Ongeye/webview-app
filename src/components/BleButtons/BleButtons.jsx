@@ -109,17 +109,17 @@ const BleButtons = () => {
         }
       );
       // New handlers for BLE initialization progress and completion
-      window.WebViewJavascriptBridge.registerHandler(
-        "bleInitDataOnProgressCallBack",
-        (data, responseCallback) => {
-          let resp = JSON.parse(data);
-          const progress = Math.round((resp.progress / resp.total) * 100);
-          console.info(`BLE Init Progress: ${progress}%`);
-          setProgress(progress);
-          setProgressStage("Initializing BLE Data");
-          responseCallback(data);
-        }
-      );
+      // window.WebViewJavascriptBridge.registerHandler(
+      //   "bleInitDataOnProgressCallBack",
+      //   (data, responseCallback) => {
+      //     let resp = JSON.parse(data);
+      //     const progress = Math.round((resp.progress / resp.total) * 100);
+      //     console.info(`BLE Init Progress: ${progress}%`);
+      //     setProgress(progress);
+      //     setProgressStage("Initializing BLE Data");
+      //     responseCallback(data);
+      //   }
+      // );
 
       window.WebViewJavascriptBridge.registerHandler(
         "bleInitDataOnCompleteCallBack",
