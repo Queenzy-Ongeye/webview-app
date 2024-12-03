@@ -220,7 +220,7 @@ const BleButtons = () => {
       setProgress(10);
       await connectToBluetoothDevice(macAddress);
       setProgress(30);
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 25000));
 
       setProgress(50);
       const response = await initBleData(macAddress);
