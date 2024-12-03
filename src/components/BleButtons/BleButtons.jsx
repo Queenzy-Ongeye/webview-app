@@ -188,7 +188,7 @@ const BleButtons = () => {
             state: { deviceData },
             replace: true, // Use replace to prevent back navigation issues
           });
-        }, 100);
+        }, 60000);
         setExplicitNavigationTriggered(false); // Reset trigger after navigation
       } else {
         throw new Error("Navigation attempted without valid data");
