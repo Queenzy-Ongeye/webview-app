@@ -186,7 +186,7 @@ const BleDataPage = React.memo(() => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {Object.entries(serviceData.characterMap || {}).map(
+                {Object.entries(serviceData.characteristicList || {}).map(
                   ([charUuid, characteristic]) => (
                     <TableRow
                       key={`${serviceData.uuid}-${charUuid}`}
