@@ -120,7 +120,7 @@ const BleDataPage = React.memo(() => {
           {descriptors && descriptors.length > 0 ? (
             descriptors.map((descItem, index) => (
               <div
-                key={index} // Use index as the key when mapping over an array
+                key={index}
                 className="flex justify-between items-center mb-2 text-gray-700"
               >
                 <code className="text-xs">{descItem.uuid}</code>
