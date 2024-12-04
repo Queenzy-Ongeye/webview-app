@@ -87,10 +87,6 @@ const BleButtons = () => {
     return devices;
   }, [uniqueDevicesMap, searchTerm, sortBy, sortOrder]);
 
-  // const handleFilterChange = (filter) => {
-  //   setCurrentFilter(filter);
-  // };
-
   useEffect(() => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.registerHandler(
@@ -108,7 +104,44 @@ const BleButtons = () => {
           responseCallback(data);
         }
       );
+      window.WebViewJavascriptBridge.registerHandler(
+        "bleInitDataOnProgressCallBack",
+        (data) => {
+          try {
+            const parsedData = JSON.parse(data);
+            const progressPercentage =
+              (parsedData.progress / parsedData.total) * 100;
+            setProgress(progressPercentage);
+          } catch (error) {
+            console.error("Progress callback error:", error);
+          }
+        }
+      );
 
+      window.WebViewJavascriptBridge.registerHandler(
+        "bleInitDataOnCompleteCallBack",
+        (data) => {
+          try {
+            const parsedData = JSON.parse(data);
+            console.log("Data received in completion callback:", parsedData);
+
+            // Update application state with the fetched data
+            dispatch({
+              type: "SET_INIT_BLE_DATA",
+              payload: { dataList: parsedData.dataList },
+            });
+
+            // Trigger navigation after updating state
+            performNavigation(parsedData.dataList);
+          } catch (error) {
+            console.error("Completion callback error:", error);
+            setError("Failed to process BLE initialization data.");
+          } finally {
+            setProgress(100);
+            setShowProgressBar(false);
+          }
+        }
+      );
       // In the bridge setup, register the scanQrcodeResultCallBack handler
       window.WebViewJavascriptBridge.registerHandler(
         "scanQrcodeResultCallBack",
@@ -159,36 +192,27 @@ const BleButtons = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (state.initBleData?.dataList && explicitNavigationTriggered) {
-      performNavigation();
-    }
-  }, [state.initBleData, explicitNavigationTriggered]);
+  // useEffect(() => {
+  //   if (state.initBleData?.dataList && explicitNavigationTriggered) {
+  //     performNavigation();
+  //   }
+  // }, [state.initBleData, explicitNavigationTriggered]);
 
-  const performNavigation = () => {
+  const performNavigation = (deviceData) => {
     if (isNavigating) return; // Prevent multiple navigations
 
-    console.log("Attempting navigation with data:", {
-      initBleData: state.initBleData,
-      dataList: state.initBleData?.dataList,
-    });
+    console.log("Attempting navigation with data:", { deviceData });
 
     setIsNavigating(true);
 
     try {
-      if (state.initBleData?.dataList) {
-        // Ensure we have the data before navigating
-        const deviceData = state.initBleData.dataList;
-
-        // Use a short timeout to ensure state updates have completed
-        setTimeout(() => {
-          console.log("Navigating to /ble-data with data:", deviceData);
-          setProgress(100);
-          navigate("/ble-data", {
-            state: { deviceData },
-            replace: true, // Use replace to prevent back navigation issues
-          });
-        }, 60000);
+      if (deviceData) {
+        // Navigate immediately with the provided data
+        console.log("Navigating to /ble-data with data:", deviceData);
+        navigate("/ble-data", {
+          state: { deviceData },
+          replace: true, // Use replace to prevent back navigation issues
+        });
         setExplicitNavigationTriggered(false); // Reset trigger after navigation
       } else {
         throw new Error("Navigation attempted without valid data");
