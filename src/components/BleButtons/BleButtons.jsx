@@ -109,8 +109,9 @@ const BleButtons = () => {
         (data) => {
           try {
             const parsedData = JSON.parse(data);
-            const progressPercentage =
-              (parsedData.progress / parsedData.total) * 100;
+            const progressPercentage = Math.round(
+              (parsedData.progress / parsedData.total) * 100
+            );
             setProgress(progressPercentage);
           } catch (error) {
             console.error("Progress callback error:", error);
