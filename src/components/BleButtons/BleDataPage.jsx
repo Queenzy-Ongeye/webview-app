@@ -216,7 +216,7 @@ const BleDataPage = React.memo(() => {
                         {characteristic.descMap &&
                           Object.keys(characteristic.descMap).length > 0 && (
                             <DescriptorsDialog
-                              descriptors={characteristic.descMap}
+                              descriptors={characteristic.descriptors}
                             />
                           )}
                       </TableCell>
