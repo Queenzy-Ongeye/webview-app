@@ -117,15 +117,19 @@ const BleDataPage = React.memo(() => {
           <DialogTitle>Descriptors</DialogTitle>
         </DialogHeader>
         <div className="mt-4">
-          {Object.entries(descriptors).map(([descUuid, descItem]) => (
-            <div
-              key={descUuid}
-              className="flex justify-between items-center mb-2 text-gray-700"
-            >
-              <code className="text-xs">{descUuid}</code>
-              <span className="text-sm">{descItem.desc}</span>
-            </div>
-          ))}
+          {descriptors && descriptors.length > 0 ? (
+            descriptors.map((descItem, index) => (
+              <div
+                key={index} // Use index as the key when mapping over an array
+                className="flex justify-between items-center mb-2 text-gray-700"
+              >
+                <code className="text-xs">{descItem.uuid}</code>
+                <span className="text-sm">{descItem.desc}</span>
+              </div>
+            ))
+          ) : (
+            <div>No descriptors available</div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
@@ -203,7 +207,7 @@ const BleDataPage = React.memo(() => {
                         </div>
                       </TableCell>
                       <TableCell className="py-2">
-                        {String(characteristic.realVal)}
+                        {String(characteristic.valType)}
                       </TableCell>
                       <TableCell className="py-2">
                         {characteristic.properties}
