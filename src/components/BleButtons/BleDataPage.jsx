@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Send, ArrowLeft } from 'lucide-react';
+import { Info, Send, ArrowLeft } from "lucide-react";
 import { useStore } from "../../service/store";
 import { toast } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
@@ -134,14 +134,10 @@ const BleDataPage = React.memo(() => {
   return (
     <div className="container mx-auto py-4">
       <div className="mb-2 flex mt-12">
-        <Button
-          onClick={handleGoBack}
-          variant="outline"
-          size="sm"
-        >
+        <Button onClick={handleGoBack} variant="outline" size="sm">
           <ArrowLeft className="mr-2 h-4 w-4 bg-oves-blue text-white" />
         </Button>
-      <h1 className="text-3xl font-bold mb-6">Device Data</h1>
+        <h1 className="text-3xl font-bold mb-6">Device Data</h1>
       </div>
 
       <Button
@@ -169,63 +165,67 @@ const BleDataPage = React.memo(() => {
         ))}
       </div>
 
-      {categorizedData[activeCategory].map((serviceData) => (
-        <div key={serviceData.uuid} className="mb-8">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-lg font-bold">
-              {serviceData.serviceNameEnum
-                ? serviceData.serviceNameEnum.replace(/_/g, " ")
-                : "Unnamed Service"}
-            </h2>
-          </div>
+      {categorizedData[activeCategory]?.length > 0 ? (
+        categorizedData[activeCategory].map((serviceData) => (
+          <div key={serviceData.uuid} className="mb-8">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-lg font-bold">
+                {serviceData.serviceNameEnum
+                  ? serviceData.serviceNameEnum.replace(/_/g, " ")
+                  : "Unnamed Service"}
+              </h2>
+            </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Characteristic Name</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Properties</TableHead>
-                <TableHead>Descriptors</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Object.entries(serviceData.characterMap || {}).map(
-                ([charUuid, characteristic]) => (
-                  <TableRow
-                    key={`${serviceData.uuid}-${charUuid}`}
-                    className="text-sm"
-                  >
-                    <TableCell className="py-2">
-                      <div>
-                        <p className="font-semibold">
-                          {characteristic.name || "Unnamed Characteristic"}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {characteristic.desc || "No description available"}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-2">
-                      {String(characteristic.realVal)}
-                    </TableCell>
-                    <TableCell className="py-2">
-                      {characteristic.properties}
-                    </TableCell>
-                    <TableCell className="py-2">
-                      {characteristic.descMap &&
-                        Object.keys(characteristic.descMap).length > 0 && (
-                          <DescriptorsDialog
-                            descriptors={characteristic.descMap}
-                          />
-                        )}
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      ))}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Characteristic Name</TableHead>
+                  <TableHead>Value</TableHead>
+                  <TableHead>Properties</TableHead>
+                  <TableHead>Descriptors</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(serviceData.characterMap || {}).map(
+                  ([charUuid, characteristic]) => (
+                    <TableRow
+                      key={`${serviceData.uuid}-${charUuid}`}
+                      className="text-sm"
+                    >
+                      <TableCell className="py-2">
+                        <div>
+                          <p className="font-semibold">
+                            {characteristic.name || "Unnamed Characteristic"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {characteristic.desc || "No description available"}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        {String(characteristic.realVal)}
+                      </TableCell>
+                      <TableCell className="py-2">
+                        {characteristic.properties}
+                      </TableCell>
+                      <TableCell className="py-2">
+                        {characteristic.descMap &&
+                          Object.keys(characteristic.descMap).length > 0 && (
+                            <DescriptorsDialog
+                              descriptors={characteristic.descMap}
+                            />
+                          )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        ))
+      ) : (
+        <div>No data available for this category</div>
+      )}
 
       <Button
         variant="outline"
