@@ -114,17 +114,17 @@ const BleDataPage = React.memo(() => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Descriptors</DialogTitle>
+          <DialogTitle className="text-gray-50">Descriptors</DialogTitle>
         </DialogHeader>
-        <div className="mt-4">
+        <div className="mt-4 text-gray-50">
           {descriptors && descriptors.length > 0 ? (
             descriptors.map((descItem, index) => (
               <div
                 key={index}
-                className="flex justify-between items-center mb-2 text-gray-700"
+                className="flex justify-between items-center mb-2 text-gray-50"
               >
-                <code className="text-xs">{descItem.uuid}</code>
-                <span className="text-sm">{descItem.desc}</span>
+                <code className="text-xs text-gray-50">{descItem.uuid}</code>
+                <span className="text-sm text-gray-50">{descItem.desc}</span>
               </div>
             ))
           ) : (
