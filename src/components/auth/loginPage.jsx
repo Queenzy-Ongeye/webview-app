@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AtSign, Lock, Eye, EyeOff } from "lucide-react";
@@ -25,11 +23,19 @@ export default function LoginPage() {
   const from = location.state?.from?.pathname || "/home";
   const navigate = useNavigate();
 
-  // Check login state on component mount
+  // Utility to check for localStorage safely
+  const isBrowser = typeof window !== "undefined";
+
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
+    if (isBrowser) {
+      try {
+        const isAuthenticated = localStorage.getItem("isAuthenticated");
+        if (isAuthenticated) {
+          navigate(from, { replace: true });
+        }
+      } catch (error) {
+        console.error("Error accessing localStorage:", error);
+      }
     }
   }, [from, navigate]);
 
@@ -43,7 +49,13 @@ export default function LoginPage() {
 
     if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
       setError("");
-      localStorage.setItem("isAuthenticated", "true"); // Save login state
+      if (isBrowser) {
+        try {
+          localStorage.setItem("isAuthenticated", "true"); // Save login state
+        } catch (error) {
+          console.error("Error saving to localStorage:", error);
+        }
+      }
       navigate(from, { replace: true });
     } else {
       setError("Invalid email or password");
