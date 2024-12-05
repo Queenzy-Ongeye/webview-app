@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AtSign, Lock, Eye, EyeOff } from "lucide-react";
 import { Alert, AlertDescription } from "../reusableCards/alert";
@@ -25,6 +25,14 @@ export default function LoginPage() {
   const from = location.state?.from?.pathname || "/home";
   const navigate = useNavigate();
 
+  // Check login state on component mount
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [from, navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -35,6 +43,7 @@ export default function LoginPage() {
 
     if (email === "oves.altec@omnivoltaic.com" && password === "Altec1234") {
       setError("");
+      localStorage.setItem("isAuthenticated", "true"); // Save login state
       navigate(from, { replace: true });
     } else {
       setError("Invalid email or password");
