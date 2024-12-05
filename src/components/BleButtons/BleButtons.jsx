@@ -111,7 +111,7 @@ const BleButtons = () => {
             const parsedData = JSON.parse(data);
             const progressPercentage = Math.round(
               (parsedData.progress / parsedData.total) * 100
-            ) / 100;
+            );
             setProgress(progressPercentage);
           } catch (error) {
             console.error("Progress callback error:", error);
@@ -244,7 +244,6 @@ const BleButtons = () => {
     try {
       setProgress(10);
       await connectToBluetoothDevice(macAddress);
-      setProgress(30);
       await new Promise((resolve) => setTimeout(resolve, 10000));
 
       setProgress(50);
