@@ -213,8 +213,8 @@ const BleDataPage = React.memo(() => {
                         {characteristic.properties}
                       </TableCell>
                       <TableCell className="py-2">
-                        {characteristic.descMap &&
-                          Object.keys(characteristic.descMap).length > 0 && (
+                        {characteristic.descriptors &&
+                          Object.keys(characteristic.descriptors).length > 0 && (
                             <DescriptorsDialog
                               descriptors={characteristic.descriptors}
                             />
