@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useStore } from "../../service/store";
 const ScanDataPage = () => {
   const [scannedData, setScannedData] = useState(null);
@@ -164,6 +164,77 @@ const ScanDataPage = () => {
           });
         }
       });
+  };
+
+  // Check for match in BLE data
+  const checkForMatch = (initBleData, scannedData) => {
+    for (const item of initBleData.dataList || []) {
+      for (const characteristic of Object.values(item.characterMap || {})) {
+        const { realVal, desc } = characteristic;
+        if (
+          (realVal && realVal.toString().includes(scannedData)) ||
+          (desc && desc.includes(scannedData))
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  // Connect to Bluetooth device
+  const connectToBluetoothDevice = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "connBleByMacAddress",
+          macAddress,
+          (responseData) => {
+            try {
+              const parsedData = JSON.parse(responseData);
+              if (parsedData.respCode === "200") {
+                resolve(macAddress);
+              } else {
+                reject("Connection failed");
+              }
+            } catch (error) {
+              console.error("Error parsing JSON data:", error);
+              reject(error);
+            }
+          }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+        reject("WebViewJavascriptBridge not initialized");
+      }
+    });
+  };
+
+  // Initialize BLE data
+  const initBleData = (macAddress) => {
+    return new Promise((resolve, reject) => {
+      if (window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler(
+          "initBleData",
+          macAddress,
+          (responseData) => {
+            try {
+              const parsedData = JSON.parse(responseData);
+              resolve(parsedData);
+            } catch (error) {
+              console.error(
+                "Error parsing JSON data from 'initBleData' response:",
+                error
+              );
+              reject(error);
+            }
+          }
+        );
+      } else {
+        console.error("WebViewJavascriptBridge is not initialized.");
+        reject("WebViewJavascriptBridge not initialized");
+      }
+    });
   };
 
   // Render component with match status and actions
