@@ -89,11 +89,11 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-            if (parsedData && parsedData.devices) {
-              setDetectedDevices(parsedData.devices);
+            if (parsedData) {
+              setDetectedDevices(parsedData);
               // Start matching process
               setCurrentDeviceIndex(0);
-              connectAndMatchNextDevice(parsedData.devices[0]);
+              connectAndMatchNextDevice(parsedData[0]);
             }
           } catch (error) {
             console.error("Error parsing BLE scan data:", error.message);
@@ -247,7 +247,7 @@ const ScanDataPage = () => {
   // Render component with match status and actions
   return (
     <div className="mt-20">
-      <button onClick={startQrCodeScan}>Scan Barcode</button>
+      <button onClick={startQrCodeScan} className="px-4 py-2 border rounded-md ml-4 text-white bg-oves-blue">Scan Barcode</button>
       
       {matchStatus.searching && <p>Searching for matching device...</p>}
       
