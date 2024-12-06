@@ -1,17 +1,3 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useStore } from "../../service/store";
-import { IoQrCodeOutline } from "react-icons/io5";
-import PopupNotification from "../notification/PopUp";
-import { useNavigate } from "react-router-dom";
-import { Camera, Loader2, Wifi, WifiOff, ChevronDown } from "lucide-react";
-import {
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenu,
-} from "../reusableCards/dropdown";
-import { Button } from "../reusableCards/Buttons";
-
 const ScanDataPage = () => {
   const [scannedData, setScannedData] = useState(null);
   const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0);
@@ -20,8 +6,7 @@ const ScanDataPage = () => {
     matchFound: false,
     message: "",
   });
-  const { dispatch, state } = useStore();
-  const [devicesArray, setDevicesArray] = useState([]); // State to hold devices data
+  const { dispatch, state } = useStore(); // Access the global store
 
   // Start QR/Barcode scan
   const startQrCodeScan = () => {
@@ -79,7 +64,6 @@ const ScanDataPage = () => {
       );
     }
   }, []);
-
   // Scan BLE devices
   const scanBleDevices = () => {
     if (window.WebViewJavascriptBridge) {
@@ -94,7 +78,9 @@ const ScanDataPage = () => {
             // Check if parsedData contains valid device information
             if (parsedData && parsedData.data) {
               const device = JSON.parse(parsedData.data); // Parse the inner `data` field
-              setDevicesArray((prevDevices) => [...prevDevices, device]); // Append device to the array
+
+              // Add device to the global store
+              dispatch({ type: "ADD_DETECTED_DEVICE", payload: device });
             } else {
               console.error("Invalid device data format:", parsedData);
             }
@@ -178,77 +164,6 @@ const ScanDataPage = () => {
       });
   };
 
-  // Check for match in BLE data
-  const checkForMatch = (initBleData, scannedData) => {
-    for (const item of initBleData.dataList || []) {
-      for (const characteristic of Object.values(item.characterMap || {})) {
-        const { realVal, desc } = characteristic;
-        if (
-          (realVal && realVal.toString().includes(scannedData)) ||
-          (desc && desc.includes(scannedData))
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  };
-
-  // Connect to Bluetooth device
-  const connectToBluetoothDevice = (macAddress) => {
-    return new Promise((resolve, reject) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "connBleByMacAddress",
-          macAddress,
-          (responseData) => {
-            try {
-              const parsedData = JSON.parse(responseData);
-              if (parsedData.respCode === "200") {
-                resolve(macAddress);
-              } else {
-                reject("Connection failed");
-              }
-            } catch (error) {
-              console.error("Error parsing JSON data:", error);
-              reject(error);
-            }
-          }
-        );
-      } else {
-        console.error("WebViewJavascriptBridge is not initialized.");
-        reject("WebViewJavascriptBridge not initialized");
-      }
-    });
-  };
-
-  // Initialize BLE data
-  const initBleData = (macAddress) => {
-    return new Promise((resolve, reject) => {
-      if (window.WebViewJavascriptBridge) {
-        window.WebViewJavascriptBridge.callHandler(
-          "initBleData",
-          macAddress,
-          (responseData) => {
-            try {
-              const parsedData = JSON.parse(responseData);
-              resolve(parsedData);
-            } catch (error) {
-              console.error(
-                "Error parsing JSON data from 'initBleData' response:",
-                error
-              );
-              reject(error);
-            }
-          }
-        );
-      } else {
-        console.error("WebViewJavascriptBridge is not initialized.");
-        reject("WebViewJavascriptBridge not initialized");
-      }
-    });
-  };
-
   // Render component with match status and actions
   return (
     <div className="mt-20">
@@ -271,7 +186,7 @@ const ScanDataPage = () => {
 
       {/* Display the scanned devices */}
       <ul>
-        {devicesArray.map((device, index) => (
+        {state.detectedDevices.map((device, index) => (
           <li key={index}>
             MAC Address: {device.macAddress}, RSSI: {device.rssi}, Name:{" "}
             {device.name}
