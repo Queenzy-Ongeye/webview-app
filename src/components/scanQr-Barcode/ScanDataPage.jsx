@@ -90,16 +90,16 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
 
-            if (parsedData) {
-              // Add new devices to the array
-              setDevicesArray((prevDevices) => [...prevDevices, ...parsedData]);
-
-              // Start matching process
-              setCurrentDeviceIndex(0);
-              connectAndMatchNextDevice(parsedData[0]);
+            // Check if parsedData contains valid device information
+            if (parsedData && parsedData.data) {
+              const device = JSON.parse(parsedData.data); // Parse the inner `data` field
+              setDevicesArray((prevDevices) => [...prevDevices, device]); // Append device to the array
+            } else {
+              console.error("Invalid device data format:", parsedData);
             }
+
+            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
           } catch (error) {
             console.error("Error parsing BLE scan data:", error.message);
             setMatchStatus((prev) => ({
