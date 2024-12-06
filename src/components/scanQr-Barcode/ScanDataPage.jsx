@@ -12,6 +12,7 @@ import {
 } from "../reusableCards/dropdown";
 import { Button } from "../reusableCards/Buttons";
 
+
 const ScanDataPage = () => {
   const [scannedData, setScannedData] = useState(null);
   const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0);
@@ -20,6 +21,7 @@ const ScanDataPage = () => {
     matchFound: false,
     message: ''
   });
+  const {dispatch, state} = useStore();
 
   // Start QR/Barcode scan
   const startQrCodeScan = () => {
@@ -88,7 +90,7 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
+            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
             if (parsedData) {
               // Start matching process
               setCurrentDeviceIndex(0);
