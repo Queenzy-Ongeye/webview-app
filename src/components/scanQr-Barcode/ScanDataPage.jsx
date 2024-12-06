@@ -13,7 +13,6 @@ import {
 import { Button } from "../reusableCards/Buttons";
 
 const ScanDataPage = () => {
-  const [detectedDevices, setDetectedDevices] = useState([]);
   const [scannedData, setScannedData] = useState(null);
   const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0);
   const [matchStatus, setMatchStatus] = useState({
@@ -89,8 +88,8 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
+            dispatch({ type: "SET_BLE_DATA", payload: jsonData });
             if (parsedData) {
-              setDetectedDevices(parsedData);
               // Start matching process
               setCurrentDeviceIndex(0);
               connectAndMatchNextDevice(parsedData[0]);
@@ -141,8 +140,8 @@ const ScanDataPage = () => {
           const nextIndex = currentDeviceIndex + 1;
           setCurrentDeviceIndex(nextIndex);
           
-          if (nextIndex < detectedDevices.length) {
-            connectAndMatchNextDevice(detectedDevices[nextIndex]);
+          if (nextIndex < state.detectedDevices.length) {
+            connectAndMatchNextDevice(state.detectedDevices[nextIndex]);
           } else {
             // No more devices to check
             setMatchStatus({
@@ -160,8 +159,8 @@ const ScanDataPage = () => {
         const nextIndex = currentDeviceIndex + 1;
         setCurrentDeviceIndex(nextIndex);
         
-        if (nextIndex < detectedDevices.length) {
-          connectAndMatchNextDevice(detectedDevices[nextIndex]);
+        if (nextIndex < state.detectedDevices.length) {
+          connectAndMatchNextDevice(state.detectedDevices[nextIndex]);
         } else {
           // No more devices to check
           setMatchStatus({
