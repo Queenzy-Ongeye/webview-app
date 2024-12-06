@@ -12,16 +12,16 @@ import {
 } from "../reusableCards/dropdown";
 import { Button } from "../reusableCards/Buttons";
 
-
 const ScanDataPage = () => {
   const [scannedData, setScannedData] = useState(null);
   const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0);
   const [matchStatus, setMatchStatus] = useState({
     searching: false,
     matchFound: false,
-    message: ''
+    message: "",
   });
-  const {dispatch, state} = useStore();
+  const { dispatch, state } = useStore();
+  const [devicesArray, setDevicesArray] = useState([]); // State to hold devices data
 
   // Start QR/Barcode scan
   const startQrCodeScan = () => {
@@ -60,7 +60,7 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(data);
             const scannedValue = parsedData.respData?.value;
-            
+
             if (scannedValue) {
               setScannedData(scannedValue);
               // Immediately start scanning for BLE devices
@@ -83,7 +83,7 @@ const ScanDataPage = () => {
   // Scan BLE devices
   const scanBleDevices = () => {
     if (window.WebViewJavascriptBridge) {
-      setMatchStatus(prev => ({ ...prev, searching: true }));
+      setMatchStatus((prev) => ({ ...prev, searching: true }));
       window.WebViewJavascriptBridge.callHandler(
         "startBleScan",
         null,
@@ -91,17 +91,21 @@ const ScanDataPage = () => {
           try {
             const parsedData = JSON.parse(responseData);
             dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+
             if (parsedData) {
+              // Add new devices to the array
+              setDevicesArray((prevDevices) => [...prevDevices, ...parsedData]);
+
               // Start matching process
               setCurrentDeviceIndex(0);
               connectAndMatchNextDevice(parsedData[0]);
             }
           } catch (error) {
             console.error("Error parsing BLE scan data:", error.message);
-            setMatchStatus(prev => ({ 
-              ...prev, 
-              searching: false, 
-              message: "Error scanning devices" 
+            setMatchStatus((prev) => ({
+              ...prev,
+              searching: false,
+              message: "Error scanning devices",
             }));
           }
         }
@@ -118,7 +122,7 @@ const ScanDataPage = () => {
       setMatchStatus({
         searching: false,
         matchFound: false,
-        message: "No matching device found"
+        message: "No matching device found",
       });
       return;
     }
@@ -129,19 +133,19 @@ const ScanDataPage = () => {
       .then((bleData) => {
         // Check for match in the BLE data
         const match = checkForMatch(bleData, scannedData);
-        
+
         if (match) {
           // Match found
           setMatchStatus({
             searching: false,
             matchFound: true,
-            message: `Match found with device: ${device.macAddress}`
+            message: `Match found with device: ${device.macAddress}`,
           });
         } else {
           // Move to next device
           const nextIndex = currentDeviceIndex + 1;
           setCurrentDeviceIndex(nextIndex);
-          
+
           if (nextIndex < state.detectedDevices.length) {
             connectAndMatchNextDevice(state.detectedDevices[nextIndex]);
           } else {
@@ -149,18 +153,18 @@ const ScanDataPage = () => {
             setMatchStatus({
               searching: false,
               matchFound: false,
-              message: "No matching device found"
+              message: "No matching device found",
             });
           }
         }
       })
       .catch((error) => {
         console.error("Error connecting or matching device:", error);
-        
+
         // Move to next device
         const nextIndex = currentDeviceIndex + 1;
         setCurrentDeviceIndex(nextIndex);
-        
+
         if (nextIndex < state.detectedDevices.length) {
           connectAndMatchNextDevice(state.detectedDevices[nextIndex]);
         } else {
@@ -168,7 +172,7 @@ const ScanDataPage = () => {
           setMatchStatus({
             searching: false,
             matchFound: false,
-            message: "No matching device found"
+            message: "No matching device found",
           });
         }
       });
@@ -248,17 +252,32 @@ const ScanDataPage = () => {
   // Render component with match status and actions
   return (
     <div className="mt-20">
-      <button onClick={startQrCodeScan} className="px-4 py-2 border rounded-md ml-4 text-white bg-oves-blue">Scan Barcode</button>
-      
+      <button
+        onClick={startQrCodeScan}
+        className="px-4 py-2 border rounded-md ml-4 text-white bg-oves-blue"
+      >
+        Scan Barcode
+      </button>
+
       {matchStatus.searching && <p>Searching for matching device...</p>}
-      
+
       {matchStatus.message && (
         <p>
-          {matchStatus.matchFound 
-            ? `Success: ${matchStatus.message}` 
+          {matchStatus.matchFound
+            ? `Success: ${matchStatus.message}`
             : `No Match: ${matchStatus.message}`}
         </p>
       )}
+
+      {/* Display the scanned devices */}
+      <ul>
+        {devicesArray.map((device, index) => (
+          <li key={index}>
+            MAC Address: {device.macAddress}, RSSI: {device.rssi}, Name:{" "}
+            {device.name}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
