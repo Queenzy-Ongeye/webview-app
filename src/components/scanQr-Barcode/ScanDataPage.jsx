@@ -246,7 +246,7 @@ const ScanDataPage = () => {
 
   // Render component with match status and actions
   return (
-    <div>
+    <div className="mt-20">
       <button onClick={startQrCodeScan}>Scan Barcode</button>
       
       {matchStatus.searching && <p>Searching for matching device...</p>}
