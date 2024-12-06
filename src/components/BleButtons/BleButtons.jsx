@@ -40,6 +40,8 @@ const BleButtons = () => {
   const [progressStage, setProgressStage] = useState("");
   const [explicitNavigationTriggered, setExplicitNavigationTriggered] =
     useState(false);
+  const requestCode = 999;
+  const [deviceQueue, setDeviceQueue] = useState([]);
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -174,6 +176,58 @@ const BleButtons = () => {
       );
     }
   }, []);
+
+  // Function to handle the scanned data after receiving it
+  const handleScanData = (scannedValue) => {
+    if (scannedValue) {
+      console.log("Scanned Value:", scannedValue);
+      dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+      initiateDeviceQueue(); // Start pairing process
+    } else {
+      console.error("Invalid scan data received.");
+      alert("Invalid scan data. Neither a barcode nor a QR code.");
+    }
+  };
+
+  // Initiate the device queue based on the top 5 strongest signals
+  const initiateDeviceQueue = () => {
+    const detectedDevices = state.detectedDevices;
+    if (detectedDevices && detectedDevices.length > 0) {
+      const topDevices = detectedDevices
+        .sort((a, b) => b.rssi - a.rssi)
+        .slice(0, 5);
+      setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
+      connectToNextDevice(); // Start the pairing process
+    } else {
+      console.warn("No BLE devices detected.");
+    }
+  };
+
+  // Attempt to connect to the next device in the queue
+  const connectToNextDevice = () => {
+    if (deviceQueue.length === 0) {
+      alert("No matching device found. Please scan again.");
+      return;
+    }
+
+    const nextDeviceMac = deviceQueue[0];
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        nextDeviceMac,
+        (responseData) => {
+          const parsedData = JSON.parse(responseData);
+          if (parsedData.respCode === 200) {
+            initBleData(nextDeviceMac);
+          } else {
+            alert("Connection failed. Trying next device...");
+            setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove current device and retry
+            connectToNextDevice();
+          }
+        }
+      );
+    }
+  };
 
   // useEffect(() => {
   //   if (state.initBleData?.dataList && explicitNavigationTriggered) {
