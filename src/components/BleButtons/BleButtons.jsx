@@ -146,47 +146,29 @@ const BleButtons = () => {
       // In the bridge setup, register the scanQrcodeResultCallBack handler
       window.WebViewJavascriptBridge.registerHandler(
         "scanQrcodeResultCallBack",
-        (data, responseCallback) => {
-          console.log("Raw scan data received:", data);
-
+        (data) => {
           try {
-            // Add more flexible parsing
-            const parsedData =
-              typeof data === "string" ? JSON.parse(data) : data;
+            const parsedData = JSON.parse(data);
+            const scannedValue = parsedData.respData?.value;
+            const callbackRequestCode = parsedData.respData?.requestCode;
 
-            console.log("Parsed scan data:", parsedData);
-
-            // Dispatch with more robust payload handling
-            dispatch({
-              type: "SET_SCANNED_DATA",
-              payload: parsedData,
-            });
-
-            // Set QR scan connection flag
-            setIsQrScanConnection(true);
-
-            // Trigger auto-connection process
-            setIsAutoConnecting(true);
-            setCurrentAutoConnectIndex(0);
-
-            responseCallback({
-              success: true,
-              message: "Scan data processed successfully",
-            });
+            // Validate the request code to ensure it matches the original request
+            if (callbackRequestCode === requestCode) {
+              console.log("Scanned data received:", scannedValue);
+              handleScanData(scannedValue); // Process the scanned data
+            } else {
+              console.error(
+                "Request code mismatch. Expected:",
+                requestCode,
+                "Received:",
+                callbackRequestCode
+              );
+            }
           } catch (error) {
             console.error(
-              "Comprehensive error parsing scan data:",
-              error.message,
-              "Original data:",
-              data
+              "Error processing scan callback data:",
+              error.message
             );
-
-            // More informative error response
-            responseCallback({
-              success: false,
-              error: error.message,
-              originalData: data,
-            });
           }
         }
       );
