@@ -1,3 +1,5 @@
+import React, {useState, useEffect} from "react";
+import { useStore } from "../../service/store";
 const ScanDataPage = () => {
   const [scannedData, setScannedData] = useState(null);
   const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0);
