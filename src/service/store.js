@@ -30,12 +30,6 @@ const reducer = (state, action) => {
     case "SET_IS_LOADING":
       return { ...state, isLoading: action.payload };
     case "ADD_DETECTED_DEVICE":
-      // Check for duplicates based on macAddress
-      const exists = state.detectedDevices.some(
-        (device) => device.macAddress === action.payload.macAddress
-      );
-      if (exists) return state; // Skip adding duplicates
-      // Add new device to the array
       return {
         ...state,
         detectedDevices: [...state.detectedDevices, action.payload],
@@ -57,7 +51,7 @@ const reducer = (state, action) => {
     case "SET_BLE_CONNECTION_STATUS":
       return { ...state, bleConnectionStatus: action.payload }; // Action for setting BLE connection status
     case "SET_CONNECTED_MAC_ADDRESS":
-      return { ...state, connectedMacAddress: action.payload };
+      return {...state, connectedMacAddress: action.payload};
     default:
       return state;
   }
