@@ -76,18 +76,9 @@ const ScanDataPage = () => {
         (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
-
-            // Check if parsedData contains valid device information
-            if (parsedData && parsedData.data) {
-              const device = JSON.parse(parsedData.data); // Parse the inner `data` field
-
-              // Add device to the global store
-              dispatch({ type: "ADD_DETECTED_DEVICE", payload: device });
-            } else {
-              console.error("Invalid device data format:", parsedData);
-            }
-
-            dispatch({ type: "SET_BLE_DATA", payload: parsedData });
+            // Add device to the global store
+            dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
+            console.log("data fetched is here;", parsedData)
           } catch (error) {
             console.error("Error parsing BLE scan data:", error.message);
             setMatchStatus((prev) => ({
