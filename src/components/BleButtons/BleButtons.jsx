@@ -191,12 +191,12 @@ const BleButtons = () => {
 
   // Initiate the device queue based on the top 5 strongest signals
   const initiateDeviceQueue = () => {
-    const detectedDevices = state.detectedDevices;
+    const detectedDevices = sortedAndFilteredDevices;
     if (detectedDevices && detectedDevices.length > 0) {
       const topDevices = detectedDevices
-        .sort((a, b) => b.rssi - a.rssi)
         .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
+      console.log("Top devices here: ", topDevices);
       connectToNextDevice(); // Start the pairing process
     } else {
       console.warn("No BLE devices detected.");
@@ -207,34 +207,46 @@ const BleButtons = () => {
   // Attempt to connect to the next device in the queue
   const connectToNextDevice = () => {
     if (deviceQueue.length === 0) {
+      setShowProgressBar(false); // Hide progress bar if the queue is empty
       alert("No matching device found. Please scan again.");
       return;
     }
 
     const nextDeviceMac = deviceQueue[0];
+    console.log("Attempting to connect to:", nextDeviceMac);
+
     if (window.WebViewJavascriptBridge) {
+      setShowProgressBar(true); // Show loading
+      setProgressStage(`Connecting to ${nextDeviceMac}...`);
+
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
         nextDeviceMac,
         (responseData) => {
-          const parsedData = JSON.parse(responseData);
-          if (parsedData.respCode === 200) {
-            initBleData(nextDeviceMac);
-          } else {
-            alert("Connection failed. Trying next device...");
-            setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove current device and retry
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === 200) {
+              console.log(`Connected to ${nextDeviceMac}`);
+              setProgressStage("Fetching device data...");
+              initBleData(nextDeviceMac); // Fetch initialization data
+            } else {
+              console.error(`Failed to connect to ${nextDeviceMac}`);
+              alert("Connection failed. Trying next device...");
+              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove the device and retry
+              connectToNextDevice();
+            }
+          } catch (error) {
+            console.error("Error during connection:", error);
+            setDeviceQueue((prevQueue) => prevQueue.slice(1));
             connectToNextDevice();
           }
         }
       );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+      setShowProgressBar(false);
     }
   };
-
-  // useEffect(() => {
-  //   if (state.initBleData?.dataList && explicitNavigationTriggered) {
-  //     performNavigation();
-  //   }
-  // }, [state.initBleData, explicitNavigationTriggered]);
 
   const performNavigation = (deviceData) => {
     if (isNavigating) return; // Prevent multiple navigations
@@ -417,21 +429,21 @@ const BleButtons = () => {
     if (!initBleData || !scannedData || !initBleData.dataList) return false;
 
     for (const item of initBleData.dataList) {
-      // Check if the item has a characterMap
       if (item.characterMap) {
         for (const characteristic of Object.values(item.characterMap)) {
           const { realVal, desc } = characteristic;
 
-          // Check if scanned data matches either realVal or desc
           if (
             (realVal && realVal.toString().includes(scannedData)) ||
             (desc && desc.includes(scannedData))
           ) {
+            console.log("Match found:", characteristic);
             return true;
           }
         }
       }
     }
+    console.log("No match found for the current device.");
     return false;
   };
 
@@ -440,55 +452,44 @@ const BleButtons = () => {
     const devices = sortedAndFilteredDevices;
 
     if (currentAutoConnectIndex >= devices.length) {
+      setShowProgressBar(false);
       setIsAutoConnecting(false);
       setCurrentAutoConnectIndex(0);
+      alert("No matching device found. Please scan again.");
       return;
     }
 
     const deviceToConnect = devices[currentAutoConnectIndex];
+    console.log("Attempting to auto-connect to:", deviceToConnect.macAddress);
+
+    setShowProgressBar(true);
+    setProgressStage(
+      `Connecting to device ${deviceToConnect.name || "Unknown"}`
+    );
 
     try {
       await connectToBluetoothDevice(deviceToConnect.macAddress);
-      await new Promise((resolve) => setTimeout(resolve, 25000)); // Short delay
+      setProgress(50);
 
       await initBleData(deviceToConnect.macAddress);
+      setProgress(80);
 
-      // Wait for state to update with dataList
-      const checkMatch = () => {
-        return new Promise((resolve) => {
-          // Use a timeout to give some time for state to update
-          const checkInterval = setInterval(() => {
-            if (state.initBleData?.dataList) {
-              clearInterval(checkInterval);
-              resolve(checkDeviceMatch());
-            }
-          }, 5000); // Check every 500ms
-
-          // Prevent infinite waiting
-          setTimeout(() => {
-            clearInterval(checkInterval);
-            resolve(false);
-          }, 20000); // 10 seconds timeout
-        });
-      };
-
-      const matchFound = await checkMatch();
-
+      const matchFound = checkDeviceMatch();
       if (matchFound) {
+        setProgress(100);
         navigate("/ble-data", {
           state: { deviceData: state.initBleData.dataList },
           replace: true,
         });
         setIsAutoConnecting(false);
       } else {
-        // Move to next device
+        console.log("No match found. Trying next device...");
         setCurrentAutoConnectIndex((prev) => prev + 1);
-        // Recursively try next device
-        autoConnectNextDevice();
+        setProgress(0); // Reset progress for the next device
+        autoConnectNextDevice(); // Recursively try the next device
       }
     } catch (error) {
-      console.error("Auto-connection error:", error);
-      // Move to next device on failure
+      console.error("Error during auto-connect:", error);
       setCurrentAutoConnectIndex((prev) => prev + 1);
       autoConnectNextDevice();
     }
@@ -515,48 +516,6 @@ const BleButtons = () => {
     isAutoConnecting,
     state.scannedData,
     currentAutoConnectIndex,
-  ]);
-
-  // Modify searchForMatch to use isQrScanConnection
-  const searchForMatch = useCallback(() => {
-    const { initBleData, scannedData } = state;
-
-    if (!initBleData || !scannedData || !isQrScanConnection) {
-      handleMatchResult(false);
-      return;
-    }
-
-    let match = false;
-    let foundDeviceData = null;
-    for (const item of initBleData.dataList || []) {
-      for (const characteristic of Object.values(item.characterMap || {})) {
-        const { realVal, desc } = characteristic;
-        if (
-          (realVal && realVal.toString().includes(scannedData)) ||
-          (desc && desc.includes(scannedData))
-        ) {
-          match = true;
-          foundDeviceData = item;
-          console.log("Match:", characteristic);
-          break;
-        }
-      }
-      if (match) break;
-    }
-
-    handleMatchResult(match, foundDeviceData);
-  }, [state.initBleData, state.scannedData, isQrScanConnection]);
-
-  // Effect to trigger search only for QR scan connections
-  useEffect(() => {
-    if (state.initBleData && state.scannedData && isQrScanConnection) {
-      searchForMatch();
-    }
-  }, [
-    state.initBleData,
-    state.scannedData,
-    isQrScanConnection,
-    searchForMatch,
   ]);
 
   return (
@@ -680,11 +639,7 @@ const BleButtons = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <ProgressBar progress={progress} />
-            <p className="text-gray-700 mt-4">
-              {progress < 100
-                ? `Loading data... ${progress}%`
-                : "Finishing up..."}
-            </p>
+            <p className="text-gray-700 mt-4">{progressStage}</p>
           </div>
         </div>
       )}
