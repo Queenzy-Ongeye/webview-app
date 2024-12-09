@@ -201,6 +201,7 @@ const BleButtons = () => {
     } else {
       console.warn("No BLE devices detected.");
     }
+    console.log("Detected devices here:", detectedDevices);
   };
 
   // Attempt to connect to the next device in the queue
