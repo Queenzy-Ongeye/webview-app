@@ -25,7 +25,7 @@ const ScanDataPage = () => {
               parsedResponse.respData?.value
             ) {
               const barcodeValue = parsedResponse.respData.value;
-              setScannedData(barcodeValue);
+              dispatch({ type: "SET_SCANNED_DATA", payload: barcodeValue });
 
               // Start matching process
               startMatching(barcodeValue);
@@ -44,18 +44,19 @@ const ScanDataPage = () => {
 
   // Start the matching process
   const startMatching = (barcodeValue) => {
-    if (state.detectedDevices.length === 0) {
+    console.log("Detected devices at startMatching:", state.detectedDevices);
+
+    if (!state.detectedDevices || state.detectedDevices.length === 0) {
       setMatchStatus({
         searching: false,
         matchFound: false,
         message: "No devices detected. Please scan for devices first.",
       });
-    console.log("Devices are here:", state.detectedDevices)
       return;
     }
 
-    setMatchStatus((prev) => ({ ...prev, searching: true, message: "" }));
-    setCurrentDeviceIndex(0);
+    setMatchStatus({ searching: true, matchFound: false, message: "" });
+    setCurrentDeviceIndex(0); // Reset device index
     connectAndMatchNextDevice(barcodeValue, state.detectedDevices[0]);
   };
 
