@@ -191,9 +191,10 @@ const BleButtons = () => {
 
   // Initiate the device queue based on the top 5 strongest signals
   const initiateDeviceQueue = () => {
-    const detectedDevices = sortedAndFilteredDevices;
+    const detectedDevices = state.detectedDevices;
     if (detectedDevices && detectedDevices.length > 0) {
       const topDevices = detectedDevices
+        .sort((a, b) => b.rssi - a.rssi)
         .slice(0, 5);
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       console.log("Top devices here: ", topDevices);
