@@ -399,29 +399,54 @@ const BleButtons = () => {
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
+      // Set the loading state and progress bar visibility before starting the scan
+      setShowProgressBar(true);
+      setProgress(0);
+      setProgressStage("Starting QR code scan...");
+  
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
         999,
         (responseData) => {
-          const parsedResponse = JSON.parse(responseData);
-          if (
-            parsedResponse.respCode === "200" &&
-            parsedResponse.respData === true
-          ) {
-            // Reset auto-connection when starting a new scan
-            setIsAutoConnecting(true);
-            setCurrentAutoConnectIndex(0);
-            console.log("Scan started, preparing auto-connection");
-          } else {
-            console.error("Failed to start scan:", parsedResponse.respDesc);
-            alert("Failed to start scan. Please try again.");
+          try {
+            const parsedResponse = JSON.parse(responseData);
+  
+            if (
+              parsedResponse.respCode === "200" &&
+              parsedResponse.respData === true
+            ) {
+              // Reset auto-connection and progress
+              setIsAutoConnecting(true);
+              setCurrentAutoConnectIndex(0);
+              setProgress(10); // Indicate scan started
+              setProgressStage("Scan in progress...");
+  
+              console.log("Scan started, preparing auto-connection");
+            } else {
+              // Hide progress bar on failure
+              setShowProgressBar(false);
+              setProgress(0);
+              setProgressStage("");
+              console.error("Failed to start scan:", parsedResponse.respDesc);
+              alert("Failed to start scan. Please try again.");
+            }
+          } catch (error) {
+            // Handle JSON parsing errors
+            setShowProgressBar(false);
+            setProgress(0);
+            setProgressStage("");
+            console.error("Error parsing scan response:", error.message);
+            alert("Error occurred while starting scan.");
           }
         }
       );
     } else {
+      // Log error if WebViewJavascriptBridge is not initialized
       console.error("WebViewJavascriptBridge is not initialized.");
+      alert("Scan cannot be started. Please ensure the app is initialized.");
     }
   };
+  
 
   // Device matching function
   const checkDeviceMatch = () => {
@@ -640,7 +665,11 @@ const BleButtons = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <ProgressBar progress={progress} />
-            <p className="text-gray-700 mt-4">{progressStage}</p>
+            <p className="text-gray-700 mt-4">
+              {progress < 100
+                ? `Loading data... ${progress}%`
+                : "Finishing up..."}
+            </p>
           </div>
         </div>
       )}
