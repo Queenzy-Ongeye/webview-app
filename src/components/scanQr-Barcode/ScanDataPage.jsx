@@ -19,14 +19,18 @@ const ScanDataPage = () => {
           999,
           (responseData) => {
             const parsedResponse = JSON.parse(responseData);
+
             if (
               parsedResponse.respCode === "200" &&
-              parsedResponse.respData === true
+              parsedResponse.respData?.value
             ) {
-              console.log("Scan started successfully.");
+              const barcodeValue = parsedResponse.respData.value;
+              setScannedData(barcodeValue);
+
+              // Start matching process
+              startMatching(barcodeValue);
             } else {
-              console.error("Failed to start scan:", parsedResponse.respDesc);
-              alert("Failed to start scan. Please try again.");
+              alert("Failed to scan barcode. Please try again.");
             }
           }
         );
@@ -38,70 +42,31 @@ const ScanDataPage = () => {
     }
   };
 
-  // Register callback handler for scan result
-  useEffect(() => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.registerHandler(
-        "scanQrcodeResultCallBack",
-        (data) => {
-          try {
-            const parsedData = JSON.parse(data);
-            const scannedValue = parsedData.respData?.value;
+  // Start the matching process
+  const startMatching = (barcodeValue) => {
+    if (state.detectedDevices.length === 0) {
+      setMatchStatus({
+        searching: false,
+        matchFound: false,
+        message: "No devices detected. Please scan for devices first.",
+      });
+    console.log("Devices are here:", state.detectedDevices)
+      return;
+    }
 
-            if (scannedValue) {
-              setScannedData(scannedValue);
-              // Immediately start scanning for BLE devices
-              scanBleDevices();
-            } else {
-              console.error("Invalid scan data received.");
-              alert("Invalid scan data. Neither a barcode nor a QR code.");
-            }
-          } catch (error) {
-            console.error(
-              "Error processing scan callback data:",
-              error.message
-            );
-          }
-        }
-      );
-    }
-  }, []);
-  // Scan BLE devices
-  const scanBleDevices = () => {
-    if (window.WebViewJavascriptBridge) {
-      setMatchStatus((prev) => ({ ...prev, searching: true }));
-      window.WebViewJavascriptBridge.callHandler(
-        "startBleScan",
-        null,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            // Add device to the global store
-            dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
-            console.log("data fetched is here;", parsedData)
-          } catch (error) {
-            console.error("Error parsing BLE scan data:", error.message);
-            setMatchStatus((prev) => ({
-              ...prev,
-              searching: false,
-              message: "Error scanning devices",
-            }));
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized for BLE scan.");
-    }
+    setMatchStatus((prev) => ({ ...prev, searching: true, message: "" }));
+    setCurrentDeviceIndex(0);
+    connectAndMatchNextDevice(barcodeValue, state.detectedDevices[0]);
   };
 
   // Connect to device and check for match
-  const connectAndMatchNextDevice = (device) => {
+  const connectAndMatchNextDevice = (barcodeValue, device) => {
     if (!device) {
       // No more devices to check
       setMatchStatus({
         searching: false,
         matchFound: false,
-        message: "No matching device found",
+        message: "No matching device found. Please scan another barcode.",
       });
       return;
     }
@@ -111,7 +76,7 @@ const ScanDataPage = () => {
       .then(initBleData)
       .then((bleData) => {
         // Check for match in the BLE data
-        const match = checkForMatch(bleData, scannedData);
+        const match = checkForMatch(bleData, barcodeValue);
 
         if (match) {
           // Match found
@@ -126,13 +91,16 @@ const ScanDataPage = () => {
           setCurrentDeviceIndex(nextIndex);
 
           if (nextIndex < state.detectedDevices.length) {
-            connectAndMatchNextDevice(state.detectedDevices[nextIndex]);
+            connectAndMatchNextDevice(
+              barcodeValue,
+              state.detectedDevices[nextIndex]
+            );
           } else {
             // No more devices to check
             setMatchStatus({
               searching: false,
               matchFound: false,
-              message: "No matching device found",
+              message: "No matching device found. Please scan another barcode.",
             });
           }
         }
@@ -145,26 +113,29 @@ const ScanDataPage = () => {
         setCurrentDeviceIndex(nextIndex);
 
         if (nextIndex < state.detectedDevices.length) {
-          connectAndMatchNextDevice(state.detectedDevices[nextIndex]);
+          connectAndMatchNextDevice(
+            barcodeValue,
+            state.detectedDevices[nextIndex]
+          );
         } else {
           // No more devices to check
           setMatchStatus({
             searching: false,
             matchFound: false,
-            message: "No matching device found",
+            message: "No matching device found. Please scan another barcode.",
           });
         }
       });
   };
 
   // Check for match in BLE data
-  const checkForMatch = (initBleData, scannedData) => {
-    for (const item of initBleData.dataList || []) {
+  const checkForMatch = (bleData, barcodeValue) => {
+    for (const item of bleData.dataList || []) {
       for (const characteristic of Object.values(item.characterMap || {})) {
         const { realVal, desc } = characteristic;
         if (
-          (realVal && realVal.toString().includes(scannedData)) ||
-          (desc && desc.includes(scannedData))
+          (realVal && realVal.toString().includes(barcodeValue)) ||
+          (desc && desc.includes(barcodeValue))
         ) {
           return true;
         }
@@ -228,7 +199,6 @@ const ScanDataPage = () => {
     });
   };
 
-  // Render component with match status and actions
   return (
     <div className="mt-20">
       <button
@@ -248,7 +218,7 @@ const ScanDataPage = () => {
         </p>
       )}
 
-      {/* Display the scanned devices */}
+      {/* Display the detected devices */}
       <ul>
         {state.detectedDevices.map((device, index) => (
           <li key={index}>
