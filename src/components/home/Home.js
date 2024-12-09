@@ -69,17 +69,21 @@ const Home = () => {
           (data, responseCallback) => {
             try {
               const parsedData = JSON.parse(data);
-              if (parsedData) {
+              if (
+                parsedData &&
+                parsedData.macAddress &&
+                parsedData.name &&
+                parsedData.rssi
+              ) {
+                // Ensure the required fields are present
                 dispatch({ type: "ADD_DETECTED_DEVICE", payload: parsedData });
-                responseCallback(parsedData);
+                responseCallback({ success: true });
               } else {
-                throw new Error("Parsed data is not in the expected format.");
+                console.warn("Invalid device data format:", parsedData);
               }
             } catch (error) {
-              console.error(
-                "Error parsing JSON data from 'findBleDeviceCallBack' handler:",
-                error
-              );
+              console.error("Error parsing BLE device data:", error);
+              responseCallback({ success: false, error: error.message });
             }
           }
         );
