@@ -149,28 +149,26 @@ const BleButtons = () => {
       window.WebViewJavascriptBridge.registerHandler(
         "scanQrcodeResultCallBack",
         (data) => {
+          console.log("Raw scan result data:", data); // Log raw data
           try {
             const parsedData = JSON.parse(data);
+            console.log("Parsed scan result:", parsedData); // Log parsed data
+
             const scannedValue = parsedData.respData?.value;
             const callbackRequestCode = parsedData.respData?.requestCode;
 
-            // Validate the request code to ensure it matches the original request
             if (callbackRequestCode === requestCode) {
-              console.log("Scanned data received:", scannedValue);
-              handleScanData(scannedValue); // Process the scanned data
+              console.log("Valid scan received:", scannedValue);
+              handleScanData(scannedValue);
             } else {
-              console.error(
-                "Request code mismatch. Expected:",
-                requestCode,
-                "Received:",
-                callbackRequestCode
-              );
+              console.error("Request code mismatch", {
+                expected: requestCode,
+                received: callbackRequestCode,
+              });
             }
           } catch (error) {
-            console.error(
-              "Error processing scan callback data:",
-              error.message
-            );
+            console.error("Scan result processing error:", error);
+            setShowProgressBar(false);
           }
         }
       );
@@ -326,11 +324,20 @@ const BleButtons = () => {
 
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
+    console.log("startQrCodeScan called"); // Diagnostic log
+
     if (window.WebViewJavascriptBridge) {
+      console.log("Setting progress bar visibility"); // Diagnostic log
       // Show progress bar and set initial stage for QR scan
       setShowProgressBar(true);
       setProgressStage("Initiating QR Code Scan");
       setProgress(10); // Initial progress
+
+      console.log("Progress bar state:", {
+        showProgressBar: true,
+        progressStage: "Initiating QR Code Scan",
+        progress: 10,
+      }); // Detailed diagnostic log
 
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
@@ -367,11 +374,11 @@ const BleButtons = () => {
     if (scannedValue) {
       console.log("Scanned Value:", scannedValue);
       dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-  
+
       // Update progress and stage
       setProgressStage("Processing scanned data");
       setProgress(50);
-  
+
       initiateDeviceQueue(); // Start pairing process
     } else {
       console.error("Invalid scan data received.");
@@ -675,7 +682,7 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {isAnyDeviceLoading() && showProgressBar && (
+      {isAnyDeviceLoading() || showProgressBar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <ProgressBar progress={progress} />
