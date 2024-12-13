@@ -415,12 +415,12 @@ const BleButtons = () => {
     // Use the passed queue or the current deviceQueue state
     const currentQueue = queue || deviceQueue;
 
-    if (currentQueue.length === 0) {
-      console.log("Device connection queue is empty");
-      setShowProgressBar(false);
-      handleMatchResult(false); // Show no match found popup
-      return;
-    }
+    // if (currentQueue.length === 0) {
+    //   console.log("Device connection queue is empty");
+    //   setShowProgressBar(false);
+    //   handleMatchResult(false); // Show no match found popup
+    //   return;
+    // }
 
     const nextDeviceMac = currentQueue[0];
     console.log("Attempting to connect to device:", nextDeviceMac);
@@ -469,7 +469,7 @@ const BleButtons = () => {
                 // Remove current device from queue and try next
                 const updatedQueue = currentQueue.slice(1);
                 setDeviceQueue(updatedQueue);
-
+                await new Promise((resolve) => setTimeout(resolve, 60000));
                 // Recursively try next device
                 connectToNextDevice(updatedQueue);
               }
@@ -480,6 +480,7 @@ const BleButtons = () => {
               // Remove current device from queue and try next
               const updatedQueue = currentQueue.slice(1);
               setDeviceQueue(updatedQueue);
+              await new Promise((resolve) => setTimeout(resolve, 60000));
 
               // Recursively try next device
               connectToNextDevice(updatedQueue);
@@ -490,7 +491,7 @@ const BleButtons = () => {
             // Remove current device from queue and try next
             const updatedQueue = currentQueue.slice(1);
             setDeviceQueue(updatedQueue);
-
+            await new Promise((resolve) => setTimeout(resolve, 10000));
             // Recursively try next device
             connectToNextDevice(updatedQueue);
           }
