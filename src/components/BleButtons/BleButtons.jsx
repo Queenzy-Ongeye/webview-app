@@ -145,30 +145,40 @@ const BleButtons = () => {
           }
         }
       );
-      // In the bridge setup, register the scanQrcodeResultCallBack handler
+      // In the scan result handler, set progress bar when data is received
       window.WebViewJavascriptBridge.registerHandler(
         "scanQrcodeResultCallBack",
         (data) => {
-          console.log("Raw scan result data:", data); // Log raw data
           try {
             const parsedData = JSON.parse(data);
-            console.log("Parsed scan result:", parsedData); // Log parsed data
-
             const scannedValue = parsedData.respData?.value;
             const callbackRequestCode = parsedData.respData?.requestCode;
 
             if (callbackRequestCode === requestCode) {
-              console.log("Valid scan received:", scannedValue);
-              handleScanData(scannedValue);
+              console.log("Scanned data received:", scannedValue);
+
+              // NOW set the progress bar
+              setShowProgressBar(true);
+              setProgressStage("Processing scanned data");
+              setProgress(10);
+
+              dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+
+              // Continue with device queue initialization
+              initiateDeviceQueue();
             } else {
-              console.error("Request code mismatch", {
-                expected: requestCode,
-                received: callbackRequestCode,
-              });
+              console.error(
+                "Request code mismatch. Expected:",
+                requestCode,
+                "Received:",
+                callbackRequestCode
+              );
             }
           } catch (error) {
-            console.error("Scan result processing error:", error);
-            setShowProgressBar(false);
+            console.error(
+              "Error processing scan callback data:",
+              error.message
+            );
           }
         }
       );
@@ -324,47 +334,32 @@ const BleButtons = () => {
 
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
-    console.log("startQrCodeScan called"); // Diagnostic log
+    console.log("startQrCodeScan called");
 
     if (window.WebViewJavascriptBridge) {
-      console.log("Setting progress bar visibility"); // Diagnostic log
-
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
         999,
         (responseData) => {
-          // Show progress bar and set initial stage for QR scan
-          setShowProgressBar(true);
-          setProgressStage("Initiating QR Code Scan");
-          setProgress(10); // Initial progress
+          console.log("QR Code Scan Response:", responseData);
 
-          console.log("Progress bar state:", {
-            showProgressBar: true,
-            progressStage: "Initiating QR Code Scan",
-            progress: 10,
-          }); // Detailed diagnostic log
           const parsedResponse = JSON.parse(responseData);
           if (
             parsedResponse.respCode === "200" &&
             parsedResponse.respData === true
           ) {
-            const barcodeValue = parsedResponse.respData.value;
-            dispatch({ type: "SET_SCANNED_DATA", payload: barcodeValue });
-
-            // Reset auto-connection when starting a new scan
+            console.log("Scan started successfully");
+            // Prepare for scanning, but don't set progress bar yet
             setIsAutoConnecting(true);
             setCurrentAutoConnectIndex(0);
-            console.log("Scan started, preparing auto-connection");
           } else {
             console.error("Failed to start scan:", parsedResponse.respDesc);
-            setShowProgressBar(false);
             alert("Failed to start scan. Please try again.");
           }
         }
       );
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
-      setShowProgressBar(false);
     }
   };
 
@@ -376,7 +371,7 @@ const BleButtons = () => {
 
       // Update progress and stage
       setProgressStage("Processing scanned data");
-      setProgress(50);
+      setProgress(30);
 
       initiateDeviceQueue(); // Start pairing process
     } else {
@@ -396,7 +391,7 @@ const BleButtons = () => {
 
       // Update progress and stage
       setProgressStage(`Preparing to connect to ${topDevices.length} devices`);
-      setProgress(30);
+      setProgress(40);
 
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       console.log("Top devices here: ", topDevices);
