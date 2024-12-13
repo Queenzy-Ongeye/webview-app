@@ -194,6 +194,66 @@ const BleButtons = () => {
     }
   };
 
+  // Initiate the device queue based on the top 5 strongest signals
+  const initiateDeviceQueue = () => {
+    const detectedDevices = state.detectedDevices;
+    if (detectedDevices && detectedDevices.length > 0) {
+      const topDevices = detectedDevices
+        .sort((a, b) => b.rssi - a.rssi)
+        .slice(0, 5);
+      setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
+      console.log("Top devices here: ", topDevices);
+      connectToNextDevice(); // Start the pairing process
+    } else {
+      console.warn("No BLE devices detected.");
+    }
+    console.log("Detected devices here:", detectedDevices);
+  };
+
+  // Attempt to connect to the next device in the queue
+  const connectToNextDevice = () => {
+    if (deviceQueue.length === 0) {
+      setShowProgressBar(false); // Hide progress bar if the queue is empty
+      alert("No matching device found. Please scan again.");
+      return;
+    }
+
+    const nextDeviceMac = deviceQueue[0];
+    console.log("Attempting to connect to:", nextDeviceMac);
+
+    if (window.WebViewJavascriptBridge) {
+      setShowProgressBar(true); // Show loading
+      setProgressStage(`Connecting to ${nextDeviceMac}...`);
+
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        nextDeviceMac,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === 200) {
+              console.log(`Connected to ${nextDeviceMac}`);
+              setProgressStage("Fetching device data...");
+              initBleData(nextDeviceMac); // Fetch initialization data
+            } else {
+              console.error(`Failed to connect to ${nextDeviceMac}`);
+              alert("Connection failed. Trying next device...");
+              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove the device and retry
+              connectToNextDevice();
+            }
+          } catch (error) {
+            console.error("Error during connection:", error);
+            setDeviceQueue((prevQueue) => prevQueue.slice(1));
+            connectToNextDevice();
+          }
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+      setShowProgressBar(false);
+    }
+  };
+
   const performNavigation = (deviceData) => {
     if (isNavigating) return; // Prevent multiple navigations
 
@@ -409,6 +469,7 @@ const BleButtons = () => {
     const sortedDevices = [...detectedDevices]
       .sort((a, b) => b.rssi - a.rssi)
       .slice(0, 5); // Top 5 strongest signals
+      console.log("Top devices here: ", sortedDevices);
 
     // Update progress tracking
     setConnectionProgress((prev) => ({
@@ -427,6 +488,8 @@ const BleButtons = () => {
       }
 
       const device = sortedDevices[deviceIndex];
+      console.log("Devices here: ", device);
+      
 
       // Update current device in progress
       setConnectionProgress((prev) => ({
