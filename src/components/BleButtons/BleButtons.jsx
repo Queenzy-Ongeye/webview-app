@@ -329,15 +329,6 @@ const BleButtons = () => {
     if (window.WebViewJavascriptBridge) {
       console.log("Setting progress bar visibility"); // Diagnostic log
       // Show progress bar and set initial stage for QR scan
-      setShowProgressBar(true);
-      setProgressStage("Initiating QR Code Scan");
-      // setProgress(10); // Initial progress
-
-      console.log("Progress bar state:", {
-        showProgressBar: true,
-        progressStage: "Initiating QR Code Scan",
-        progress: 10,
-      }); // Detailed diagnostic log
 
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
@@ -350,9 +341,15 @@ const BleButtons = () => {
           ) {
             const barcodeValue = parsedResponse.respData.value;
             dispatch({ type: "SET_SCANNED_DATA", payload: barcodeValue });
-            // Update progress and stage
-            setProgressStage("Scan started, preparing auto-connection");
-            setProgress(10);
+            setShowProgressBar(true);
+            setProgressStage("Initiating QR Code Scan");
+            setProgress(10); // Initial progress
+
+            console.log("Progress bar state:", {
+              showProgressBar: true,
+              progressStage: "Initiating QR Code Scan",
+              progress: 10,
+            }); // Detailed diagnostic log
 
             // Reset auto-connection when starting a new scan
             setIsAutoConnecting(true);
