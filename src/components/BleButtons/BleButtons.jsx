@@ -731,19 +731,18 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {isAnyDeviceLoading() ||
-        (showProgressBar && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-              <ProgressBar progress={progress} />
-              <p className="text-gray-700 mt-4">
-                {progress < 100
-                  ? `Loading data... ${progress}%`
-                  : "Finishing up..."}
-              </p>
-            </div>
+      {isAnyDeviceLoading() && showProgressBar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+            <ProgressBar progress={progress} />
+            <p className="text-gray-700 mt-4">
+              {progress < 100
+                ? `Loading data... ${progress}%`
+                : "Finishing up..."}
+            </p>
           </div>
-        ))}
+        </div>
+      )}
 
       {isPopupVisible && (
         <PopupNotification
