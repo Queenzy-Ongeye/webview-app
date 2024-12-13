@@ -163,6 +163,7 @@ const BleButtons = () => {
               setProgress(10);
 
               dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+              handleScanData(scannedValue);
 
               // Continue with device queue initialization
               initiateDeviceQueue();
@@ -335,6 +336,8 @@ const BleButtons = () => {
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     console.log("startQrCodeScan called");
+    setShowProgressBar(true);
+    setProgress(0);
 
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
@@ -393,59 +396,108 @@ const BleButtons = () => {
       setProgressStage(`Preparing to connect to ${topDevices.length} devices`);
       setProgress(40);
 
-      setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
-      console.log("Top devices here: ", topDevices);
-      connectToNextDevice(); // Start the pairing process
+      // Create a queue of device MAC addresses
+      const deviceMacQueue = topDevices.map((device) => device.macAddress);
+      setDeviceQueue(deviceMacQueue);
+
+      console.log("Top devices for connection: ", topDevices);
+
+      // Start the connection process
+      connectToNextDevice(deviceMacQueue);
     } else {
       console.warn("No BLE devices detected.");
       setShowProgressBar(false);
       alert("No devices found. Please try scanning again.");
     }
-    console.log("Detected devices here:", detectedDevices);
   };
 
-  // Attempt to connect to the next device in the queue
-  const connectToNextDevice = () => {
-    if (deviceQueue.length === 0) {
-      setShowProgressBar(false); // Hide progress bar if the queue is empty
-      alert("No matching device found. Please scan again.");
+  const connectToNextDevice = (queue) => {
+    // Use the passed queue or the current deviceQueue state
+    const currentQueue = queue || deviceQueue;
+
+    if (currentQueue.length === 0) {
+      console.log("Device connection queue is empty");
+      setShowProgressBar(false);
+      handleMatchResult(false); // Show no match found popup
       return;
     }
 
-    const nextDeviceMac = deviceQueue[0];
-    console.log("Attempting to connect to:", nextDeviceMac);
+    const nextDeviceMac = currentQueue[0];
+    console.log("Attempting to connect to device:", nextDeviceMac);
+
+    // Update progress stage
+    setProgressStage(`Connecting to ${nextDeviceMac}`);
+    setProgress(50);
 
     if (window.WebViewJavascriptBridge) {
-      setShowProgressBar(true); // Show loading
-      setProgressStage(`Connecting to ${nextDeviceMac}...`);
-      setProgress(40);
-
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
         nextDeviceMac,
-        (responseData) => {
+        async (responseData) => {
           try {
             const parsedData = JSON.parse(responseData);
+
             if (parsedData.respCode === 200) {
-              console.log(`Connected to ${nextDeviceMac}`);
-              setProgressStage("Fetching device data...");
-              initBleData(nextDeviceMac); // Fetch initialization data
-              setProgress(60);
+              console.log(`Successfully connected to ${nextDeviceMac}`);
+
+              // Update progress
+              setProgressStage("Initializing device data");
+              setProgress(70);
+
+              // Initialize BLE data
+              const initResponse = await initBleData(nextDeviceMac);
+
+              // Check for device match
+              const matchFound = checkDeviceMatch();
+
+              if (matchFound) {
+                // Success scenario
+                setProgress(100);
+                handleMatchResult(true);
+
+                // Navigate after a short delay
+                setTimeout(() => {
+                  navigate("/ble-data", {
+                    state: { deviceData: initResponse.dataList },
+                    replace: true,
+                  });
+                }, 1500);
+              } else {
+                // No match, try next device
+                console.log("No match found, trying next device");
+
+                // Remove current device from queue and try next
+                const updatedQueue = currentQueue.slice(1);
+                setDeviceQueue(updatedQueue);
+
+                // Recursively try next device
+                connectToNextDevice(updatedQueue);
+              }
             } else {
+              // Connection failed
               console.error(`Failed to connect to ${nextDeviceMac}`);
-              alert("Connection failed. Trying next device...");
-              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove the device and retry
-              connectToNextDevice();
+
+              // Remove current device from queue and try next
+              const updatedQueue = currentQueue.slice(1);
+              setDeviceQueue(updatedQueue);
+
+              // Recursively try next device
+              connectToNextDevice(updatedQueue);
             }
           } catch (error) {
-            console.error("Error during connection:", error);
-            setDeviceQueue((prevQueue) => prevQueue.slice(1));
-            connectToNextDevice();
+            console.error("Connection error:", error);
+
+            // Remove current device from queue and try next
+            const updatedQueue = currentQueue.slice(1);
+            setDeviceQueue(updatedQueue);
+
+            // Recursively try next device
+            connectToNextDevice(updatedQueue);
           }
         }
       );
     } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
+      console.error("WebViewJavascriptBridge not initialized");
       setShowProgressBar(false);
     }
   };
