@@ -382,7 +382,7 @@ const BleButtons = () => {
 
   // Modify the initiateDeviceQueue function
   const initiateDeviceQueue = () => {
-    const detectedDevices = state.detectedDevices;
+    const detectedDevices = Array.from(uniqueDevicesMap.values());
     if (detectedDevices && detectedDevices.length > 0) {
       const topDevices = detectedDevices
         .sort((a, b) => b.rssi - a.rssi)
