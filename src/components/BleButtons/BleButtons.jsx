@@ -42,12 +42,6 @@ const BleButtons = () => {
     useState(false);
   const requestCode = 999;
   const [deviceQueue, setDeviceQueue] = useState([]);
-  const [connectionProgress, setConnectionProgress] = useState({
-    stage: "",
-    current: 0,
-    total: 0,
-    currentDevice: null,
-  });
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -182,77 +176,6 @@ const BleButtons = () => {
       );
     }
   }, []);
-
-  // Function to handle the scanned data after receiving it
-  const handleScanData = (scannedValue) => {
-    if (scannedValue) {
-      console.log("Scanned Value:", scannedValue);
-      dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-    } else {
-      console.error("Invalid scan data received.");
-      alert("Invalid scan data. Neither a barcode nor a QR code.");
-    }
-  };
-
-  // Initiate the device queue based on the top 5 strongest signals
-  const initiateDeviceQueue = () => {
-    const detectedDevices = state.detectedDevices;
-    if (detectedDevices && detectedDevices.length > 0) {
-      const topDevices = detectedDevices
-        .sort((a, b) => b.rssi - a.rssi)
-        .slice(0, 5);
-      setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
-      console.log("Top devices here: ", topDevices);
-      connectToNextDevice(); // Start the pairing process
-    } else {
-      console.warn("No BLE devices detected.");
-    }
-    console.log("Detected devices here:", detectedDevices);
-  };
-
-  // Attempt to connect to the next device in the queue
-  const connectToNextDevice = () => {
-    if (deviceQueue.length === 0) {
-      setShowProgressBar(false); // Hide progress bar if the queue is empty
-      alert("No matching device found. Please scan again.");
-      return;
-    }
-
-    const nextDeviceMac = deviceQueue[0];
-    console.log("Attempting to connect to:", nextDeviceMac);
-
-    if (window.WebViewJavascriptBridge) {
-      setShowProgressBar(true); // Show loading
-      setProgressStage(`Connecting to ${nextDeviceMac}...`);
-
-      window.WebViewJavascriptBridge.callHandler(
-        "connBleByMacAddress",
-        nextDeviceMac,
-        (responseData) => {
-          try {
-            const parsedData = JSON.parse(responseData);
-            if (parsedData.respCode === 200) {
-              console.log(`Connected to ${nextDeviceMac}`);
-              setProgressStage("Fetching device data...");
-              initBleData(nextDeviceMac); // Fetch initialization data
-            } else {
-              console.error(`Failed to connect to ${nextDeviceMac}`);
-              alert("Connection failed. Trying next device...");
-              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove the device and retry
-              connectToNextDevice();
-            }
-          } catch (error) {
-            console.error("Error during connection:", error);
-            setDeviceQueue((prevQueue) => prevQueue.slice(1));
-            connectToNextDevice();
-          }
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
-      setShowProgressBar(false);
-    }
-  };
 
   const performNavigation = (deviceData) => {
     if (isNavigating) return; // Prevent multiple navigations
@@ -404,131 +327,125 @@ const BleButtons = () => {
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
-      // Set the loading state and progress bar visibility before starting the scan
-      setProgress(0);
-      // Reset all connection-related states
-      setConnectionProgress({
-        stage: "Preparing Scan",
-        current: 0,
-        total: 0,
-        currentDevice: null,
-      });
+      // Show progress bar and set initial stage
       setShowProgressBar(true);
+      setProgressStage("Initiating QR Code Scan");
+      setProgress(10); // Initial progress
 
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
         999,
         (responseData) => {
-          try {
-            const parsedResponse = JSON.parse(responseData);
+          const parsedResponse = JSON.parse(responseData);
+          if (
+            parsedResponse.respCode === "200" &&
+            parsedResponse.respData === true
+          ) {
+            // Update progress and stage
+            setProgressStage("Scan started, preparing auto-connection");
+            setProgress(30);
 
-            if (
-              parsedResponse.respCode === "200" &&
-              parsedResponse.respData === true
-            ) {
-              // Scan initiated successfully
-              setConnectionProgress((prev) => ({
-                ...prev,
-                stage: "Scan in Progress",
-                current: 10,
-              }));
-
-              // Initiate auto-connection process
-              initiateAutoConnection();
-
-              console.log("Scan started, preparing auto-connection");
-            } else {
-              // Scan start failed
-              handleConnectionError(
-                "Scan initiation failed",
-                parsedResponse.respDesc
-              );
-            }
-          } catch (error) {
-            handleConnectionError("Error parsing scan response", error.message);
+            // Reset auto-connection when starting a new scan
+            setIsAutoConnecting(true);
+            setCurrentAutoConnectIndex(0);
+            console.log("Scan started, preparing auto-connection");
+          } else {
+            console.error("Failed to start scan:", parsedResponse.respDesc);
+            setShowProgressBar(false);
+            alert("Failed to start scan. Please try again.");
           }
         }
       );
     } else {
-      // Log error if WebViewJavascriptBridge is not initialized
       console.error("WebViewJavascriptBridge is not initialized.");
-      alert("Scan cannot be started. Please ensure the app is initialized.");
+      setShowProgressBar(false);
     }
   };
 
-  // Comprehensive Auto-Connection Process
-  const initiateAutoConnection = useCallback(() => {
-    const detectedDevices = state.detectedDevices;
-    console.log("Here are the detected divices: ", detectedDevices);
-    
+  // Modify the handleScanData function
+  const handleScanData = (scannedValue) => {
+    if (scannedValue) {
+      console.log("Scanned Value:", scannedValue);
+      dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
 
-    if (!detectedDevices || detectedDevices.length === 0) {
-      handleConnectionError("No Devices", "No BLE devices detected.");
+      // Update progress and stage
+      setProgressStage("Processing scanned data");
+      setProgress(50);
+
+      initiateDeviceQueue(); // Start pairing process
+    } else {
+      console.error("Invalid scan data received.");
+      setShowProgressBar(false);
+      alert("Invalid scan data. Neither a barcode nor a QR code.");
+    }
+  };
+
+  // Modify the initiateDeviceQueue function
+  const initiateDeviceQueue = () => {
+    const detectedDevices = sortedAndFilteredDevices;
+    if (detectedDevices && detectedDevices.length > 0) {
+      const topDevices = detectedDevices
+        .sort((a, b) => b.rssi - a.rssi)
+        .slice(0, 5);
+
+      // Update progress and stage
+      setProgressStage(`Preparing to connect to ${topDevices.length} devices`);
+      setProgress(70);
+
+      setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
+      console.log("Top devices here: ", topDevices);
+      connectToNextDevice(); // Start the pairing process
+    } else {
+      console.warn("No BLE devices detected.");
+      setShowProgressBar(false);
+      alert("No devices found. Please try scanning again.");
+    }
+    console.log("Detected devices here:", detectedDevices);
+  };
+
+  // Attempt to connect to the next device in the queue
+  const connectToNextDevice = () => {
+    if (deviceQueue.length === 0) {
+      setShowProgressBar(false); // Hide progress bar if the queue is empty
+      alert("No matching device found. Please scan again.");
       return;
     }
 
-    // Sort devices by signal strength
-    const sortedDevices = detectedDevices
-      .sort((a, b) => b.rssi - a.rssi)
-      .slice(0, 5); // Top 5 strongest signals
-    console.log("Top devices here: ", sortedDevices);
+    const nextDeviceMac = deviceQueue[0];
+    console.log("Attempting to connect to:", nextDeviceMac);
 
-    // Update progress tracking
-    setConnectionProgress((prev) => ({
-      stage: "Preparing Connection",
-      current: 20,
-      total: sortedDevices.length,
-      currentDevice: null,
-    }));
+    if (window.WebViewJavascriptBridge) {
+      setShowProgressBar(true); // Show loading
+      setProgressStage(`Connecting to ${nextDeviceMac}...`);
 
-    // Recursive connection attempt function
-    const connectToDevices = async (deviceIndex = 0) => {
-      if (deviceIndex >= sortedDevices.length) {
-        // No matching device found after trying all
-        handleConnectionError("Connection Failed", "No matching device found.");
-        return;
-      }
-
-      const device = sortedDevices[deviceIndex];
-      console.log("Devices here: ", device);
-
-      // Update current device in progress
-      setConnectionProgress((prev) => ({
-        ...prev,
-        stage: `Connecting to ${device.name || "Unknown Device"}`,
-        current: Math.floor(30 + (deviceIndex / sortedDevices.length) * 40),
-        currentDevice: device,
-      }));
-
-      try {
-        // Attempt to connect to the device
-        await connectToBluetoothDevice(device.macAddress);
-
-        // Initialize BLE data
-        const initData = await initBleData(device.macAddress);
-
-        // Check if the device matches the scanned data
-        if (checkDeviceMatch(initData)) {
-          // Match found - navigate to BLE data page
-          navigateToBleDatePage(initData);
-          return;
+      window.WebViewJavascriptBridge.callHandler(
+        "connBleByMacAddress",
+        nextDeviceMac,
+        (responseData) => {
+          try {
+            const parsedData = JSON.parse(responseData);
+            if (parsedData.respCode === 200) {
+              console.log(`Connected to ${nextDeviceMac}`);
+              setProgressStage("Fetching device data...");
+              initBleData(nextDeviceMac); // Fetch initialization data
+            } else {
+              console.error(`Failed to connect to ${nextDeviceMac}`);
+              alert("Connection failed. Trying next device...");
+              setDeviceQueue((prevQueue) => prevQueue.slice(1)); // Remove the device and retry
+              connectToNextDevice();
+            }
+          } catch (error) {
+            console.error("Error during connection:", error);
+            setDeviceQueue((prevQueue) => prevQueue.slice(1));
+            connectToNextDevice();
+          }
         }
-
-        // If no match, try next device
-        connectToDevices(deviceIndex + 1);
-      } catch (error) {
-        console.error(
-          `Connection attempt failed for ${device.macAddress}:`,
-          error
-        );
-        // Try next device
-        connectToDevices(deviceIndex + 1);
-      }
-    };
-
-    // Start the connection process
-    connectToDevices();
-  }, [state.detectedDevices, state.scannedData]);
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+      setShowProgressBar(false);
+    }
+  };
 
   // Device matching function
   const checkDeviceMatch = () => {
@@ -537,14 +454,22 @@ const BleButtons = () => {
     if (!initBleData || !scannedData || !initBleData.dataList) return false;
 
     for (const item of initBleData.dataList) {
-      if (item.characterMap) {
-        for (const characteristic of Object.values(item.characterMap)) {
-          const { realVal, desc } = characteristic;
+      if (item.characteristicList) {
+        for (const characteristic of Object.values(item.characteristicList)) {
+          const { valType, descriptors } = characteristic;
 
-          if (
-            (realVal && realVal.toString().includes(scannedData)) ||
-            (desc && desc.includes(scannedData))
-          ) {
+          // More flexible matching
+          const matchConditions = [
+            valType &&
+              valType
+                .toString()
+                .toLowerCase()
+                .includes(scannedData.toLowerCase()),
+            descriptors &&
+              descriptors.toLowerCase().includes(scannedData.toLowerCase()),
+          ];
+
+          if (matchConditions.some((condition) => condition)) {
             console.log("Match found:", characteristic);
             return true;
           }
@@ -555,85 +480,83 @@ const BleButtons = () => {
     return false;
   };
 
-  // Error Handling Method
-  const handleConnectionError = (stage, message) => {
-    console.error(`${stage} Error:`, message);
+  // Automatic connection logic
+  const autoConnectNextDevice = useCallback(async () => {
+    const devices = sortedAndFilteredDevices;
 
-    setConnectionProgress({
-      stage: "Error",
-      current: 0,
-      total: 0,
-      currentDevice: null,
-    });
-
-    setShowProgressBar(false);
-
-    // Show user-friendly alert
-    alert(message);
-  };
-
-  // Navigation Method
-  const navigateToBleDatePage = (deviceData) => {
-    setConnectionProgress({
-      stage: "Connection Successful",
-      current: 100,
-      total: 0,
-      currentDevice: null,
-    });
-
-    // Short delay to show final progress
-    setTimeout(() => {
+    if (currentAutoConnectIndex >= devices.length) {
       setShowProgressBar(false);
-      navigate("/ble-data", {
-        state: { deviceData },
-        replace: true,
-      });
-    }, 500);
-  };
+      setIsAutoConnecting(false);
+      setCurrentAutoConnectIndex(0);
+      // Instead of a simple alert, use a more user-friendly popup
+      handleMatchResult(false);
+      return;
+    }
 
-  // Progress Bar Rendering
-  const renderProgressBar = () => {
-    if (!showProgressBar) return null;
+    const deviceToConnect = devices[currentAutoConnectIndex];
+    console.log("Attempting to auto-connect to:", deviceToConnect.macAddress);
 
-    const { stage, current, total, currentDevice } = connectionProgress;
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
-          <ProgressBar progress={current} />
-          <p className="text-gray-700 mt-4">
-            {stage}
-            {currentDevice && ` (${currentDevice.name || "Unknown Device"})`}
-          </p>
-          <p className="text-sm text-gray-500">
-            {total > 0 ? `Devices: ${current}/${total}` : ""}
-          </p>
-        </div>
-      </div>
+    setShowProgressBar(true);
+    setProgressStage(
+      `Connecting to device ${deviceToConnect.name || "Unknown"}`
     );
-  };
+
+    try {
+      await connectToBluetoothDevice(deviceToConnect.macAddress);
+      setProgress(50);
+
+      await initBleData(deviceToConnect.macAddress);
+      setProgress(80);
+
+      const matchFound = checkDeviceMatch();
+      if (matchFound) {
+        setProgress(100);
+        // Use handleMatchResult to show a success popup before navigation
+        handleMatchResult(true);
+
+        // Optional: Add a slight delay to allow user to see the match found popup
+        setTimeout(() => {
+          navigate("/ble-data", {
+            state: { deviceData: state.initBleData.dataList },
+            replace: true,
+          });
+          setIsAutoConnecting(false);
+        }, 1500); // 1.5 seconds delay
+      } else {
+        console.log("No match found. Trying next device...");
+        setCurrentAutoConnectIndex((prev) => prev + 1);
+        setProgress(0); // Reset progress for the next device
+        autoConnectNextDevice(); // Recursively try the next device
+      }
+    } catch (error) {
+      console.error("Error during auto-connect:", error);
+      setCurrentAutoConnectIndex((prev) => prev + 1);
+      autoConnectNextDevice();
+    }
+  }, [sortedAndFilteredDevices, currentAutoConnectIndex, state.scannedData]);
 
   // Add an effect to watch for dataList updates during auto-connection
-  // useEffect(() => {
-  //   if (isAutoConnecting && state.initBleData?.dataList) {
-  //     const matchFound = checkDeviceMatch();
-  //     if (matchFound) {
-  //       navigate("/ble-data", {
-  //         state: { deviceData: state.initBleData.dataList },
-  //         replace: true,
-  //       });
-  //       setIsAutoConnecting(false);
-  //     }
-  //     setShowProgressBar(true);
-  //     setProgressStage(
-  //       `Auto-connecting: Device ${currentAutoConnectIndex + 1}`
-  //     );
-  //   }
-  // }, [
-  //   state.initBleData,
-  //   isAutoConnecting,
-  //   state.scannedData,
-  //   currentAutoConnectIndex,
-  // ]);
+  useEffect(() => {
+    if (isAutoConnecting && state.initBleData?.dataList) {
+      const matchFound = checkDeviceMatch();
+      if (matchFound) {
+        navigate("/ble-data", {
+          state: { deviceData: state.initBleData.dataList },
+          replace: true,
+        });
+        setIsAutoConnecting(false);
+      }
+      setShowProgressBar(true);
+      setProgressStage(
+        `Auto-connecting: Device ${currentAutoConnectIndex + 1}`
+      );
+    }
+  }, [
+    state.initBleData,
+    isAutoConnecting,
+    state.scannedData,
+    currentAutoConnectIndex,
+  ]);
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
