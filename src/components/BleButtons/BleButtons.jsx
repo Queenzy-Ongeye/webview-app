@@ -459,6 +459,8 @@ const BleButtons = () => {
   // Comprehensive Auto-Connection Process
   const initiateAutoConnection = useCallback(() => {
     const detectedDevices = state.detectedDevices;
+    console.log("Here are the detected divices: ", detectedDevices);
+    
 
     if (!detectedDevices || detectedDevices.length === 0) {
       handleConnectionError("No Devices", "No BLE devices detected.");
@@ -466,10 +468,10 @@ const BleButtons = () => {
     }
 
     // Sort devices by signal strength
-    const sortedDevices = [...detectedDevices]
+    const sortedDevices = detectedDevices
       .sort((a, b) => b.rssi - a.rssi)
       .slice(0, 5); // Top 5 strongest signals
-      console.log("Top devices here: ", sortedDevices);
+    console.log("Top devices here: ", sortedDevices);
 
     // Update progress tracking
     setConnectionProgress((prev) => ({
@@ -489,7 +491,6 @@ const BleButtons = () => {
 
       const device = sortedDevices[deviceIndex];
       console.log("Devices here: ", device);
-      
 
       // Update current device in progress
       setConnectionProgress((prev) => ({
