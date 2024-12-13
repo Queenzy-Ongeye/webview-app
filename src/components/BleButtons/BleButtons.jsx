@@ -328,12 +328,21 @@ const BleButtons = () => {
 
     if (window.WebViewJavascriptBridge) {
       console.log("Setting progress bar visibility"); // Diagnostic log
-      // Show progress bar and set initial stage for QR scan
 
       window.WebViewJavascriptBridge.callHandler(
         "startQrCodeScan",
         999,
         (responseData) => {
+          // Show progress bar and set initial stage for QR scan
+          setShowProgressBar(true);
+          setProgressStage("Initiating QR Code Scan");
+          setProgress(10); // Initial progress
+
+          console.log("Progress bar state:", {
+            showProgressBar: true,
+            progressStage: "Initiating QR Code Scan",
+            progress: 10,
+          }); // Detailed diagnostic log
           const parsedResponse = JSON.parse(responseData);
           if (
             parsedResponse.respCode === "200" &&
@@ -341,15 +350,6 @@ const BleButtons = () => {
           ) {
             const barcodeValue = parsedResponse.respData.value;
             dispatch({ type: "SET_SCANNED_DATA", payload: barcodeValue });
-            setShowProgressBar(true);
-            setProgressStage("Initiating QR Code Scan");
-            setProgress(10); // Initial progress
-
-            console.log("Progress bar state:", {
-              showProgressBar: true,
-              progressStage: "Initiating QR Code Scan",
-              progress: 10,
-            }); // Detailed diagnostic log
 
             // Reset auto-connection when starting a new scan
             setIsAutoConnecting(true);
@@ -396,7 +396,7 @@ const BleButtons = () => {
 
       // Update progress and stage
       setProgressStage(`Preparing to connect to ${topDevices.length} devices`);
-      setProgress(70);
+      setProgress(30);
 
       setDeviceQueue(topDevices.map((device) => device.macAddress)); // Queue MAC addresses
       console.log("Top devices here: ", topDevices);
@@ -423,6 +423,7 @@ const BleButtons = () => {
     if (window.WebViewJavascriptBridge) {
       setShowProgressBar(true); // Show loading
       setProgressStage(`Connecting to ${nextDeviceMac}...`);
+      setProgress(40);
 
       window.WebViewJavascriptBridge.callHandler(
         "connBleByMacAddress",
@@ -434,6 +435,7 @@ const BleButtons = () => {
               console.log(`Connected to ${nextDeviceMac}`);
               setProgressStage("Fetching device data...");
               initBleData(nextDeviceMac); // Fetch initialization data
+              setProgress(60);
             } else {
               console.error(`Failed to connect to ${nextDeviceMac}`);
               alert("Connection failed. Trying next device...");
@@ -509,7 +511,7 @@ const BleButtons = () => {
 
     try {
       await connectToBluetoothDevice(deviceToConnect.macAddress);
-      setProgress(50);
+      setProgress(60);
 
       await initBleData(deviceToConnect.macAddress);
       setProgress(80);
