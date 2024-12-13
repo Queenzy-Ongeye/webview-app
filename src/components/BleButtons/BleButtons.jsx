@@ -327,7 +327,7 @@ const BleButtons = () => {
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     if (window.WebViewJavascriptBridge) {
-      // Show progress bar and set initial stage
+      // Show progress bar and set initial stage for QR scan
       setShowProgressBar(true);
       setProgressStage("Initiating QR Code Scan");
       setProgress(10); // Initial progress
@@ -367,11 +367,11 @@ const BleButtons = () => {
     if (scannedValue) {
       console.log("Scanned Value:", scannedValue);
       dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
-
+  
       // Update progress and stage
       setProgressStage("Processing scanned data");
       setProgress(50);
-
+  
       initiateDeviceQueue(); // Start pairing process
     } else {
       console.error("Invalid scan data received.");
