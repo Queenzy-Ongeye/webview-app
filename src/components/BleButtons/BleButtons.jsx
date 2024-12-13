@@ -455,13 +455,7 @@ const BleButtons = () => {
                 setProgress(100);
                 handleMatchResult(true);
 
-                // Navigate after a short delay
-                setTimeout(() => {
-                  navigate("/ble-data", {
-                    state: { deviceData: initResponse.dataList },
-                    replace: true,
-                  });
-                }, 1500);
+                performNavigation(initResponse.dataList)
               } else {
                 // No match, try next device
                 console.log("No match found, trying next device");
@@ -591,28 +585,6 @@ const BleButtons = () => {
     }
   }, [sortedAndFilteredDevices, currentAutoConnectIndex, state.scannedData]);
 
-  // Add an effect to watch for dataList updates during auto-connection
-  useEffect(() => {
-    if (isAutoConnecting && state.initBleData?.dataList) {
-      const matchFound = checkDeviceMatch();
-      if (matchFound) {
-        navigate("/ble-data", {
-          state: { deviceData: state.initBleData.dataList },
-          replace: true,
-        });
-        setIsAutoConnecting(false);
-      }
-      setShowProgressBar(true);
-      setProgressStage(
-        `Auto-connecting: Device ${currentAutoConnectIndex + 1}`
-      );
-    }
-  }, [
-    state.initBleData,
-    isAutoConnecting,
-    state.scannedData,
-    currentAutoConnectIndex,
-  ]);
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
