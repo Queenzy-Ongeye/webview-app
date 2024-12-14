@@ -157,57 +157,103 @@ const BleButtons = () => {
             if (callbackRequestCode === requestCode) {
               console.log("Scanned data received:", scannedValue);
 
-              // NOW set the progress bar
-              setShowProgressBar(true);
+              // Update progress with more detailed stages
               setProgressStage("Processing scanned data");
-              setProgress(10);
+              setProgress(40);
+
+              if (!scannedValue) {
+                throw new Error("No scan value received");
+              }
 
               dispatch({ type: "SET_SCANNED_DATA", payload: scannedValue });
+
+              // Update progress before handling scan data
+              setProgressStage("Preparing device connection");
+              setProgress(60);
+
               handleScanData(scannedValue);
 
               // Continue with device queue initialization
+              setProgressStage("Initializing device queue");
+              setProgress(80);
               initiateDeviceQueue();
             } else {
-              console.error(
-                "Request code mismatch. Expected:",
-                requestCode,
-                "Received:",
-                callbackRequestCode
+              throw new Error(
+                `Request code mismatch. Expected: ${requestCode}, Received: ${callbackRequestCode}`
               );
             }
           } catch (error) {
-            console.error(
-              "Error processing scan callback data:",
-              error.message
-            );
+            console.error("Error processing scan callback data:", error);
+
+            setProgressStage("Scan processing failed");
+            setProgress(0);
+            setShowProgressBar(false);
+
+            alert(`Scan processing error: ${error.message}`);
           }
         }
       );
     }
   }, []);
 
-  const performNavigation = (deviceData) => {
+  const performNavigation = (deviceData, isScanConnection = false) => {
     if (isNavigating) return; // Prevent multiple navigations
 
-    console.log("Attempting navigation with data:", { deviceData });
+    console.log("Attempting navigation with data:", {
+      deviceData,
+      isScanConnection,
+    });
 
     setIsNavigating(true);
 
     try {
-      if (deviceData) {
-        // Navigate immediately with the provided data
-        console.log("Navigating to /ble-data with data:", deviceData);
+      // For manual connection, always navigate
+      if (!isScanConnection && deviceData) {
+        console.log(
+          "Manual connection - Navigating to /ble-data with data:",
+          deviceData
+        );
         navigate("/ble-data", {
           state: { deviceData },
-          replace: true, // Use replace to prevent back navigation issues
+          replace: true,
         });
-        setExplicitNavigationTriggered(false); // Reset trigger after navigation
-      } else {
+        setExplicitNavigationTriggered(false);
+        return;
+      }
+
+      // For scan connection, verify device match
+      if (isScanConnection) {
+        const matchFound = checkDeviceMatch();
+
+        if (matchFound && deviceData) {
+          console.log(
+            "Scan connection - Match found. Navigating to /ble-data:",
+            deviceData
+          );
+          navigate("/ble-data", {
+            state: { deviceData },
+            replace: true,
+          });
+          setExplicitNavigationTriggered(false);
+        } else {
+          console.log(
+            "Scan connection - No match found. Navigation prevented."
+          );
+          // Optionally handle no match scenario
+          handleMatchResult(false);
+        }
+      }
+
+      // If no valid navigation occurred
+      if (!deviceData) {
         throw new Error("Navigation attempted without valid data");
       }
     } catch (error) {
       console.error("Navigation error:", error);
       setError(`Failed to navigate: ${error.message}`);
+      setIsNavigating(false);
+    } finally {
+      // Ensure navigation state is reset
       setIsNavigating(false);
     }
   };
@@ -336,8 +382,11 @@ const BleButtons = () => {
   // Function to initiate the QR/barcode scan
   const startQrCodeScan = () => {
     console.log("startQrCodeScan called");
+
+    // Immediately show progress bar
     setShowProgressBar(true);
-    setProgress(0);
+    setProgressStage("Initiating QR Code Scan");
+    setProgress(5);
 
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler(
@@ -346,23 +395,50 @@ const BleButtons = () => {
         (responseData) => {
           console.log("QR Code Scan Response:", responseData);
 
-          const parsedResponse = JSON.parse(responseData);
-          if (
-            parsedResponse.respCode === "200" &&
-            parsedResponse.respData === true
-          ) {
-            console.log("Scan started successfully");
-            // Prepare for scanning, but don't set progress bar yet
-            setIsAutoConnecting(true);
-            setCurrentAutoConnectIndex(0);
-          } else {
-            console.error("Failed to start scan:", parsedResponse.respDesc);
-            alert("Failed to start scan. Please try again.");
+          try {
+            const parsedResponse = JSON.parse(responseData);
+
+            // Update progress and stages more explicitly
+            if (
+              parsedResponse.respCode === "200" &&
+              parsedResponse.respData === true
+            ) {
+              console.log("Scan started successfully");
+
+              setProgressStage("Scan in progress");
+              setProgress(20);
+
+              setIsAutoConnecting(true);
+              setCurrentAutoConnectIndex(0);
+            } else {
+              console.error("Failed to start scan:", parsedResponse.respDesc);
+
+              // Update progress bar to show failure
+              setProgressStage("Scan failed");
+              setProgress(0);
+              setShowProgressBar(false);
+
+              alert("Failed to start scan. Please try again.");
+            }
+          } catch (error) {
+            console.error("Error parsing scan response:", error);
+
+            setProgressStage("Scan error");
+            setProgress(0);
+            setShowProgressBar(false);
+
+            alert("An error occurred during scanning.");
           }
         }
       );
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
+
+      setProgressStage("Bridge not initialized");
+      setProgress(0);
+      setShowProgressBar(false);
+
+      alert("Communication bridge not ready. Please try again.");
     }
   };
 
@@ -412,20 +488,11 @@ const BleButtons = () => {
   };
 
   const connectToNextDevice = (queue) => {
-    // Use the passed queue or the current deviceQueue state
     const currentQueue = queue || deviceQueue;
-
-    // if (currentQueue.length === 0) {
-    //   console.log("Device connection queue is empty");
-    //   setShowProgressBar(false);
-    //   handleMatchResult(false); // Show no match found popup
-    //   return;
-    // }
 
     const nextDeviceMac = currentQueue[0];
     console.log("Attempting to connect to device:", nextDeviceMac);
 
-    // Update progress stage
     setProgressStage(`Connecting to ${nextDeviceMac}`);
     setProgress(50);
 
@@ -440,53 +507,49 @@ const BleButtons = () => {
             if (parsedData.respCode === 200) {
               console.log(`Successfully connected to ${nextDeviceMac}`);
 
-              // Update progress
               setProgressStage("Initializing device data");
               setProgress(70);
 
-              // Initialize BLE data
+              // Explicitly call initBleData and dispatch like in manual connection
               const initResponse = await initBleData(nextDeviceMac);
 
-              // Check for device match
+              // Dispatch the init data to store - this was missing!
+              dispatch({
+                type: "SET_INIT_BLE_DATA",
+                payload: { dataList: initResponse.dataList },
+              });
+
               const matchFound = checkDeviceMatch();
 
               if (matchFound) {
-                // Success scenario
                 setProgress(100);
                 handleMatchResult(true);
 
-                performNavigation(initResponse.dataList)
+                // Explicitly navigate with the data
+                navigate("/ble-data", {
+                  state: { deviceData: initResponse.dataList },
+                  replace: true,
+                });
               } else {
-                // No match, try next device
                 console.log("No match found, trying next device");
 
-                // Remove current device from queue and try next
                 const updatedQueue = currentQueue.slice(1);
                 setDeviceQueue(updatedQueue);
-                await new Promise((resolve) => setTimeout(resolve, 60000));
-                // Recursively try next device
+                await new Promise((resolve) => setTimeout(resolve, 1000));
                 connectToNextDevice(updatedQueue);
               }
             } else {
-              // Connection failed
               console.error(`Failed to connect to ${nextDeviceMac}`);
-
-              // Remove current device from queue and try next
               const updatedQueue = currentQueue.slice(1);
               setDeviceQueue(updatedQueue);
-              await new Promise((resolve) => setTimeout(resolve, 60000));
-
-              // Recursively try next device
+              await new Promise((resolve) => setTimeout(resolve, 1000));
               connectToNextDevice(updatedQueue);
             }
           } catch (error) {
             console.error("Connection error:", error);
-
-            // Remove current device from queue and try next
             const updatedQueue = currentQueue.slice(1);
             setDeviceQueue(updatedQueue);
-            await new Promise((resolve) => setTimeout(resolve, 10000));
-            // Recursively try next device
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             connectToNextDevice(updatedQueue);
           }
         }
@@ -566,10 +629,7 @@ const BleButtons = () => {
 
         // Optional: Add a slight delay to allow user to see the match found popup
         setTimeout(() => {
-          navigate("/ble-data", {
-            state: { deviceData: state.initBleData.dataList },
-            replace: true,
-          });
+          performNavigation(state.initResponse.dataList, true); // Add true for scan connection
           setIsAutoConnecting(false);
         }, 1500); // 1.5 seconds delay
       } else {
@@ -584,7 +644,6 @@ const BleButtons = () => {
       autoConnectNextDevice();
     }
   }, [sortedAndFilteredDevices, currentAutoConnectIndex, state.scannedData]);
-
 
   return (
     <div className="scan-data-page flex flex-col h-screen">
