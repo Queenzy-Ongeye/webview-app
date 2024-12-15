@@ -42,6 +42,8 @@ const BleButtons = () => {
     useState(false);
   const requestCode = 999;
   const [deviceQueue, setDeviceQueue] = useState([]);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const SESSION_TIMEOUT = 30000; // 30 seconds session timeout
 
   const handleMatchResult = (found) => {
     setMatchFound(found);
@@ -460,35 +462,26 @@ const BleButtons = () => {
     }
   };
 
-  // Modify the initiateDeviceQueue function
-  const initiateDeviceQueue = () => {
-    const detectedDevices = Array.from(uniqueDevicesMap.values());
-    if (detectedDevices && detectedDevices.length > 0) {
-      const topDevices = detectedDevices
-        .sort((a, b) => b.rssi - a.rssi)
-        .slice(0, 5);
-
-      // Update progress and stage
-      setProgressStage(`Preparing to connect to ${topDevices.length} devices`);
-      setProgress(40);
-
-      // Create a queue of device MAC addresses
-      const deviceMacQueue = topDevices.map((device) => device.macAddress);
-      setDeviceQueue(deviceMacQueue);
-
-      console.log("Top devices for connection: ", topDevices);
-
-      // Start the connection process
-      connectToNextDevice(deviceMacQueue);
-    } else {
-      console.warn("No BLE devices detected.");
-      setShowProgressBar(false);
-      alert("No devices found. Please try scanning again.");
-    }
-  };
-
   const connectToNextDevice = (queue) => {
     const currentQueue = queue || deviceQueue;
+
+    // Set session start time if not already set
+    if (!sessionStartTime) {
+      setSessionStartTime(Date.now());
+    }
+
+    // Check for session timeout
+    if (sessionStartTime && Date.now() - sessionStartTime > SESSION_TIMEOUT) {
+      console.log(
+        "Session timeout reached. Stopping device connection attempts."
+      );
+      setShowProgressBar(false);
+      setIsAutoConnecting(false);
+      setCurrentAutoConnectIndex(0);
+      setSessionStartTime(null);
+      handleMatchResult(false);
+      return;
+    }
 
     const nextDeviceMac = currentQueue[0];
     console.log("Attempting to connect to device:", nextDeviceMac);
@@ -525,6 +518,9 @@ const BleButtons = () => {
                 setProgress(100);
                 handleMatchResult(true);
 
+                // Reset session start time
+                setSessionStartTime(null);
+
                 // Explicitly navigate with the data
                 navigate("/ble-data", {
                   state: { deviceData: initResponse.dataList },
@@ -557,6 +553,36 @@ const BleButtons = () => {
     } else {
       console.error("WebViewJavascriptBridge not initialized");
       setShowProgressBar(false);
+    }
+  };
+
+  // Modify initiateDeviceQueue to reset session start time
+  const initiateDeviceQueue = () => {
+    const detectedDevices = Array.from(uniqueDevicesMap.values());
+    if (detectedDevices && detectedDevices.length > 0) {
+      // Reset session start time when initiating queue
+      setSessionStartTime(Date.now());
+
+      const topDevices = detectedDevices
+        .sort((a, b) => b.rssi - a.rssi)
+        .slice(0, 5);
+
+      // Update progress and stage
+      setProgressStage(`Preparing to connect to ${topDevices.length} devices`);
+      setProgress(40);
+
+      // Create a queue of device MAC addresses
+      const deviceMacQueue = topDevices.map((device) => device.macAddress);
+      setDeviceQueue(deviceMacQueue);
+
+      console.log("Top devices for connection: ", topDevices);
+
+      // Start the connection process
+      connectToNextDevice(deviceMacQueue);
+    } else {
+      console.warn("No BLE devices detected.");
+      setShowProgressBar(false);
+      alert("No devices found. Please try scanning again.");
     }
   };
 
@@ -762,7 +788,7 @@ const BleButtons = () => {
       </div>
 
       {/* Loading Spinner Overlay */}
-      {isAnyDeviceLoading() && showProgressBar && (
+      {(isAnyDeviceLoading() || isAutoConnecting) && showProgressBar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
             <ProgressBar progress={progress} />
