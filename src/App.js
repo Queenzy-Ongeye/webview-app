@@ -19,6 +19,7 @@ const EditProfile = lazy(() => import("./components/profile/EditProfilePage"));
 const BleData = lazy(() => import("./components/BleButtons/BleDataPage"));
 const BleContainer = lazy(() => import("./components/BleButtons/BleContainer"));
 const LocationTracker = lazy(() => import("./components/locationTracker/LocationTracker"))
+const PreviousLocation = lazy(() => import("./components/locationTracker/PreviouseLocation"))
 
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = true; // Replace with your actual authentication logic
@@ -78,7 +79,7 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                     <Layout>
-                      <DeviceData />
+                      <PreviousLocation />
                     </Layout>
                     </ProtectedRoute>
                   }
