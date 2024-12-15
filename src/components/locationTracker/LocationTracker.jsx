@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Map, { Marker, Source, Layer } from "react-map-gl";
 import { MapPin } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import 'mapbox-gl/dist/mapbox-gl.css';
+import "mapbox-gl/dist/mapbox-gl.css";
 
 const LocationTracker = () => {
   const [viewState, setViewState] = useState({
@@ -20,7 +20,8 @@ const LocationTracker = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const MAPBOX_TOKEN = "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
+  const MAPBOX_TOKEN =
+    "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
 
   // WebViewJavascriptBridge setup
   const connectWebViewJavascriptBridge = (callback) => {
@@ -51,7 +52,10 @@ const LocationTracker = () => {
           latitude: newLocation.latitude,
           longitude: newLocation.longitude,
         }));
-        setPath((prevPath) => [...prevPath, [newLocation.longitude, newLocation.latitude]]);
+        setPath((prevPath) => [
+          ...prevPath,
+          [newLocation.longitude, newLocation.latitude],
+        ]);
         responseCallback("Location received successfully");
       }
     });
@@ -87,8 +91,19 @@ const LocationTracker = () => {
           setCurrentLocation({ latitude, longitude });
         },
         (error) => {
-          console.error("Error getting initial location:", error);
-          alert("Unable to retrieve your location. Please enable location services.");
+          if (error.code === error.PERMISSION_DENIED) {
+            alert(
+              "Location permission denied. Please enable it in your browser settings."
+            );
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            alert(
+              "Position unavailable. Ensure location services are enabled."
+            );
+          } else if (error.code === error.TIMEOUT) {
+            alert("Geolocation request timed out. Try again.");
+          } else {
+            alert("Unable to retrieve location.");
+          }
         }
       );
     } else {
@@ -110,7 +125,10 @@ const LocationTracker = () => {
         onMove={(evt) => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}
       >
-        <Marker latitude={currentLocation.latitude} longitude={currentLocation.longitude}>
+        <Marker
+          latitude={currentLocation.latitude}
+          longitude={currentLocation.longitude}
+        >
           <MapPin className="text-red-500" size={32} />
         </Marker>
 
@@ -138,7 +156,11 @@ const LocationTracker = () => {
         )}
 
         {stopovers.map((stopover, index) => (
-          <Marker key={index} latitude={stopover.latitude} longitude={stopover.longitude}>
+          <Marker
+            key={index}
+            latitude={stopover.latitude}
+            longitude={stopover.longitude}
+          >
             <div className="bg-blue-500 rounded-full p-2">
               <span className="text-white font-bold">{index + 1}</span>
             </div>
