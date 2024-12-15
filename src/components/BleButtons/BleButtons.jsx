@@ -470,10 +470,14 @@ const BleButtons = () => {
       setSessionStartTime(Date.now());
     }
 
-    // Check for session timeout
-    if (sessionStartTime && Date.now() - sessionStartTime > SESSION_TIMEOUT) {
+    // Check for session timeout (increased to allow more time for data fetching)
+    const EXTENDED_SESSION_TIMEOUT = 60000; // 60 seconds
+    if (
+      sessionStartTime &&
+      Date.now() - sessionStartTime > EXTENDED_SESSION_TIMEOUT
+    ) {
       console.log(
-        "Session timeout reached. Stopping device connection attempts."
+        "Extended session timeout reached. Stopping device connection attempts."
       );
       setShowProgressBar(false);
       setIsAutoConnecting(false);
@@ -503,42 +507,60 @@ const BleButtons = () => {
               setProgressStage("Initializing device data");
               setProgress(70);
 
-              // Explicitly call initBleData and dispatch like in manual connection
-              const initResponse = await initBleData(nextDeviceMac);
+              // Add a timeout for data initialization
+              const initDataTimeout = new Promise((_, reject) =>
+                setTimeout(
+                  () => reject(new Error("Data initialization timeout")),
+                  15000
+                )
+              );
 
-              // Dispatch the init data to store - this was missing!
-              dispatch({
-                type: "SET_INIT_BLE_DATA",
-                payload: { dataList: initResponse.dataList },
-              });
+              try {
+                const initResponse = await Promise.race([
+                  initBleData(nextDeviceMac),
+                  initDataTimeout,
+                ]);
 
-              const matchFound = checkDeviceMatch();
-
-              if (matchFound) {
-                setProgress(100);
-                handleMatchResult(true);
-
-                // Reset session start time
-                setSessionStartTime(null);
-
-                // Explicitly navigate with the data
-                navigate("/ble-data", {
-                  state: { deviceData: initResponse.dataList },
-                  replace: true,
+                dispatch({
+                  type: "SET_INIT_BLE_DATA",
+                  payload: { dataList: initResponse.dataList },
                 });
-              } else {
-                console.log("No match found, trying next device");
 
+                const matchFound = checkDeviceMatch();
+
+                if (matchFound) {
+                  setProgress(100);
+                  handleMatchResult(true);
+
+                  // Reset session start time
+                  setSessionStartTime(null);
+
+                  // Explicitly navigate with the data
+                  performNavigation(initResponse.dataList, true)
+                  // navigate("/ble-data", {
+                  //   state: { deviceData: initResponse.dataList },
+                  //   replace: true,
+                  // });
+                } else {
+                  console.log("No match found, trying next device");
+
+                  const updatedQueue = currentQueue.slice(1);
+                  setDeviceQueue(updatedQueue);
+                  await new Promise((resolve) => setTimeout(resolve, 50000));
+                  connectToNextDevice(updatedQueue);
+                }
+              } catch (initError) {
+                console.error("Data initialization error:", initError);
                 const updatedQueue = currentQueue.slice(1);
                 setDeviceQueue(updatedQueue);
-                await new Promise((resolve) => setTimeout(resolve, 1000));
+                await new Promise((resolve) => setTimeout(resolve, 50000));
                 connectToNextDevice(updatedQueue);
               }
             } else {
               console.error(`Failed to connect to ${nextDeviceMac}`);
               const updatedQueue = currentQueue.slice(1);
               setDeviceQueue(updatedQueue);
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+              await new Promise((resolve) => setTimeout(resolve, 10000));
               connectToNextDevice(updatedQueue);
             }
           } catch (error) {
