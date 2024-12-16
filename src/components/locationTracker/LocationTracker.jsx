@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Map, { Marker, Source, Layer } from "react-map-gl";
-import { MapPin } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { MapPin } from 'lucide-react';
+import { Button } from "../reusableCards/Buttons";
+import { Card, CardContent, CardFooter } from "../reusableCards/cards";
+import { Alert, AlertDescription, AlertTitle } from "../reusableCards/alert";
+import { Badge } from "../reusableCards/Badge";
 import "mapbox-gl/dist/mapbox-gl.css";
+
+const MAPBOX_TOKEN = "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
 
 const LocationTracker = () => {
   const [viewState, setViewState] = useState({
@@ -17,13 +23,9 @@ const LocationTracker = () => {
   const [isTracking, setIsTracking] = useState(false);
   const [path, setPath] = useState([]);
   const [stopovers, setStopovers] = useState([]);
-  const location = useLocation();
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const MAPBOX_TOKEN =
-    "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
-
-  // WebViewJavascriptBridge setup
   const connectWebViewJavascriptBridge = (callback) => {
     if (window.WebViewJavascriptBridge) {
       callback(window.WebViewJavascriptBridge);
@@ -65,7 +67,8 @@ const LocationTracker = () => {
     connectWebViewJavascriptBridge((bridge) => {
       bridge.callHandler("startLocationListener", "", () => {
         setIsTracking(true);
-        setPath([]); // Clear previous path
+        setPath([]);
+        setError(null);
       });
     });
   };
@@ -92,35 +95,30 @@ const LocationTracker = () => {
         },
         (error) => {
           if (error.code === error.PERMISSION_DENIED) {
-            alert(
-              "Location permission denied. Please enable it in your browser settings."
-            );
+            setError("Location permission denied. Please enable it in your browser settings.");
           } else if (error.code === error.POSITION_UNAVAILABLE) {
-            alert(
-              "Position unavailable. Ensure location services are enabled."
-            );
+            setError("Position unavailable. Ensure location services are enabled.");
           } else if (error.code === error.TIMEOUT) {
-            alert("Geolocation request timed out. Try again.");
+            setError("Geolocation request timed out. Try again.");
           } else {
-            alert("Unable to retrieve location.");
+            setError("Unable to retrieve location.");
           }
         }
       );
     } else {
-      alert("Geolocation is not supported by your browser.");
+      setError("Geolocation is not supported by your browser.");
     }
 
-    // Register WebView location callback
     connectWebViewJavascriptBridge((bridge) => {
       registerLocationCallback(bridge);
     });
   }, []);
 
   return (
-    <div className="relative h-screen w-full">
+    <div className="relative z-0 w-full h-full overflow-hidden">
       <Map
         {...viewState}
-        style={{ width: "100%", height: "100%" }}
+        style={{ width: "100vw", height: "100vh" }}
         mapStyle="mapbox://styles/mapbox/light-v11"
         onMove={(evt) => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}
@@ -129,7 +127,7 @@ const LocationTracker = () => {
           latitude={currentLocation.latitude}
           longitude={currentLocation.longitude}
         >
-          <MapPin className="text-red-500" size={32} />
+          <MapPin className="text-red-500 w-6 h-6 sm:w-8 sm:h-8" />
         </Marker>
 
         {path.length > 1 && (
@@ -148,7 +146,7 @@ const LocationTracker = () => {
               id="route"
               type="line"
               paint={{
-                "line-color": "#00FF00",
+                "line-color": "#10B981",
                 "line-width": 3,
               }}
             />
@@ -161,36 +159,56 @@ const LocationTracker = () => {
             latitude={stopover.latitude}
             longitude={stopover.longitude}
           >
-            <div className="bg-blue-500 rounded-full p-2">
-              <span className="text-white font-bold">{index + 1}</span>
-            </div>
+            <Badge variant="secondary" className="w-6 h-6 rounded-full flex items-center justify-center">
+              {index + 1}
+            </Badge>
           </Marker>
         ))}
       </Map>
 
-      {/* Control Panel */}
-      <div className="absolute bottom-4 left-4 right-4 flex flex-col gap-2 bg-gray-100/90 p-4 rounded-lg backdrop-blur-sm">
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            className="w-full bg-[#1a365d] hover:bg-[#2a466d] text-white py-2 px-4 rounded"
-            onClick={startLocationListener}
+      <Card className="absolute bottom-20 left-4 right-4 max-w-md xs:max-w-screen sm:max-w-screen mx-auto bg-white/90 backdrop-blur-sm sm:left-4 sm:right-auto">
+        <CardContent className="p-4 space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl sm:text-2xl font-bold">Location Tracker</h2>
+            <Badge variant={isTracking ? "default" : "secondary"}>
+              {isTracking ? "Tracking" : "Idle"}
+            </Badge>
+          </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Button
+              variant={isTracking ? "secondary" : "default"}
+              onClick={startLocationListener}
+              disabled={isTracking}
+              className="w-full bg-black text-white"
+            >
+              Start Tracking
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={stopLocationListener}
+              disabled={!isTracking}
+              className="w-full bg-red-700 text-white"
+            >
+              Stop Tracking
+            </Button>
+          </div>
+        </CardContent>
+        <CardFooter className="bg-gray-50 rounded-b-lg">
+          <Button
+            variant="outline"
+            className="w-full bg-oves-blue/65 text-white"
+            onClick={() => navigate("/device-data")}
           >
-            Start Tracking
-          </button>
-          <button
-            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
-            onClick={stopLocationListener}
-          >
-            Stop Tracking
-          </button>
-        </div>
-        <button
-          className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded"
-          onClick={() => navigate("/device-data")}
-        >
-          View Journey History
-        </button>
-      </div>
+            View Journey History
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   );
 };
