@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Map, { Marker, Source, Layer } from "react-map-gl";
-import { MapPin } from 'lucide-react';
+import { MapPin } from "lucide-react";
 import { Button } from "../reusableCards/Buttons";
 import { Card, CardContent, CardFooter } from "../reusableCards/cards";
 import { Alert, AlertDescription, AlertTitle } from "../reusableCards/alert";
 import { Badge } from "../reusableCards/Badge";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const MAPBOX_TOKEN = "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
+const MAPBOX_TOKEN =
+  "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
 
 const LocationTracker = () => {
   const [viewState, setViewState] = useState({
@@ -82,36 +83,15 @@ const LocationTracker = () => {
   };
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setViewState((prevState) => ({
-            ...prevState,
-            latitude,
-            longitude,
-          }));
-          setCurrentLocation({ latitude, longitude });
-        },
-        (error) => {
-          if (error.code === error.PERMISSION_DENIED) {
-            setError("Location permission denied. Please enable it in your browser settings.");
-          } else if (error.code === error.POSITION_UNAVAILABLE) {
-            setError("Position unavailable. Ensure location services are enabled.");
-          } else if (error.code === error.TIMEOUT) {
-            setError("Geolocation request timed out. Try again.");
-          } else {
-            setError("Unable to retrieve location.");
+    if (navigator.permissions) {
+      navigator.permissions
+        .query({ name: "geolocation" })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === "denied") {
+            setError("Location permission denied. Please enable it.");
           }
-        }
-      );
-    } else {
-      setError("Geolocation is not supported by your browser.");
+        });
     }
-
-    connectWebViewJavascriptBridge((bridge) => {
-      registerLocationCallback(bridge);
-    });
   }, []);
 
   return (
@@ -159,7 +139,10 @@ const LocationTracker = () => {
             latitude={stopover.latitude}
             longitude={stopover.longitude}
           >
-            <Badge variant="secondary" className="w-6 h-6 rounded-full flex items-center justify-center">
+            <Badge
+              variant="secondary"
+              className="w-6 h-6 rounded-full flex items-center justify-center"
+            >
               {index + 1}
             </Badge>
           </Marker>
