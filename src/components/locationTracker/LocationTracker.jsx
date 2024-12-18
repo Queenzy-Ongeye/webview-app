@@ -157,9 +157,7 @@ const LocationTracker = () => {
   const stopLocationListener = () => {
     if (window.WebViewJavascriptBridge) {
       window.WebViewJavascriptBridge.callHandler('stopLocationListener', '', (responseData) => {
-        setStatusMessage('Location tracking stopped.');
         setIsTracking(false);
-        setMovementType(null);
       });
     } else {
       setStatusMessage('WebViewJavascriptBridge is not initialized.');
