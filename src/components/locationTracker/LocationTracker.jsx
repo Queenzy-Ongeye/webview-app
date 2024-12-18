@@ -8,8 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "../reusableCards/alert";
 import { Badge } from "../reusableCards/Badge";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const MAPBOX_TOKEN =
-  "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
+const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN;
 
 const LocationTracker = () => {
   const [viewState, setViewState] = useState({
