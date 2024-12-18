@@ -33,9 +33,8 @@ const LocationTracker = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          const newLocation = { latitude, longitude };
-
-          setCurrentLocation(newLocation);
+          console.log("Location fetched successfully:", { latitude, longitude });
+          setCurrentLocation({ latitude, longitude });
           setViewState((prev) => ({
             ...prev,
             latitude,
@@ -45,13 +44,21 @@ const LocationTracker = () => {
         },
         (err) => {
           console.error("Geolocation error:", err);
-          setError("Unable to retrieve location. Please enable location services.");
-        }
+          if (err.code === 1) {
+            setError("Location permission denied. Please enable it in your settings.");
+          } else if (err.code === 2) {
+            setError("Location position unavailable.");
+          } else if (err.code === 3) {
+            setError("Location request timed out.");
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Config options
       );
     } else {
       setError("Geolocation is not supported by your browser.");
     }
   };
+  
 
   const connectWebViewJavascriptBridge = (callback) => {
     if (window.WebViewJavascriptBridge) {
