@@ -149,7 +149,6 @@ const LocationTracker = () => {
       );
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
-      setStatusMessage("WebViewJavascriptBridge is not initialized.");
     }
   };
   
@@ -160,7 +159,7 @@ const LocationTracker = () => {
         setIsTracking(false);
       });
     } else {
-      setStatusMessage('WebViewJavascriptBridge is not initialized.');
+      console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
 
