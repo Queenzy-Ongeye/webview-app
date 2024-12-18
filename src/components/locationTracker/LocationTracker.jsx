@@ -33,7 +33,10 @@ const LocationTracker = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          console.log("Location fetched successfully:", { latitude, longitude });
+          console.log("Location fetched successfully:", {
+            latitude,
+            longitude,
+          });
           setCurrentLocation({ latitude, longitude });
           setViewState((prev) => ({
             ...prev,
@@ -45,7 +48,9 @@ const LocationTracker = () => {
         (err) => {
           console.error("Geolocation error:", err);
           if (err.code === 1) {
-            setError("Location permission denied. Please enable it in your settings.");
+            setError(
+              "Location permission denied. Please enable it in your settings."
+            );
           } else if (err.code === 2) {
             setError("Location position unavailable.");
           } else if (err.code === 3) {
@@ -58,7 +63,6 @@ const LocationTracker = () => {
       setError("Geolocation is not supported by your browser.");
     }
   };
-  
 
   const connectWebViewJavascriptBridge = (callback) => {
     if (window.WebViewJavascriptBridge) {
@@ -120,21 +124,46 @@ const LocationTracker = () => {
       if (bridge) {
         registerLocationCallback(bridge);
       } else {
-        console.error("Bridge is undefined or null. Falling back to browser location.");
+        console.error(
+          "Bridge is undefined or null. Falling back to browser location."
+        );
         fetchCurrentLocation(); // Fallback to browser geolocation
       }
     });
   }, []);
 
   const startLocationListener = () => {
-    setIsTracking(true);
-    setPath([]); // Reset the path for a new tracking session
-    setError(null);
-    fetchCurrentLocation(); // Fetch current location when starting
+    if (window.WebViewJavascriptBridge) {
+      console.log("Calling startLocationListener via WebViewJavascriptBridge...");
+  
+      window.WebViewJavascriptBridge.callHandler(
+        "startLocationListener",
+        "",
+        (responseData) => {
+          console.log("Response from startLocationListener:", responseData);
+          setIsTracking(true);
+          setPath([]); // Reset the path for a new tracking session
+          setError(null);
+          fetchCurrentLocation(); // Fetch current location when starting
+        }
+      );
+    } else {
+      console.error("WebViewJavascriptBridge is not initialized.");
+      setStatusMessage("WebViewJavascriptBridge is not initialized.");
+    }
   };
+  
 
   const stopLocationListener = () => {
-    setIsTracking(false);
+    if (window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler('stopLocationListener', '', (responseData) => {
+        setStatusMessage('Location tracking stopped.');
+        setIsTracking(false);
+        setMovementType(null);
+      });
+    } else {
+      setStatusMessage('WebViewJavascriptBridge is not initialized.');
+    }
   };
 
   useEffect(() => {
