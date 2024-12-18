@@ -49,12 +49,12 @@ const LocationTracker = () => {
           console.error("Geolocation error:", err);
           if (err.code === 1) {
             setError(
-              "Location permission denied. Please enable it in your settings."
+              "Location permission denied. Please enable location access in your browser or system settings."
             );
           } else if (err.code === 2) {
-            setError("Location position unavailable.");
+            setError("Location position unavailable. Please try again.");
           } else if (err.code === 3) {
-            setError("Location request timed out.");
+            setError("Location request timed out. Please try again.");
           }
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Config options
@@ -134,8 +134,10 @@ const LocationTracker = () => {
 
   const startLocationListener = () => {
     if (window.WebViewJavascriptBridge) {
-      console.log("Calling startLocationListener via WebViewJavascriptBridge...");
-  
+      console.log(
+        "Calling startLocationListener via WebViewJavascriptBridge..."
+      );
+
       window.WebViewJavascriptBridge.callHandler(
         "startLocationListener",
         "",
@@ -151,13 +153,16 @@ const LocationTracker = () => {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
   };
-  
 
   const stopLocationListener = () => {
     if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler('stopLocationListener', '', (responseData) => {
-        setIsTracking(false);
-      });
+      window.WebViewJavascriptBridge.callHandler(
+        "stopLocationListener",
+        "",
+        (responseData) => {
+          setIsTracking(false);
+        }
+      );
     } else {
       console.error("WebViewJavascriptBridge is not initialized.");
     }
