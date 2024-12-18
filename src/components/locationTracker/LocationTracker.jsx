@@ -8,7 +8,8 @@ import { Alert, AlertDescription, AlertTitle } from "../reusableCards/alert";
 import { Badge } from "../reusableCards/Badge";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN;
+const MAPBOX_TOKEN =
+  "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
 
 const LocationTracker = () => {
   const [viewState, setViewState] = useState({
@@ -26,6 +27,32 @@ const LocationTracker = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // Function to fetch the user's current location
+  const fetchCurrentLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const newLocation = { latitude, longitude };
+
+          setCurrentLocation(newLocation);
+          setViewState((prev) => ({
+            ...prev,
+            latitude,
+            longitude,
+          }));
+          setPath((prevPath) => [...prevPath, [longitude, latitude]]);
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          setError("Unable to retrieve location. Please enable location services.");
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by your browser.");
+    }
+  };
+
   const connectWebViewJavascriptBridge = (callback) => {
     if (window.WebViewJavascriptBridge) {
       callback(window.WebViewJavascriptBridge);
@@ -40,45 +67,67 @@ const LocationTracker = () => {
 
   const registerLocationCallback = (bridge) => {
     bridge.registerHandler("locationCallBack", (data, responseCallback) => {
-      const parsedData = JSON.parse(data.data || "{}");
-      if (parsedData.latitude && parsedData.longitude) {
-        const newLocation = {
-          latitude: parsedData.latitude,
-          longitude: parsedData.longitude,
-          timestamp: new Date().toISOString(),
-        };
+      try {
+        console.log("Location callback triggered:", data);
+        const parsedData = JSON.parse(data || "{}");
 
-        setCurrentLocation(newLocation);
-        setViewState((prevViewState) => ({
-          ...prevViewState,
-          latitude: newLocation.latitude,
-          longitude: newLocation.longitude,
-        }));
-        setPath((prevPath) => [
-          ...prevPath,
-          [newLocation.longitude, newLocation.latitude],
-        ]);
-        responseCallback("Location received successfully");
+        if (parsedData.latitude && parsedData.longitude) {
+          const newLocation = {
+            latitude: parsedData.latitude,
+            longitude: parsedData.longitude,
+          };
+
+          setCurrentLocation(newLocation);
+          setViewState((prevViewState) => ({
+            ...prevViewState,
+            latitude: newLocation.latitude,
+            longitude: newLocation.longitude,
+          }));
+
+          setPath((prevPath) => [
+            ...prevPath,
+            [newLocation.longitude, newLocation.latitude],
+          ]);
+
+          setStopovers((prevStopovers) => [
+            ...prevStopovers,
+            {
+              latitude: newLocation.latitude,
+              longitude: newLocation.longitude,
+            },
+          ]);
+
+          responseCallback("Location received successfully");
+        } else {
+          console.error("Invalid location data received:", parsedData);
+        }
+      } catch (err) {
+        console.error("Error in location callback:", err);
       }
     });
   };
 
-  const startLocationListener = () => {
+  useEffect(() => {
     connectWebViewJavascriptBridge((bridge) => {
-      bridge.callHandler("startLocationListener", "", () => {
-        setIsTracking(true);
-        setPath([]);
-        setError(null);
-      });
+      console.log("Bridge initialized:", bridge);
+      if (bridge) {
+        registerLocationCallback(bridge);
+      } else {
+        console.error("Bridge is undefined or null. Falling back to browser location.");
+        fetchCurrentLocation(); // Fallback to browser geolocation
+      }
     });
+  }, []);
+
+  const startLocationListener = () => {
+    setIsTracking(true);
+    setPath([]); // Reset the path for a new tracking session
+    setError(null);
+    fetchCurrentLocation(); // Fetch current location when starting
   };
 
   const stopLocationListener = () => {
-    connectWebViewJavascriptBridge((bridge) => {
-      bridge.callHandler("stopLocationListener", "", () => {
-        setIsTracking(false);
-      });
-    });
+    setIsTracking(false);
   };
 
   useEffect(() => {
@@ -102,12 +151,14 @@ const LocationTracker = () => {
         onMove={(evt) => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}
       >
-        <Marker
-          latitude={currentLocation.latitude}
-          longitude={currentLocation.longitude}
-        >
-          <MapPin className="text-red-500 w-6 h-6 sm:w-8 sm:h-8" />
-        </Marker>
+        {currentLocation.latitude !== 0 && currentLocation.longitude !== 0 && (
+          <Marker
+            latitude={currentLocation.latitude}
+            longitude={currentLocation.longitude}
+          >
+            <MapPin className="text-red-500 w-6 h-6 sm:w-8 sm:h-8" />
+          </Marker>
+        )}
 
         {path.length > 1 && (
           <Source
