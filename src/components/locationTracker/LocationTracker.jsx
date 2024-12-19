@@ -30,13 +30,10 @@ const LocationTracker = () => {
   // Function to fetch the user's current location
   const fetchCurrentLocation = () => {
     if ("geolocation" in navigator) {
+      // Attempt to get location from browser's geolocation API
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          console.log("Location fetched successfully:", {
-            latitude,
-            longitude,
-          });
           setCurrentLocation({ latitude, longitude });
           setViewState((prev) => ({
             ...prev,
@@ -49,19 +46,86 @@ const LocationTracker = () => {
           console.error("Geolocation error:", err);
           if (err.code === 1) {
             setError(
-              "Location permission denied. Please enable location access in your browser or system settings."
+              "Location permission denied. Please enable location access in your settings."
             );
           } else if (err.code === 2) {
-            setError("Location position unavailable. Please try again.");
+            setError("Location position unavailable. Check GPS settings.");
           } else if (err.code === 3) {
-            setError("Location request timed out. Please try again.");
+            setError("Location request timed out. Please retry.");
+          }
+          // Attempt fallback to WebView bridge
+          if (window.WebViewJavascriptBridge) {
+            console.log("Attempting location from WebView bridge...");
+            window.WebViewJavascriptBridge.callHandler(
+              "requestLocation",
+              null,
+              (response) => {
+                try {
+                  const { latitude, longitude } = JSON.parse(response);
+                  if (latitude && longitude) {
+                    setCurrentLocation({ latitude, longitude });
+                    setViewState((prev) => ({
+                      ...prev,
+                      latitude,
+                      longitude,
+                    }));
+                    setPath((prevPath) => [...prevPath, [longitude, latitude]]);
+                  } else {
+                    setError("Invalid location received from WebView.");
+                  }
+                } catch (e) {
+                  setError("Error parsing location from WebView.");
+                  console.error(e);
+                }
+              }
+            );
           }
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Config options
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       setError("Geolocation is not supported by your browser.");
     }
+  };
+
+  useEffect(() => {
+    if (navigator.permissions) {
+      navigator.permissions
+        .query({ name: "geolocation" })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === "denied") {
+            setError("Location permission denied. Please enable it.");
+          } else {
+            fetchCurrentLocation(); // Fetch location if permission is granted or prompt is displayed
+          }
+        });
+    } else if (window.WebViewJavascriptBridge) {
+      console.log("Fetching location via WebView bridge...");
+      window.WebViewJavascriptBridge.callHandler(
+        "requestLocation",
+        null,
+        (response) => {
+          try {
+            const { latitude, longitude } = JSON.parse(response);
+            setCurrentLocation({ latitude, longitude });
+            setViewState((prev) => ({
+              ...prev,
+              latitude,
+              longitude,
+            }));
+            setPath((prevPath) => [...prevPath, [longitude, latitude]]);
+          } catch (e) {
+            setError("Failed to fetch location from WebView bridge.");
+          }
+        }
+      );
+    } else {
+      setError("Permissions API and WebView bridge not supported.");
+    }
+  }, []);
+
+  const handleRetryPermissions = () => {
+    fetchCurrentLocation();
   };
 
   const connectWebViewJavascriptBridge = (callback) => {
@@ -248,9 +312,17 @@ const LocationTracker = () => {
           {error && (
             <Alert variant="destructive">
               <AlertTitle>Error</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription>
+                {error}
+                {window.WebViewJavascriptBridge && (
+                  <Button onClick={fetchCurrentLocation} className="mt-4 bg-oves-blue text-white">
+                    Retry
+                  </Button>
+                )}
+              </AlertDescription>
             </Alert>
           )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Button
               variant={isTracking ? "secondary" : "default"}
