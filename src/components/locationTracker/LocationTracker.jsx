@@ -6,7 +6,6 @@ import { Button } from "../reusableCards/Buttons";
 import { Card, CardContent, CardFooter } from "../reusableCards/cards";
 import { Alert, AlertDescription, AlertTitle } from "../reusableCards/alert";
 import { Badge } from "../reusableCards/Badge";
-import "mapbox-gl/dist/mapbox-gl.css";
 
 const MAPBOX_TOKEN =
   "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
@@ -89,6 +88,24 @@ const LocationTracker = () => {
   };
 
   useEffect(() => {
+    // Check if running in WebView
+    const isWebView =
+      navigator.userAgent.includes("wv") ||
+      navigator.userAgent.includes("WebView");
+
+    if (isWebView) {
+      // Enable WebGL for WebView
+      const canvas = document.createElement("canvas");
+      const gl =
+        canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+
+      if (!gl) {
+        setError("WebGL is not supported in this WebView");
+        return;
+      }
+    }
+
+    // Initialize map only if WebGL is available
     if (navigator.permissions) {
       navigator.permissions
         .query({ name: "geolocation" })
@@ -96,31 +113,9 @@ const LocationTracker = () => {
           if (permissionStatus.state === "denied") {
             setError("Location permission denied. Please enable it.");
           } else {
-            fetchCurrentLocation(); // Fetch location if permission is granted or prompt is displayed
+            fetchCurrentLocation();
           }
         });
-    } else if (window.WebViewJavascriptBridge) {
-      console.log("Fetching location via WebView bridge...");
-      window.WebViewJavascriptBridge.callHandler(
-        "requestLocation",
-        null,
-        (response) => {
-          try {
-            const { latitude, longitude } = JSON.parse(response);
-            setCurrentLocation({ latitude, longitude });
-            setViewState((prev) => ({
-              ...prev,
-              latitude,
-              longitude,
-            }));
-            setPath((prevPath) => [...prevPath, [longitude, latitude]]);
-          } catch (e) {
-            setError("Failed to fetch location from WebView bridge.");
-          }
-        }
-      );
-    } else {
-      setError("Permissions API and WebView bridge not supported.");
     }
   }, []);
 
@@ -315,7 +310,10 @@ const LocationTracker = () => {
               <AlertDescription>
                 {error}
                 {window.WebViewJavascriptBridge && (
-                  <Button onClick={fetchCurrentLocation} className="mt-4 bg-oves-blue text-white">
+                  <Button
+                    onClick={handleRetryPermissions}
+                    className="mt-4 bg-oves-blue text-white"
+                  >
                     Retry
                   </Button>
                 )}
