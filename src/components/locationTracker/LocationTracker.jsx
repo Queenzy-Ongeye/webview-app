@@ -7,8 +7,7 @@ import { Card, CardContent, CardFooter } from "../reusableCards/cards";
 import { Alert, AlertDescription, AlertTitle } from "../reusableCards/alert";
 import { Badge } from "../reusableCards/Badge";
 
-const MAPBOX_TOKEN =
-  "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
+const MAPBOX_TOKEN = "pk.eyJ1IjoicXVlZW56eTAxIiwiYSI6ImNtNHBrbDhzNDB1ejMya3M3N21tcm5teGEifQ.xhLfAJcCXm-YZMzuZ3lwMw";
 
 const LocationTracker = () => {
   const [viewState, setViewState] = useState({
@@ -24,221 +23,179 @@ const LocationTracker = () => {
   const [path, setPath] = useState([]);
   const [stopovers, setStopovers] = useState([]);
   const [error, setError] = useState(null);
+  const [bridgeReady, setBridgeReady] = useState(false);
   const navigate = useNavigate();
 
-  // Function to fetch the user's current location
-  const fetchCurrentLocation = () => {
-    if ("geolocation" in navigator) {
-      // Attempt to get location from browser's geolocation API
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCurrentLocation({ latitude, longitude });
-          setViewState((prev) => ({
-            ...prev,
-            latitude,
-            longitude,
-          }));
-          setPath((prevPath) => [...prevPath, [longitude, latitude]]);
-        },
-        (err) => {
-          console.error("Geolocation error:", err);
-          if (err.code === 1) {
-            setError(
-              "Location permission denied. Please enable location access in your settings."
-            );
-          } else if (err.code === 2) {
-            setError("Location position unavailable. Check GPS settings.");
-          } else if (err.code === 3) {
-            setError("Location request timed out. Please retry.");
-          }
-          // Attempt fallback to WebView bridge
-          if (window.WebViewJavascriptBridge) {
-            console.log("Attempting location from WebView bridge...");
-            window.WebViewJavascriptBridge.callHandler(
-              "requestLocation",
-              null,
-              (response) => {
-                try {
-                  const { latitude, longitude } = JSON.parse(response);
-                  if (latitude && longitude) {
-                    setCurrentLocation({ latitude, longitude });
-                    setViewState((prev) => ({
-                      ...prev,
-                      latitude,
-                      longitude,
-                    }));
-                    setPath((prevPath) => [...prevPath, [longitude, latitude]]);
-                  } else {
-                    setError("Invalid location received from WebView.");
-                  }
-                } catch (e) {
-                  setError("Error parsing location from WebView.");
-                  console.error(e);
-                }
-              }
-            );
-          }
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    } else {
-      setError("Geolocation is not supported by your browser.");
-    }
-  };
-
+  // Initialize WebView bridge
   useEffect(() => {
-    // Check if running in WebView
-    const isWebView =
-      navigator.userAgent.includes("wv") ||
-      navigator.userAgent.includes("WebView");
-
-    if (isWebView) {
-      // Enable WebGL for WebView
-      const canvas = document.createElement("canvas");
-      const gl =
-        canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-
-      if (!gl) {
-        setError("WebGL is not supported in this WebView");
+    const initializeBridge = () => {
+      if (window.WebViewJavascriptBridge) {
+        console.log("Bridge already initialized");
+        setBridgeReady(true);
         return;
       }
-    }
 
-    // Initialize map only if WebGL is available
-    if (navigator.permissions) {
-      navigator.permissions
-        .query({ name: "geolocation" })
-        .then((permissionStatus) => {
-          if (permissionStatus.state === "denied") {
-            setError("Location permission denied. Please enable it.");
-          } else {
-            fetchCurrentLocation();
-          }
+      if (window.WVJBCallbacks) {
+        window.WVJBCallbacks.push(() => setBridgeReady(true));
+        return;
+      }
+
+      window.WVJBCallbacks = [() => setBridgeReady(true)];
+      
+      // Create WVJBIframe for iOS WebView
+      const WVJBIframe = document.createElement('iframe');
+      WVJBIframe.style.display = 'none';
+      WVJBIframe.src = 'wvjbscheme://__BRIDGE_LOADED__';
+      document.documentElement.appendChild(WVJBIframe);
+      setTimeout(() => document.documentElement.removeChild(WVJBIframe), 0);
+    };
+
+    initializeBridge();
+
+    // Cleanup
+    return () => {
+      window.WVJBCallbacks = undefined;
+    };
+  }, []);
+
+  const fetchCurrentLocation = async () => {
+    // Clear previous errors
+    setError(null);
+
+    try {
+      // Try WebView bridge first if available
+      if (bridgeReady && window.WebViewJavascriptBridge) {
+        return new Promise((resolve, reject) => {
+          window.WebViewJavascriptBridge.callHandler(
+            'requestLocation',
+            null,
+            (response) => {
+              try {
+                const locationData = typeof response === 'string' 
+                  ? JSON.parse(response) 
+                  : response;
+
+                if (locationData?.latitude && locationData?.longitude) {
+                  const location = {
+                    latitude: Number(locationData.latitude),
+                    longitude: Number(locationData.longitude)
+                  };
+                  resolve(location);
+                } else {
+                  reject(new Error('Invalid location data from WebView'));
+                }
+              } catch (e) {
+                reject(new Error(`Failed to parse WebView location: ${e.message}`));
+              }
+            }
+          );
         });
-    }
-  }, []);
-
-  const handleRetryPermissions = () => {
-    fetchCurrentLocation();
-  };
-
-  const connectWebViewJavascriptBridge = (callback) => {
-    if (window.WebViewJavascriptBridge) {
-      callback(window.WebViewJavascriptBridge);
-    } else {
-      document.addEventListener(
-        "WebViewJavascriptBridgeReady",
-        () => callback(window.WebViewJavascriptBridge),
-        false
-      );
-    }
-  };
-
-  const registerLocationCallback = (bridge) => {
-    bridge.registerHandler("locationCallBack", (data, responseCallback) => {
-      try {
-        console.log("Location callback triggered:", data);
-        const parsedData = JSON.parse(data || "{}");
-
-        if (parsedData.latitude && parsedData.longitude) {
-          const newLocation = {
-            latitude: parsedData.latitude,
-            longitude: parsedData.longitude,
-          };
-
-          setCurrentLocation(newLocation);
-          setViewState((prevViewState) => ({
-            ...prevViewState,
-            latitude: newLocation.latitude,
-            longitude: newLocation.longitude,
-          }));
-
-          setPath((prevPath) => [
-            ...prevPath,
-            [newLocation.longitude, newLocation.latitude],
-          ]);
-
-          setStopovers((prevStopovers) => [
-            ...prevStopovers,
-            {
-              latitude: newLocation.latitude,
-              longitude: newLocation.longitude,
-            },
-          ]);
-
-          responseCallback("Location received successfully");
-        } else {
-          console.error("Invalid location data received:", parsedData);
-        }
-      } catch (err) {
-        console.error("Error in location callback:", err);
       }
-    });
+
+      // Fallback to browser geolocation
+      if ("geolocation" in navigator) {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          });
+        });
+
+        return {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        };
+      }
+
+      throw new Error('No location services available');
+
+    } catch (err) {
+      let errorMessage = 'Failed to get location';
+      
+      if (err.code === 1) {
+        errorMessage = 'Location permission denied. Please enable location access.';
+      } else if (err.code === 2) {
+        errorMessage = 'Location unavailable. Please check GPS settings.';
+      } else if (err.code === 3) {
+        errorMessage = 'Location request timed out. Please retry.';
+      }
+
+      setError(errorMessage);
+      throw err;
+    }
   };
 
+  const updateLocation = async () => {
+    try {
+      const location = await fetchCurrentLocation();
+      
+      setCurrentLocation(location);
+      setViewState(prev => ({
+        ...prev,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      }));
+      
+      setPath(prevPath => [...prevPath, [location.longitude, location.latitude]]);
+      
+      if (isTracking) {
+        setStopovers(prev => [...prev, location]);
+      }
+    } catch (err) {
+      console.error('Error updating location:', err);
+    }
+  };
+
+  // Initialize location tracking
   useEffect(() => {
-    connectWebViewJavascriptBridge((bridge) => {
-      console.log("Bridge initialized:", bridge);
-      if (bridge) {
-        registerLocationCallback(bridge);
-      } else {
-        console.error(
-          "Bridge is undefined or null. Falling back to browser location."
-        );
-        fetchCurrentLocation(); // Fallback to browser geolocation
+    let locationInterval;
+
+    const startTracking = async () => {
+      if (isTracking) {
+        await updateLocation();
+        locationInterval = setInterval(updateLocation, 10000); // Update every 10 seconds
       }
-    });
-  }, []);
+    };
 
-  const startLocationListener = () => {
-    if (window.WebViewJavascriptBridge) {
-      console.log(
-        "Calling startLocationListener via WebViewJavascriptBridge..."
-      );
+    startTracking();
 
-      window.WebViewJavascriptBridge.callHandler(
-        "startLocationListener",
-        "",
-        (responseData) => {
-          console.log("Response from startLocationListener:", responseData);
-          setIsTracking(true);
-          setPath([]); // Reset the path for a new tracking session
-          setError(null);
-          fetchCurrentLocation(); // Fetch current location when starting
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
+    return () => {
+      if (locationInterval) {
+        clearInterval(locationInterval);
+      }
+    };
+  }, [isTracking]);
+
+  const startLocationListener = async () => {
+    try {
+      // Clear previous path and errors
+      setPath([]);
+      setError(null);
+      
+      // Get initial location
+      await updateLocation();
+      
+      setIsTracking(true);
+
+      // Notify WebView if bridge is available
+      if (bridgeReady && window.WebViewJavascriptBridge) {
+        window.WebViewJavascriptBridge.callHandler('startLocationListener', '');
+      }
+    } catch (err) {
+      console.error('Failed to start location tracking:', err);
+      setError('Failed to start location tracking. Please check permissions and try again.');
     }
   };
 
   const stopLocationListener = () => {
-    if (window.WebViewJavascriptBridge) {
-      window.WebViewJavascriptBridge.callHandler(
-        "stopLocationListener",
-        "",
-        (responseData) => {
-          setIsTracking(false);
-        }
-      );
-    } else {
-      console.error("WebViewJavascriptBridge is not initialized.");
+    setIsTracking(false);
+    if (bridgeReady && window.WebViewJavascriptBridge) {
+      window.WebViewJavascriptBridge.callHandler('stopLocationListener', '');
     }
   };
 
-  useEffect(() => {
-    if (navigator.permissions) {
-      navigator.permissions
-        .query({ name: "geolocation" })
-        .then((permissionStatus) => {
-          if (permissionStatus.state === "denied") {
-            setError("Location permission denied. Please enable it.");
-          }
-        });
-    }
-  }, []);
-
+  // Rest of the render code remains the same
   return (
     <div className="relative z-0 w-full h-full overflow-hidden">
       <Map
@@ -309,14 +266,12 @@ const LocationTracker = () => {
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>
                 {error}
-                {window.WebViewJavascriptBridge && (
-                  <Button
-                    onClick={handleRetryPermissions}
-                    className="mt-4 bg-oves-blue text-white"
-                  >
-                    Retry
-                  </Button>
-                )}
+                <Button
+                  onClick={() => updateLocation()}
+                  className="mt-4 bg-oves-blue text-white"
+                >
+                  Retry
+                </Button>
               </AlertDescription>
             </Alert>
           )}
