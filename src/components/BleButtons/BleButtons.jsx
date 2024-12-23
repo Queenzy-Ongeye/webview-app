@@ -536,7 +536,7 @@ const BleButtons = () => {
                   setSessionStartTime(null);
 
                   // Explicitly navigate with the data
-                  performNavigation(initResponse.dataList, true)
+                  performNavigation(initResponse.dataList, true);
                   // navigate("/ble-data", {
                   //   state: { deviceData: initResponse.dataList },
                   //   replace: true,
@@ -708,16 +708,16 @@ const BleButtons = () => {
       <div
         className={`${
           isAnyDeviceLoading() ? "hidden" : "block"
-        } px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto`}
+        } px-0 w-full max-w-9xl mx-auto`}
       >
         {error && (
           <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
           </div>
         )}
-        <div className="p-2 relative">
-          <div className="container mx-auto px-2 fixed top-16 left-0 right-0 z-10 w-full max-w-9xl">
-            <div className="mb-2">
+        <div className="relative overflow-hidden">
+          <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2 bg-white dark:bg-gray-800 z-10">
+            <div className="bg-white dark:bg-gray-800">
               <Input
                 type="text"
                 placeholder="Search devices..."
@@ -735,7 +735,7 @@ const BleButtons = () => {
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-white dark:bg-gray-800 dark:text-gray-300">
                   <SelectItem value="rssi">Signal Strength</SelectItem>
                   <SelectItem value="name">Name</SelectItem>
                 </SelectContent>
@@ -765,7 +765,7 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          <div className="w-full max-w-9xl xs:max-w-9xl sm:max-w-9xl md:max-w-9xl mx-auto px-auto relative h-screen xs:max-h-screen sm:max-h-screen md:max-h-screen lg:max-h-screen">
+          <div className="w-full max-w-9xl xs:max-w-9xl sm:max-w-9xl md:max-w-9xl relative h-screen xs:max-h-screen sm:max-h-screen md:max-h-screen lg:max-h-screen">
             {sortedAndFilteredDevices.length > 0 ? (
               <ul className="text-left">
                 {sortedAndFilteredDevices.map((device) => (
@@ -788,10 +788,10 @@ const BleButtons = () => {
                       onClick={(e) =>
                         handleConnectAndInit(e, device.macAddress)
                       }
-                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 ${
+                      className={`px-4 py-2 border rounded-md ml-4 transition-colors duration-300 bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white ${
                         loadingMap.get(device.macAddress)
                           ? "bg-gray-600 text-white cursor-not-allowed animate-pulse"
-                          : "bg-oves-blue text-white"
+                          : "bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white"
                       }`}
                       disabled={loadingMap.get(device.macAddress)}
                     >
