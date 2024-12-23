@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Map, { Marker, Source, Layer } from "react-map-gl";
-import { MapPin } from "lucide-react";
+import { MapPin } from 'lucide-react';
 import { Button } from "../reusableCards/Buttons";
 import { Card, CardContent, CardFooter } from "../reusableCards/cards";
 import { Alert, AlertDescription, AlertTitle } from "../reusableCards/alert";
@@ -197,10 +197,10 @@ const LocationTracker = () => {
 
   // Rest of the render code remains the same
   return (
-    <div className="relative z-0 w-full h-full overflow-hidden">
+    <div className="relative z-0 w-screen h-screen overflow-hidden dark:text-gray-300 bg-white dark:bg-gray-800">
       <Map
         {...viewState}
-        style={{ width: "100vw", height: "100vh" }}
+        style={{ width: "100%", height: "100%" }}
         mapStyle="mapbox://styles/mapbox/light-v11"
         onMove={(evt) => setViewState(evt.viewState)}
         mapboxAccessToken={MAPBOX_TOKEN}
@@ -281,7 +281,7 @@ const LocationTracker = () => {
               variant={isTracking ? "secondary" : "default"}
               onClick={startLocationListener}
               disabled={isTracking}
-              className="w-full bg-black text-white"
+              className="w-full bg-black text-gray-100 hover:bg-gray-800 dark:bg-gray-600 dark:text-gray-100 dark:hover:bg-white"
             >
               Start Tracking
             </Button>
@@ -298,7 +298,7 @@ const LocationTracker = () => {
         <CardFooter className="bg-gray-50 rounded-b-lg">
           <Button
             variant="outline"
-            className="w-full bg-oves-blue/65 text-white"
+            className="w-full bg-oves-blue/65 bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white"
             onClick={() => navigate("/device-data")}
           >
             View Journey History
