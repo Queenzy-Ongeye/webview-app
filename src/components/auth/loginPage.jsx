@@ -135,7 +135,7 @@ export default function LoginPage() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <Button type="submit" className="w-full bg-oves-blue text-white">
+            <Button type="submit" className="w-full bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white">
               Login
             </Button>
           </form>
