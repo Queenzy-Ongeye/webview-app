@@ -1,18 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import BottomNav from "./BleButtons/BottomNav";
-import NavigationBar from "./NavBar"
+import NavigationBar from "./Header/NavBar";
+import Header from "./Header/SideBar";
 
 const Layout = ({ children }) => {
-  return (
-    <div className="flex flex-col min-h-screen">
-      {/* Include NavigationBar at the top */}
-      <NavigationBar />
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  return (
+    <div className="flex h-[100dvh] overflow-hidden max-w-9xl bg-white dark:bg-gray-800">
+      {/* Sidebar */}
+      <NavigationBar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
       {/* Main content area */}
-      <main className="flex-grow p-4">{children}</main>
+      <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+        {/*  Site header */}
+        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <main className="grow">
+          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
 
       {/* Include BottomNav at the bottom */}
-      <BottomNav />
+      {/* <BottomNav /> */}
     </div>
   );
 };
