@@ -194,7 +194,7 @@ const Home = () => {
   };
 
   return (
-    <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen">
+    <div className="grid grid-rows-[1fr_auto] max-h-screen min-w-screen dark:text-gray-300 bg-white dark:bg-gray-800">
       <div className="overflow-auto">
         <BleButtons />
       </div>

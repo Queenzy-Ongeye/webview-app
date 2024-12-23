@@ -694,7 +694,7 @@ const BleButtons = () => {
   }, [sortedAndFilteredDevices, currentAutoConnectIndex, state.scannedData]);
 
   return (
-    <div className="scan-data-page flex flex-col h-screen">
+    <div className="scan-data-page flex flex-col h-screen dark:text-gray-300 bg-white dark:bg-gray-800">
       {/* Background with BleDataPage when loading */}
       <div
         className={`absolute inset-0 z-10 opacity-75 ${
@@ -708,7 +708,7 @@ const BleButtons = () => {
       <div
         className={`${
           isAnyDeviceLoading() ? "hidden" : "block"
-        } min-h-screen bg-gray-100 w-full relative z-0`}
+        } px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto`}
       >
         {error && (
           <div className="p-4 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
@@ -716,18 +716,18 @@ const BleButtons = () => {
           </div>
         )}
         <div className="p-2 relative">
-          <div className="container mx-auto px-2 fixed top-16 left-0 right-0 z-10 max-w-full bg-gray-50 md:max-w-full sm:max-w-full xs:max-w-full">
+          <div className="container mx-auto px-2 fixed top-16 left-0 right-0 z-10 w-full max-w-9xl">
             <div className="mb-2">
               <Input
                 type="text"
                 placeholder="Search devices..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-200 mt-2"
+                className="form-input pl-9 bg-white dark:bg-gray-800"
               />
             </div>
 
-            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 ">
+            <div className="flex flex-wrap justify-between items-center gap-2 mb-2 bg-white dark:bg-gray-800">
               <Select
                 value={sortBy}
                 onValueChange={(value) => setSortBy(value)}
@@ -741,7 +741,7 @@ const BleButtons = () => {
                 </SelectContent>
               </Select>
 
-              <div className="flex gap-2 ml-2">
+              <div className="flex gap-2 ml-2 bg-white dark:bg-gray-800">
                 <Button
                   variant="outline"
                   onClick={() =>
@@ -765,13 +765,13 @@ const BleButtons = () => {
               </div>
             </div>
           </div>
-          <div className="max-w-full xs:max-w-full sm:max-w-full md:max-w-full mt-40 mx-auto px-auto relative max-h-screen xs:max-h-screen sm:max-h-screen md:max-h-screen lg:max-h-screen">
+          <div className="w-full max-w-9xl xs:max-w-9xl sm:max-w-9xl md:max-w-9xl mx-auto px-auto relative h-screen xs:max-h-screen sm:max-h-screen md:max-h-screen lg:max-h-screen">
             {sortedAndFilteredDevices.length > 0 ? (
               <ul className="text-left">
                 {sortedAndFilteredDevices.map((device) => (
                   <li
                     key={device.macAddress}
-                    className="p-2 max-w-full xs:max-w-full sm:max-w-full md:max-w-full border rounded-md shadow flex items-center justify-between"
+                    className="p-2 w-full max-w-9xl xs:max-w-9xl sm:max-w-9xl md:max-w-9xl border rounded-md shadow flex items-center justify-between"
                   >
                     <div>
                       <p className="text-gray-700 font-bold">
