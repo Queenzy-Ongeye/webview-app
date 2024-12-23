@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Send, ArrowLeft } from 'lucide-react';
+import { Info, Send, ArrowLeft } from "lucide-react";
 import { useStore } from "../../service/store";
 import { toast } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
@@ -21,7 +21,6 @@ const BleDataPage = React.memo(() => {
 
   const [activeCategory, setActiveCategory] = useState("STS");
   const [loading, setLoading] = useState(false);
-
 
   const categorizedData = useMemo(() => {
     const categories = {
@@ -101,18 +100,23 @@ const BleDataPage = React.memo(() => {
   };
 
   return (
-    <div className="container mx-auto py-4">
-      <div className="mb-2 flex mt-12">
-        <Button onClick={handleGoBack} variant="outline" size="sm">
-          <ArrowLeft className="mr-2 h-4 w-4 bg-oves-blue text-white" />
+    <div className="container mx-auto">
+      <div className="mb-2 flex">
+        <Button
+          onClick={handleGoBack}
+          variant="outline"
+          size="sm"
+          className="mb-4 bg-gray-900 text-gray-700 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4 bg-gray-900 text-gray-700 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white" />
         </Button>
-        <h1 className="text-3xl font-bold mb-6">Device Data</h1>
+        <h1 className="text-3xl font-bold">Device Data</h1>
       </div>
 
       <Button
         onClick={() => publishMqttMessage(activeCategory)}
         disabled={loading}
-        className="mb-4 bg-oves-blue text-white"
+        className="mb-4 bg-gray-900 text-gray-700 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white"
       >
         <Send className="mr-2 h-4 w-4" />
         {loading ? "Publishing..." : `Publish ${activeCategory} Data`}
@@ -123,10 +127,10 @@ const BleDataPage = React.memo(() => {
           <button
             key={category}
             onClick={() => setActiveCategory(category)}
-            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white ${
               activeCategory === category
-                ? "bg-oves-blue text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                ? "bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white"
+                : "bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-white"
             }`}
           >
             {category}
@@ -187,4 +191,3 @@ const BleDataPage = React.memo(() => {
 });
 
 export default BleDataPage;
-
