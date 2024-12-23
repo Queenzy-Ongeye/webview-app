@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Info, Send, ArrowLeft } from "lucide-react";
+import { Info, Send, ArrowLeft } from 'lucide-react';
 import { useStore } from "../../service/store";
 import { toast } from "react-toastify";
 import { Button } from "../reusableCards/Buttons";
@@ -12,13 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "../reusableCards/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../reusableCards/dialog";
+import BleDataTableItem from "./BleTableContainer";
 
 const BleDataPage = React.memo(() => {
   const { state } = useStore();
@@ -28,13 +22,14 @@ const BleDataPage = React.memo(() => {
   const [activeCategory, setActiveCategory] = useState("STS");
   const [loading, setLoading] = useState(false);
 
+
   const categorizedData = useMemo(() => {
     const categories = {
-      STS: [],
+      ATT: [],
       CMD: [],
+      STS: [],
       DTA: [],
       DIA: [],
-      ATT: [],
     };
 
     if (Array.isArray(deviceData)) {
@@ -105,36 +100,6 @@ const BleDataPage = React.memo(() => {
     }
   };
 
-  const DescriptorsDialog = ({ descriptors }) => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="text-oves-blue">
-          Show Descriptors
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-gray-50">Descriptors</DialogTitle>
-        </DialogHeader>
-        <div className="mt-4 text-gray-50">
-          {descriptors && descriptors.length > 0 ? (
-            descriptors.map((descItem, index) => (
-              <div
-                key={index}
-                className="flex justify-between items-center mb-2 text-gray-50"
-              >
-                <code className="text-xs text-gray-50">{descItem.uuid}</code>
-                <span className="text-sm text-gray-50">{descItem.desc}</span>
-              </div>
-            ))
-          ) : (
-            <div>No descriptors available</div>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-
   return (
     <div className="container mx-auto py-4">
       <div className="mb-2 flex mt-12">
@@ -192,35 +157,11 @@ const BleDataPage = React.memo(() => {
               <TableBody>
                 {Object.entries(serviceData.characteristicList || {}).map(
                   ([charUuid, characteristic]) => (
-                    <TableRow
+                    <BleDataTableItem
                       key={`${serviceData.uuid}-${charUuid}`}
-                      className="text-sm"
-                    >
-                      <TableCell className="py-2">
-                        <div>
-                          <p className="font-semibold">
-                            {characteristic.name || "Unnamed Characteristic"}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {characteristic.desc || "No description available"}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-2">
-                        {String(characteristic.valType)}
-                      </TableCell>
-                      <TableCell className="py-2">
-                        {characteristic.properties}
-                      </TableCell>
-                      <TableCell className="py-2">
-                        {characteristic.descriptors &&
-                          Object.keys(characteristic.descriptors).length > 0 && (
-                            <DescriptorsDialog
-                              descriptors={characteristic.descriptors}
-                            />
-                          )}
-                      </TableCell>
-                    </TableRow>
+                      characteristic={characteristic}
+                      serviceUuid={serviceData.uuid}
+                    />
                   )
                 )}
               </TableBody>
@@ -246,3 +187,4 @@ const BleDataPage = React.memo(() => {
 });
 
 export default BleDataPage;
+
